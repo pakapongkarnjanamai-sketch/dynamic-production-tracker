@@ -40,6 +40,8 @@ export const getLogs        = (params = {}) => {
   return request(`/api/logs${qs ? `?${qs}` : ''}`);
 };
 export const createLog      = (data) => request('/api/logs', { method: 'POST', body: data });
+export const updateLog      = (id, data) => request(`/api/logs/${id}`, { method: 'PUT',    body: data });
+export const deleteLog      = (id)       => request(`/api/logs/${id}`, { method: 'DELETE' });
 export const getLogsSummary = ()     => request('/api/logs/summary');
 
 // Operators

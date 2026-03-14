@@ -157,4 +157,153 @@ const getLogsSummary = async (req, res) => {
   }
 };
 
-module.exports = { getLogs, createLog, getLogsSummary };
+/**
+ * Recalculate and persist tray status/timestamps based on current logs.
+ * Called after any log is created, updated, or deleted.
+ */
+const recalcTrayStatus = async (trayId) => {
+  // How many logs exist for this tray?
+  const { rows: [{ cnt }] } = await db.query(
+    `SELECT COUNT(*) AS cnt FROM production_logs WHERE tray_id = $1`,
+    [trayId]
+  );
+
+  if (parseInt(cnt) === 0) {
+    await db.query(
+      `UPDATE trays SET status = 'pending', started_at = NULL, finished_at = NULL WHERE id = $1`,
+      [trayId]
+    );
+    return;
+  }
+
+  const { rows: [{ first_at }] } = await db.query(
+    `SELECT MIN(logged_at) AS first_at FROM production_logs WHERE tray_id = $1`,
+    [trayId]
+  );
+
+  // If any process's latest action is 'ng' → on_hold
+  const { rows: ngRows } = await db.query(
+    `SELECT 1
+       FROM (
+         SELECT DISTINCT ON (process_id) action
+           FROM production_logs
+          WHERE tray_id = $1
+          ORDER BY process_id, logged_at DESC
+       ) t
+      WHERE action = 'ng'
+      LIMIT 1`,
+    [trayId]
+  );
+
+  if (ngRows.length > 0) {
+    await db.query(
+      `UPDATE trays SET status = 'on_hold', started_at = $2, finished_at = NULL WHERE id = $1`,
+      [trayId, first_at]
+    );
+    return;
+  }
+
+  // Count active processes for this tray's line
+  const { rows: [{ proc_cnt }] } = await db.query(
+    `SELECT COUNT(p.id) AS proc_cnt
+       FROM processes p
+       JOIN trays t ON t.line_id = p.line_id AND t.id = $1
+      WHERE p.is_active = TRUE`,
+    [trayId]
+  );
+
+  // Processes not yet finished (latest action != 'finish')
+  const { rows: notDone } = await db.query(
+    `SELECT p.id
+       FROM processes p
+       JOIN trays t ON t.line_id = p.line_id AND t.id = $1
+       LEFT JOIN LATERAL (
+         SELECT action
+           FROM production_logs
+          WHERE tray_id    = $1
+            AND process_id = p.id
+          ORDER BY logged_at DESC
+          LIMIT 1
+       ) pl ON TRUE
+      WHERE p.is_active = TRUE
+        AND COALESCE(pl.action, '') <> 'finish'`,
+    [trayId]
+  );
+
+  const allDone = notDone.length === 0 && parseInt(proc_cnt) > 0;
+
+  if (allDone) {
+    const { rows: [{ last_finish }] } = await db.query(
+      `SELECT MAX(logged_at) AS last_finish
+         FROM production_logs
+        WHERE tray_id = $1 AND action = 'finish'`,
+      [trayId]
+    );
+    await db.query(
+      `UPDATE trays SET status = 'completed', started_at = $2, finished_at = $3 WHERE id = $1`,
+      [trayId, first_at, last_finish]
+    );
+  } else {
+    await db.query(
+      `UPDATE trays SET status = 'in_progress', started_at = $2, finished_at = NULL WHERE id = $1`,
+      [trayId, first_at]
+    );
+  }
+};
+
+/**
+ * PUT /api/logs/:id
+ * Editable fields: operator, action, note
+ */
+const updateLog = async (req, res) => {
+  const { id } = req.params;
+  const { operator, action, note } = req.body;
+
+  if (action && !['start', 'finish', 'ng'].includes(action)) {
+    return res.status(400).json({ error: 'action must be start, finish, or ng' });
+  }
+
+  try {
+    const fields = [];
+    const values = [];
+
+    if (operator !== undefined) { fields.push(`operator = $${values.length + 1}`); values.push(operator); }
+    if (action   !== undefined) { fields.push(`action   = $${values.length + 1}`); values.push(action); }
+    if (note     !== undefined) { fields.push(`note     = $${values.length + 1}`); values.push(note); }
+
+    if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+    values.push(id);
+    const { rows } = await db.query(
+      `UPDATE production_logs SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Log not found' });
+
+    await recalcTrayStatus(rows[0].tray_id);
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * DELETE /api/logs/:id
+ */
+const deleteLog = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rows } = await db.query(
+      `DELETE FROM production_logs WHERE id = $1 RETURNING tray_id`,
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Log not found' });
+
+    await recalcTrayStatus(rows[0].tray_id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { getLogs, createLog, getLogsSummary, updateLog, deleteLog };

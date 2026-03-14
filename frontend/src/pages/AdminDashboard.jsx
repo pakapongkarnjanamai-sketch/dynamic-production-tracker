@@ -3,6 +3,7 @@ import {
   getLines,   createLine,    updateLine,    deleteLine,
   getProcesses, createProcess, updateProcess, deleteProcess,
   getTrays,   createTray,   updateTray,   deleteTray,
+  getLogs,    createLog,    updateLog,    deleteLog,
   getOperators, createOperator, updateOperator, deleteOperator,
 } from '../api/client';
 
@@ -528,17 +529,273 @@ const STATUS_STYLE = {
   pending:     'bg-gray-100  text-gray-600',
   in_progress: 'bg-amber-100 text-amber-700',
   done:        'bg-green-100 text-green-700',
+  completed:   'bg-green-100 text-green-700',
   on_hold:     'bg-red-100   text-red-600',
 };
 
+const ACTION_STYLE = {
+  start:  'bg-blue-100 text-blue-700',
+  finish: 'bg-green-100 text-green-700',
+  ng:     'bg-red-100 text-red-600',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TrayLogsPanel — inline panel: view / add / edit / delete production logs
+// ─────────────────────────────────────────────────────────────────────────────
+function TrayLogsPanel({ tray, onClose, onRefreshTray }) {
+  const [logs,    setLogs]    = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editLog, setEditLog] = useState(null);
+  const [addForm, setAddForm] = useState(null);
+  const [procs,   setProcs]   = useState([]);
+  const [msg,     setMsg]     = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    getLogs({ tray_id: tray.id })
+      .then(data => { setLogs(data); setLoading(false); })
+      .catch(e  => { alert(e.message); setLoading(false); });
+  };
+
+  useEffect(() => {
+    load();
+    if (tray.line_id) {
+      getProcesses(tray.line_id).then(setProcs).catch(() => {});
+    }
+  }, [tray.id]);
+
+  const handleSaveEdit = async () => {
+    setMsg(null);
+    try {
+      await updateLog(editLog.id, {
+        operator: editLog.operator || null,
+        action:   editLog.action,
+        note:     editLog.note     || null,
+      });
+      setMsg('อัปเดตสำเร็จ');
+      setEditLog(null);
+      load();
+      onRefreshTray?.();
+    } catch (e) { setMsg(e.message); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('ลบ log นี้? สถานะถาดจะถูกคำนวณใหม่')) return;
+    try {
+      await deleteLog(id);
+      load();
+      onRefreshTray?.();
+    } catch (e) { alert(e.message); }
+  };
+
+  const handleAddLog = async (e) => {
+    e.preventDefault();
+    setMsg(null);
+    try {
+      await createLog({
+        tray_id:    tray.id,
+        process_id: Number(addForm.process_id),
+        operator:   addForm.operator || null,
+        action:     addForm.action,
+        note:       addForm.note     || null,
+      });
+      setMsg('เพิ่ม log สำเร็จ');
+      setAddForm(null);
+      load();
+      onRefreshTray?.();
+    } catch (e) { setMsg(e.message); }
+  };
+
+  return (
+    <div className="mt-6 rounded-2xl border border-indigo-200 bg-white shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-5 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-3 text-white">
+          <div className="bg-white/20 rounded-lg p-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs text-white/70">ประวัติการผลิต</p>
+            <h3 className="text-sm font-bold font-mono leading-none">{tray.qr_code}
+              {tray.line_name && <span className="font-normal text-white/70 ml-2 font-sans">· {tray.line_name}</span>}
+              {tray.product   && <span className="font-normal text-white/70 ml-2 font-sans">· {tray.product}</span>}
+            </h3>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-white/60 hover:text-white text-lg leading-none transition-colors">✕</button>
+      </div>
+
+      {/* Add log toggle + form */}
+      <div className="px-5 pt-4">
+          {!addForm ? (
+            <button
+              onClick={() => setAddForm({ process_id: procs[0]?.id || '', operator: '', action: 'finish', note: '' })}
+              className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-100 transition-colors"
+            >
+              + เพิ่ม Log ใหม่
+            </button>
+          ) : (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-1">
+              <form onSubmit={handleAddLog} className="flex flex-wrap gap-3 items-end">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">ขั้นตอน *</label>
+                  <select
+                    className="border rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    value={addForm.process_id}
+                    onChange={e => setAddForm(f => ({ ...f, process_id: e.target.value }))}
+                    required
+                  >
+                    <option value="">— เลือก —</option>
+                    {procs.map(p => <option key={p.id} value={p.id}>{p.sequence}. {p.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">ผู้ปฏิบัติ</label>
+                  <input
+                    className="border rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 w-32"
+                    value={addForm.operator}
+                    onChange={e => setAddForm(f => ({ ...f, operator: e.target.value }))}
+                    placeholder="ชื่อ"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">Action *</label>
+                  <select
+                    className="border rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    value={addForm.action}
+                    onChange={e => setAddForm(f => ({ ...f, action: e.target.value }))}
+                  >
+                    <option value="start">start</option>
+                    <option value="finish">finish</option>
+                    <option value="ng">ng</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">หมายเหตุ</label>
+                  <input
+                    className="border rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 w-36"
+                    value={addForm.note}
+                    onChange={e => setAddForm(f => ({ ...f, note: e.target.value }))}
+                    placeholder="ไม่บังคับ"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors">เพิ่ม</button>
+                  <button type="button" onClick={() => setAddForm(null)} className="text-gray-400 hover:text-gray-600 text-sm underline">ยกเลิก</button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+
+      {/* Logs table */}
+      <div className="px-5 pb-5">
+          {loading ? (
+            <p className="text-center text-gray-400 py-10 text-sm">กำลังโหลด...</p>
+          ) : logs.length === 0 ? (
+            <p className="text-center text-gray-400 py-10 text-sm">ยังไม่มีบันทึกการผลิต</p>
+          ) : (
+            <div className="rounded-xl border overflow-hidden mt-4">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b">
+                  <tr>
+                    <th className="px-3 py-2.5 text-left">เวลา</th>
+                    <th className="px-3 py-2.5 text-left">ขั้นตอน</th>
+                    <th className="px-3 py-2.5 text-left">ผู้ปฏิบัติ</th>
+                    <th className="px-3 py-2.5 text-center">Action</th>
+                    <th className="px-3 py-2.5 text-left">หมายเหตุ</th>
+                    <th className="px-3 py-2.5 text-right">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {logs.map(log =>
+                    editLog?.id === log.id ? (
+                      <tr key={log.id} className="bg-amber-50">
+                        <td className="px-3 py-2 text-gray-400 text-xs whitespace-nowrap">
+                          {new Date(log.logged_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-600">
+                          <span className="font-mono text-gray-400 mr-1">#{log.sequence}</span>{log.process_name}
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            className="border rounded px-2 py-1 text-xs w-28 bg-white"
+                            value={editLog.operator}
+                            onChange={e => setEditLog(v => ({ ...v, operator: e.target.value }))}
+                            placeholder="ชื่อ"
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <select
+                            className="border rounded px-2 py-1 text-xs bg-white"
+                            value={editLog.action}
+                            onChange={e => setEditLog(v => ({ ...v, action: e.target.value }))}
+                          >
+                            <option value="start">start</option>
+                            <option value="finish">finish</option>
+                            <option value="ng">ng</option>
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            className="border rounded px-2 py-1 text-xs w-36 bg-white"
+                            value={editLog.note}
+                            onChange={e => setEditLog(v => ({ ...v, note: e.target.value }))}
+                            placeholder="หมายเหตุ"
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap space-x-2">
+                          <button onClick={handleSaveEdit} className="text-green-600 hover:text-green-800 text-xs font-semibold">บันทึก</button>
+                          <button onClick={() => setEditLog(null)} className="text-gray-400 hover:text-gray-600 text-xs">ยกเลิก</button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-3 py-2.5 text-gray-400 text-xs whitespace-nowrap">
+                          {new Date(log.logged_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td className="px-3 py-2.5 text-gray-700">
+                          <span className="font-mono text-gray-400 text-xs mr-1">#{log.sequence}</span>{log.process_name}
+                        </td>
+                        <td className="px-3 py-2.5 text-gray-600">{log.operator || '—'}</td>
+                        <td className="px-3 py-2.5 text-center">
+                          <span className={`text-xs rounded-full px-2.5 py-0.5 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-gray-500 text-xs max-w-[160px] truncate">{log.note || '—'}</td>
+                        <td className="px-3 py-2.5 text-right whitespace-nowrap space-x-3">
+                          <button
+                            onClick={() => setEditLog({ id: log.id, operator: log.operator || '', action: log.action, note: log.note || '' })}
+                            className="text-amber-500 hover:text-amber-700 text-xs font-medium"
+                          >แก้ไข</button>
+                          <button onClick={() => handleDelete(log.id)} className="text-red-400 hover:text-red-600 text-xs font-medium">ลบ</button>
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        {msg && <div className="mt-3"><SaveMsg msg={msg} /></div>}
+      </div>
+    </div>
+  );
+}
+
 function TraysPanel({ lines }) {
-  const [trays,      setTrays]      = useState([]);
-  const [search,     setSearch]     = useState('');
-  const [filterLine, setFilterLine] = useState('');
-  const [form,       setForm]       = useState({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending' });
-  const [editId,     setEditId]     = useState(null);
-  const [msg,        setMsg]        = useState(null);
-  const [showForm,   setShowForm]   = useState(true);
+  const [trays,        setTrays]        = useState([]);
+  const [search,       setSearch]       = useState('');
+  const [filterLine,   setFilterLine]   = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [form,         setForm]         = useState({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending' });
+  const [editId,       setEditId]       = useState(null);
+  const [msg,          setMsg]          = useState(null);
+  const [showForm,     setShowForm]     = useState(true);
+  const [selectedTray, setSelectedTray] = useState(null);
   const tab = TABS[1];
   const c = TAB_COLORS[tab.color];
 
@@ -646,9 +903,12 @@ function TraysPanel({ lines }) {
       t.qr_code.toLowerCase().includes(q) ||
       (t.product  || '').toLowerCase().includes(q) ||
       (t.batch_no || '').toLowerCase().includes(q);
-    const matchLine = !filterLine || String(t.line_id) === filterLine;
-    return matchSearch && matchLine;
+    const matchLine   = !filterLine   || String(t.line_id) === filterLine;
+    const matchStatus = !filterStatus || t.status === filterStatus;
+    return matchSearch && matchLine && matchStatus;
   });
+
+  const statusCounts = trays.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
 
   return (
     <SectionCard tab={tab} count={trays.length}>
@@ -731,6 +991,25 @@ function TraysPanel({ lines }) {
         )}
       </div>
 
+      {/* ── Status summary pills ── */}
+      {trays.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {Object.entries(statusCounts).map(([s, n]) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
+              className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
+                filterStatus === s
+                  ? `${STATUS_STYLE[s] || 'bg-gray-100 text-gray-600'} border-current`
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-amber-300'
+              }`}
+            >
+              {s}: {n}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── Filter bar ── */}
       <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-gray-50 rounded-xl border">
         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -744,11 +1023,20 @@ function TraysPanel({ lines }) {
         <select
           className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
           value={filterLine} onChange={(e) => setFilterLine(e.target.value)}>
-          <option value="">ทุกสาย</option>
+          <option value="">ทั้งหมด</option>
           {lines.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
-        {(search || filterLine) && (
-          <button onClick={() => { setSearch(''); setFilterLine(''); }}
+        <select
+          className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+          value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="">ทุกสถานะ</option>
+          <option value="pending">pending</option>
+          <option value="in_progress">in_progress</option>
+          <option value="completed">completed</option>
+          <option value="on_hold">on_hold</option>
+        </select>
+        {(search || filterLine || filterStatus) && (
+          <button onClick={() => { setSearch(''); setFilterLine(''); setFilterStatus(''); }}
             className="text-xs text-gray-400 hover:text-gray-600 underline">ล้าง</button>
         )}
         <span className="text-xs text-gray-400 ml-auto">{filtered.length}/{trays.length} รายการ</span>
@@ -786,7 +1074,14 @@ function TraysPanel({ lines }) {
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-right space-x-3 whitespace-nowrap">
-                    {/* ปุ่มพิมพ์เพิ่มเข้ามาตรงนี้ */}
+                    <button
+                      onClick={() => setSelectedTray(selectedTray?.id === t.id ? null : t)}
+                      className={`text-xs font-medium transition-colors ${
+                        selectedTray?.id === t.id
+                          ? 'text-indigo-700 font-semibold'
+                          : 'text-indigo-500 hover:text-indigo-700'
+                      }`}
+                    >📋 Logs</button>
                     <button onClick={() => handlePrint(t)}     className="text-gray-500 hover:text-gray-800 text-xs font-medium">🖨️ พิมพ์ QR</button>
                     <button onClick={() => handleEdit(t)}      className="text-amber-500 hover:text-amber-700 text-xs font-medium">แก้ไข</button>
                     <button onClick={() => handleDelete(t.id)} className="text-red-400   hover:text-red-600  text-xs font-medium">ลบ</button>
@@ -797,6 +1092,13 @@ function TraysPanel({ lines }) {
           </table>
         </div>
       </div>
+      {selectedTray && (
+        <TrayLogsPanel
+          tray={selectedTray}
+          onClose={() => setSelectedTray(null)}
+          onRefreshTray={load}
+        />
+      )}
     </SectionCard>
   );
 }
