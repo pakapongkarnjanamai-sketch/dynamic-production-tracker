@@ -12,9 +12,33 @@ const TRAY_STATUS_COLORS = {
 };
 
 const TABS = [
-  { id: 'trays',     label: 'รายงานถาดงาน',      enLabel: 'Tray Status',          icon: '📦', color: 'amber' },
-  { id: 'processes', label: 'สายการผลิต & ขั้นตอน', enLabel: 'Process Performance',  icon: '⚙️', color: 'blue' },
-  { id: 'operators', label: 'ผู้ปฏิบัติงาน',        enLabel: 'Operator Performance', icon: '👷', color: 'emerald' },
+  {
+    id: 'trays', label: 'รายงานถาดงาน', enLabel: 'Tray Status', color: 'amber',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'processes', label: 'สายการผลิต & ขั้นตอน', enLabel: 'Process Performance', color: 'blue',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'operators', label: 'ผู้ปฏิบัติงาน', enLabel: 'Operator Performance', color: 'emerald',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
 ];
 
 const TAB_COLORS = {
@@ -28,7 +52,7 @@ function SectionCard({ tab, children }) {
   return (
     <div className="bg-white rounded-2xl border shadow-sm overflow-hidden mt-6">
       <div className={`bg-gradient-to-r ${c.header} px-6 py-4 flex items-center gap-3 text-white`}>
-        <div className="bg-white/20 rounded-lg p-1.5 text-lg">{tab.icon}</div>
+        <div className="bg-white/20 rounded-lg p-1.5">{tab.icon}</div>
         <div>
           <h2 className="text-base font-bold leading-none">{tab.label}</h2>
           <p className="text-xs text-white/70 mt-0.5">{tab.enLabel}</p>

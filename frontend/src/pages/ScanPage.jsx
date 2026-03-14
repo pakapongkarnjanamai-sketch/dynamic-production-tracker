@@ -226,9 +226,13 @@ export default function ScanPage() {
               </button>
               <button
                 type="submit"
-                className="w-2/3 bg-blue-600 text-white rounded-2xl py-4 text-lg font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform"
+                className="w-2/3 bg-blue-600 text-white rounded-2xl py-4 text-lg font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform inline-flex items-center justify-center gap-2"
               >
-                เริ่มสแกน 📷
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                เริ่มสแกน
               </button>
             </div>
           </form>
@@ -299,7 +303,12 @@ export default function ScanPage() {
         {error && !loading && (
           <div className="flex-1 flex flex-col justify-center mt-4">
             <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-6 text-center">
-              <div className="text-red-500 text-5xl mb-4">⚠️</div>
+              <div className="flex justify-center mb-4">
+                <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
               <h2 className="text-xl font-bold text-red-700 mb-2">เกิดข้อผิดพลาด</h2>
               <p className="text-red-600 mb-6">{error}</p>
               <button
