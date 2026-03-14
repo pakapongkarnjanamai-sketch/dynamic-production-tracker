@@ -24,6 +24,7 @@ export default function ScanPage() {
   const [error,      setError]      = useState(null);
   const [result,     setResult]     = useState(null);
   const [toast, setToast] = useState(null);
+  const [scanKey, setScanKey] = useState(0);
 
   // Ref guard — survives stale closures inside QRScanner's useEffect
   const processingRef = useRef(false);
@@ -46,14 +47,16 @@ export default function ScanPage() {
   };
 
   const clearSetup = () => {
-    processingRef.current = false;
+    processingRef.current = true;
     localStorage.removeItem(LS_OPERATOR);
     setOperator('');
     setSetupStep('operator');
+    setScanKey((k) => k + 1);
     setScanning(true);
     setResult(null);
     setError(null);
     setToast(null);
+    setTimeout(() => { processingRef.current = false; }, 1500);
   };
 
   const handleScan = useCallback(async (qrCode) => {
@@ -93,10 +96,12 @@ export default function ScanPage() {
         setResult(fresh);
       } else {
         // finish / ng → กลับหน้าสแกนรอถาดถัดไป
-        processingRef.current = false;
+        processingRef.current = true;
+        setScanKey((k) => k + 1);
         setScanning(true);
         setResult(null);
         setError(null);
+        setTimeout(() => { processingRef.current = false; }, 1500);
       }
     } catch (e) {
       setError(e.message);
@@ -106,10 +111,12 @@ export default function ScanPage() {
   }, [result, operator]);
 
   const reset = () => {
-    processingRef.current = false;
+    processingRef.current = true;          // block scans temporarily
+    setScanKey((k) => k + 1);              // force QRScanner full remount
     setScanning(true);
     setResult(null);
     setError(null);
+    setTimeout(() => { processingRef.current = false; }, 1500); // allow after 1.5 s
   };
 
   // Derive current process state from scan result
@@ -203,30 +210,17 @@ export default function ScanPage() {
         </div>
       </div>
 
-      <div className={`flex-1 flex flex-col w-full ${scanning && !loading ? '' : 'p-4 max-w-md mx-auto gap-4'}`}>
+      <div className="flex-1 flex flex-col w-full p-4 max-w-md mx-auto gap-4">
 
-        {/* Scanner — edge-to-edge full height */}
+        {/* Scanner */}
         {scanning && !loading && (
-          <div className="flex-1 w-full relative bg-black overflow-hidden flex items-center justify-center">
-
-            <QRScanner onScan={handleScan} onError={(e) => setError('ไม่สามารถเปิดกล้องได้: ' + e)} />
-
-            {/* Text overlay at top */}
-            <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent px-4 pt-6 pb-12 text-center pointer-events-none z-10">
-              <h2 className="text-2xl font-bold text-white tracking-wide">สแกน QR Code</h2>
-              <p className="text-white/80 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
+          <div className="flex-1 flex flex-col items-center justify-center gap-4">
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-gray-800">สแกน QR Code</h2>
+              <p className="text-gray-500 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
             </div>
-
-            {/* Scan frame guide + Darkened surroundings */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
-              {/* Box shadow creates the dark overlay outside the transparent center */}
-              <div className="w-64 h-64 border-2 border-white/20 relative shadow-[0_0_0_4000px_rgba(0,0,0,0.5)] rounded-xl">
-                {/* 4 Corners */}
-                <div className="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
-                <div className="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
-                <div className="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
-                <div className="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-white rounded-br-xl"></div>
-              </div>
+            <div className="w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-black">
+              <QRScanner key={scanKey} onScan={handleScan} onError={(e) => setError('ไม่สามารถเปิดกล้องได้: ' + e)} />
             </div>
           </div>
         )}
