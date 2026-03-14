@@ -221,9 +221,11 @@ export default function TrayDetailPage() {
                         {isCurrent && isStarted       && <div className="text-xs text-blue-500 font-medium mt-0.5">← กำลังดำเนินการ</div>}
                         {isCurrent && isNG            && <div className="text-xs text-red-500 font-medium mt-0.5">← ต้องแก้ไข</div>}
                       </div>
-                      {isDone          && <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg flex-shrink-0">เสร็จ</span>}
+                      {isDone && <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg flex-shrink-0">เสร็จ</span>}
                       {isNG && !isCurrent && <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded-lg flex-shrink-0">NG</span>}
-                      {isCurrent       && <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-lg flex-shrink-0 animate-pulse">ดำเนินการ</span>}
+                      {isCurrent && !p.last_action && <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-lg flex-shrink-0">ขั้นตอนถัดไป</span>}
+                      {isCurrent && isStarted && <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-lg flex-shrink-0 animate-pulse">ดำเนินการ</span>}
+                      {isCurrent && isNG && <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded-lg flex-shrink-0">ต้องแก้ไข</span>}
                     </div>
                   );
                 })}

@@ -1,5 +1,5 @@
 import { useEffect, useState, Fragment } from 'react';
-import { getLogsSummary, getLogs, getTrays } from '../api/client';
+import { getLogsSummary, getLogs, getProcesses, getLines } from '../api/client';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Configuration & Helpers
@@ -142,9 +142,15 @@ function TrayLogsViewPanel({ tray }) {
 }
 
 // ── Main Panel: สรุปถาดงาน ──
-function TrayReportPanel({ data, search, onSearch, c }) {
+function TrayReportPanel({ data, logs, search, onSearch, c }) {
   const [selectedTrayId, setSelectedTrayId] = useState(null);
-  const [filterDelay, setFilterDelay] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const latestLogByTray = [...logs].sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at)).reduce((acc, log) => {
+    const key = String(log.tray_id);
+    if (!acc[key]) acc[key] = log;
+    return acc;
+  }, {});
 
   const now = new Date();
   const withDelay = data.map((r) => ({
@@ -152,17 +158,27 @@ function TrayReportPanel({ data, search, onSearch, c }) {
     isDelayed: r.due_date && new Date(r.due_date) < now && r.status !== 'completed',
   }));
 
-  const filtered = withDelay.filter(
-    (r) =>
-      (!filterDelay || r.isDelayed) &&
-      (
-        r.qr_code.toLowerCase().includes(search.toLowerCase()) ||
-        (r.product || '').toLowerCase().includes(search.toLowerCase()) ||
-        (r.line_name || '').toLowerCase().includes(search.toLowerCase())
-      )
-  );
-
+  const pendingCount = withDelay.filter((r) => r.status === 'pending').length;
+  const inProgressCount = withDelay.filter((r) => r.status === 'in_progress').length;
+  const completedCount = withDelay.filter((r) => r.status === 'completed').length;
   const delayCount = withDelay.filter((r) => r.isDelayed).length;
+
+  const filtered = withDelay.filter((r) => {
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'delayed'
+          ? r.isDelayed
+          : r.status === statusFilter;
+
+    const q = search.toLowerCase();
+    const matchesSearch =
+      r.qr_code.toLowerCase().includes(q) ||
+      (r.product || '').toLowerCase().includes(q) ||
+      (r.line_name || '').toLowerCase().includes(q);
+
+    return matchesStatus && matchesSearch;
+  });
 
   const toggleRow = (id) => setSelectedTrayId(prev => prev === id ? null : id);
 
@@ -174,26 +190,65 @@ function TrayReportPanel({ data, search, onSearch, c }) {
           <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ภาพรวมถาดงาน</h3>
         </div>
 
-        <div className="flex wrap items-center gap-3 mb-3">
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <button
+            onClick={() => setStatusFilter('all')}
+            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
+              statusFilter === 'all'
+                ? 'bg-gray-700 text-white border-gray-700'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            ทั้งหมด: <strong>{withDelay.length}</strong>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter('in_progress')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
+              statusFilter === 'in_progress'
+                ? 'bg-amber-600 text-white border-amber-600'
+                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            กำลังดำเนินการ: <strong>{inProgressCount}</strong>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter('pending')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
+              statusFilter === 'pending'
+                ? 'bg-gray-600 text-white border-gray-600'
+                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+            }`}
+          >
+            รอดำเนิน: <strong>{pendingCount}</strong>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter('completed')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
+              statusFilter === 'completed'
+                ? 'bg-green-600 text-white border-green-600'
+                : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+            }`}
+          >
+            เสร็จสิ้น: <strong>{completedCount}</strong>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter('delayed')}
+            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
+              statusFilter === 'delayed'
+                ? 'bg-red-600 text-white border-red-600'
+                : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
+            }`}
+          >
+            ⏰ เกินกำหนด: <strong>{delayCount}</strong>
+          </button>
+
           <div className="flex flex-wrap gap-2">
-            <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1">
-              กำลังดำเนินการ: <strong>{withDelay.filter(r => r.status === 'in_progress').length}</strong>
-            </span>
-            <span className="text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 rounded-full px-3 py-1">
-              รอดำเนิน: <strong>{withDelay.filter(r => r.status === 'pending').length}</strong>
-            </span>
-            <span className="text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1">
-              เสร็จสิ้น: <strong>{withDelay.filter(r => r.status === 'completed').length}</strong>
-            </span>
-            {delayCount > 0 && (
-              <button
-                onClick={() => setFilterDelay(!filterDelay)}
-                className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
-                  filterDelay ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
-                }`}
-              >
-                ⏰ เกินกำหนด: <strong>{delayCount}</strong> {filterDelay ? '(กดเพื่อแสดงทั้งหมด)' : '(กดเพื่อกรอง)'}
-              </button>
+            {statusFilter !== 'all' && (
+              <span className="text-xs text-gray-500 px-2 py-1">กำลังกรอง: {statusFilter}</span>
             )}
           </div>
         </div>
@@ -217,10 +272,10 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                 <tr>
                   <th className="px-4 py-3">QR Code</th>
                   <th className="px-4 py-3">สินค้า</th>
+                  <th className="px-4 py-3">อยู่ที่ขั้นตอน</th>
+                  <th className="px-4 py-3">ผู้ปฏิบัติล่าสุด</th>
                   <th className="px-4 py-3 text-center">สถานะ</th>
                   <th className="px-4 py-3">กำหนดส่ง</th>
-                  <th className="px-4 py-3 text-center">เสร็จ/NG</th>
-                  <th className="px-4 py-3">อัปเดตล่าสุด</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -228,6 +283,7 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                   <tr><td colSpan={6} className="text-center py-8 text-gray-400">ไม่พบข้อมูล</td></tr>
                 )}
                 {filtered.map((r) => {
+                  const latest = latestLogByTray[String(r.tray_id)] || null;
                   const isExpanded = selectedTrayId === r.tray_id;
                   return (
                     <Fragment key={r.tray_id}>
@@ -252,6 +308,19 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                           <div>{r.product ?? '—'}</div>
                           {r.batch_no && <div className="text-xs text-gray-400 font-mono mt-0.5">{r.batch_no}</div>}
                         </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {latest ? (
+                            <div className="text-sm font-medium text-gray-800">
+                              <span className="text-xs text-gray-400 mr-1">#{latest.sequence}</span>
+                              {latest.process_name}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-300">ยังไม่เริ่ม</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 text-sm">
+                          {latest?.operator || <span className="text-xs text-gray-300">—</span>}
+                        </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${TRAY_STATUS_COLORS[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                             {r.status}
@@ -268,13 +337,6 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                           ) : (
                             <span className="text-xs text-gray-300">—</span>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="font-bold text-green-600 mr-2">{r.finished_processes ?? 0}</span>
-                          <span className="font-bold text-red-600">{r.ng_count ?? 0}</span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-400 text-xs">
-                          {r.last_activity ? new Date(r.last_activity).toLocaleString('th-TH') : '—'}
                         </td>
                       </tr>
 
@@ -305,37 +367,100 @@ function TrayReportPanel({ data, search, onSearch, c }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Lines & Processes Report Panel
 // ─────────────────────────────────────────────────────────────────────────────
-function ProcessReportPanel({ logs, c }) {
-  // จัดกลุ่มข้อมูล Log ตาม สายการผลิต และ ขั้นตอน
-  const stats = logs.reduce((acc, log) => {
-    const key = `${log.line_name}-${log.sequence}-${log.process_name}`;
-    if (!acc[key]) {
-      acc[key] = { line: log.line_name, process: log.process_name, seq: log.sequence, start: 0, finish: 0, ng: 0 };
-    }
-    if (log.action === 'start') acc[key].start++;
-    if (log.action === 'finish') acc[key].finish++;
-    if (log.action === 'ng') acc[key].ng++;
+function ProcessReportPanel({ logs, processes, lines, c }) {
+  const sortedLogs = [...logs].sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
+  const lineNameById = lines.reduce((acc, line) => {
+    acc[line.id] = line.name;
+    return acc;
+  }, {});
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  // Latest action per tray+process. If latest is start, that job is currently in progress.
+  const latestByTask = sortedLogs.reduce((acc, log) => {
+    const taskKey = `${log.tray_id}-${log.process_id}`;
+    if (!acc[taskKey]) acc[taskKey] = log;
     return acc;
   }, {});
 
+  const activeByProcess = Object.values(latestByTask).reduce((acc, log) => {
+    if (log.action !== 'start') return acc;
+    const processKey = String(log.process_id);
+    if (!acc[processKey]) acc[processKey] = [];
+    acc[processKey].push({ qr_code: log.qr_code, logged_at: log.logged_at });
+    return acc;
+  }, {});
+
+  // Base rows from process master so steps with no logs are still visible.
+  const stats = processes.reduce((acc, p) => {
+    const key = String(p.id);
+    acc[key] = {
+      line: lineNameById[p.line_id] || 'N/A',
+      process: p.name,
+      seq: p.sequence,
+      activeItems: [],
+    };
+    return acc;
+  }, {});
+
+  logs.forEach((log) => {
+    const key = String(log.process_id);
+    if (!stats[key]) {
+      stats[key] = {
+        line: log.line_name || 'N/A',
+        process: log.process_name,
+        seq: log.sequence,
+        activeItems: [],
+      };
+    }
+  });
+
+  Object.keys(stats).forEach((key) => {
+    stats[key].activeItems = (activeByProcess[key] || []).sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
+  });
+
   const rows = Object.values(stats).sort((a, b) => a.line.localeCompare(b.line) || a.seq - b.seq);
+  const lineRowCount = rows.reduce((acc, row) => {
+    acc[row.line] = (acc[row.line] || 0) + 1;
+    return acc;
+  }, {});
   let currentLine = null;
+
+  const lineStats = lines.reduce((acc, line) => {
+    acc[line.name] = {
+      finishToday: 0,
+      ngToday: 0,
+    };
+    return acc;
+  }, {});
+
+  logs.forEach((log) => {
+    const loggedAt = new Date(log.logged_at);
+    if (loggedAt < todayStart) return;
+    const lineKey = log.line_name || 'N/A';
+    if (!lineStats[lineKey]) {
+      lineStats[lineKey] = { finishToday: 0, ngToday: 0 };
+    }
+    if (log.action === 'finish') lineStats[lineKey].finishToday += 1;
+    if (log.action === 'ng') lineStats[lineKey].ngToday += 1;
+  });
 
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ประสิทธิภาพรายขั้นตอน</h3>
       </div>
+
       <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b">
               <tr>
                 <th className="px-4 py-3">สายการผลิต</th>
+                <th className="px-4 py-3 text-center text-green-600">วันนี้เสร็จ (OK)</th>
+                <th className="px-4 py-3 text-center text-red-600">วันนี้เสีย (NG)</th>
                 <th className="px-4 py-3">ขั้นตอน</th>
-                <th className="px-4 py-3 text-center text-blue-600">▶ เริ่มงาน (Start)</th>
-                <th className="px-4 py-3 text-center text-green-600">✔ เสร็จสิ้น (Finish)</th>
-                <th className="px-4 py-3 text-center text-red-600">✖ ของเสีย (NG)</th>
+                <th className="px-4 py-3 text-left text-blue-600">กำลังทำอยู่</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -343,18 +468,42 @@ function ProcessReportPanel({ logs, c }) {
               {rows.map((r, i) => {
                 const showLine = r.line !== currentLine;
                 currentLine = r.line;
+                const lineDaily = lineStats[r.line] || { finishToday: 0, ngToday: 0 };
                 return (
                   <tr key={i} className={`bg-white ${c.rowHover} transition-colors`}>
-                    <td className="px-4 py-3 font-semibold text-gray-800 border-r border-gray-100">
-                      {showLine ? r.line : ''}
-                    </td>
+                    {showLine && (
+                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle font-semibold text-gray-800 border-r border-gray-100">
+                        {r.line}
+                      </td>
+                    )}
+                    {showLine && (
+                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle text-center font-bold text-green-600 bg-green-50/50">{lineDaily.finishToday}</td>
+                    )}
+                    {showLine && (
+                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle text-center font-bold text-red-600 bg-red-50/50">{lineDaily.ngToday}</td>
+                    )}
                     <td className="px-4 py-3 text-gray-700 font-medium">
                       <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">{r.seq}</span>
                       {r.process}
                     </td>
-                    <td className="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/50">{r.start}</td>
-                    <td className="px-4 py-3 text-center font-bold text-green-600 bg-green-50/50">{r.finish}</td>
-                    <td className="px-4 py-3 text-center font-bold text-red-600 bg-red-50/50">{r.ng}</td>
+                    <td className="px-4 py-3 text-xs bg-blue-50/40">
+                      {r.activeItems.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {r.activeItems.slice(0, 4).map((item) => (
+                            <span key={`${item.qr_code}-${item.logged_at}`} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 px-2 py-0.5 font-semibold">
+                              {item.qr_code}
+                            </span>
+                          ))}
+                          {r.activeItems.length > 4 && (
+                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-white text-blue-600 px-2 py-0.5 font-semibold">
+                              +{r.activeItems.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -370,25 +519,58 @@ function ProcessReportPanel({ logs, c }) {
 // 3. Operator Report Panel
 // ─────────────────────────────────────────────────────────────────────────────
 function OperatorReportPanel({ logs, c }) {
-  // จัดกลุ่มข้อมูล Log ตาม ชื่อผู้ปฏิบัติงาน
-  const stats = logs.reduce((acc, log) => {
+  const [expandedOperator, setExpandedOperator] = useState(null);
+  const HISTORY_LIMIT = 20;
+
+  const sortedLogs = [...logs].sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
+
+  // Latest action by tray+process to determine who is currently working on what
+  const latestByTask = sortedLogs.reduce((acc, log) => {
+    const key = `${log.tray_id}-${log.process_id}`;
+    if (!acc[key]) acc[key] = log;
+    return acc;
+  }, {});
+
+  const stats = sortedLogs.reduce((acc, log) => {
     const op = log.operator || 'ไม่ระบุชื่อ (Unknown)';
     if (!acc[op]) {
-      acc[op] = { name: op, start: 0, finish: 0, ng: 0, lastActive: log.logged_at };
+      acc[op] = {
+        name: op,
+        start: 0,
+        finish: 0,
+        ng: 0,
+        lastActive: log.logged_at,
+        latestLog: log,
+        history: [],
+      };
     }
+
     if (log.action === 'start') acc[op].start++;
     if (log.action === 'finish') acc[op].finish++;
     if (log.action === 'ng') acc[op].ng++;
 
-    // หาเวลาล่าสุดที่ทำงาน
-    if (new Date(log.logged_at) > new Date(acc[op].lastActive)) {
-      acc[op].lastActive = log.logged_at;
-    }
+    acc[op].history.push(log);
     return acc;
   }, {});
 
-  // เรียงลำดับตามคนที่กด Finish เยอะสุด
+  Object.values(stats).forEach((row) => {
+    const activeLogs = Object.values(latestByTask).filter(
+      (taskLog) => taskLog.action === 'start' && (taskLog.operator || 'ไม่ระบุชื่อ (Unknown)') === row.name
+    );
+    row.currentTask = activeLogs.sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at))[0] || null;
+  });
+
   const rows = Object.values(stats).sort((a, b) => b.finish - a.finish);
+
+  const actionText = {
+    start: 'เริ่มงาน',
+    finish: 'เสร็จสิ้น',
+    ng: 'NG',
+  };
+
+  const toggleOperator = (name) => {
+    setExpandedOperator((prev) => (prev === name ? null : name));
+  };
 
   return (
     <div className="flex flex-col">
@@ -401,32 +583,93 @@ function OperatorReportPanel({ logs, c }) {
             <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b">
               <tr>
                 <th className="px-4 py-3">ผู้ปฏิบัติงาน</th>
-                <th className="px-4 py-3 text-center text-blue-600">▶ เริ่มงาน (Start)</th>
-                <th className="px-4 py-3 text-center text-green-600">✔ เสร็จสิ้น (Finish)</th>
-                <th className="px-4 py-3 text-center text-red-600">✖ ของเสีย (NG)</th>
-                <th className="px-4 py-3">ทำงานล่าสุดเมื่อ</th>
+                <th className="px-4 py-3">งานล่าสุด / กำลังทำ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {rows.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-gray-400">ยังไม่มีประวัติการทำงาน</td></tr>}
-              {rows.map((r, i) => (
-                <tr key={i} className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} ${c.rowHover} transition-colors`}>
-                  <td className="px-4 py-3 font-semibold text-gray-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                        {r.name.charAt(0)}
-                      </div>
-                      {r.name}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/50">{r.start}</td>
-                  <td className="px-4 py-3 text-center font-bold text-green-600 bg-green-50/50">{r.finish}</td>
-                  <td className="px-4 py-3 text-center font-bold text-red-600 bg-red-50/50">{r.ng}</td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">
-                    {r.lastActive ? new Date(r.lastActive).toLocaleString('th-TH') : '—'}
-                  </td>
-                </tr>
-              ))}
+              {rows.length === 0 && <tr><td colSpan={2} className="text-center py-8 text-gray-400">ยังไม่มีประวัติการทำงาน</td></tr>}
+              {rows.map((r, i) => {
+                const isExpanded = expandedOperator === r.name;
+                const baseRowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50';
+                return (
+                  <Fragment key={r.name}>
+                    <tr
+                      onClick={() => toggleOperator(r.name)}
+                      className={`${baseRowClass} ${c.rowHover} transition-colors cursor-pointer`}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-800">
+                        <div className="flex items-center gap-2">
+                          <svg className={`w-4 h-4 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-emerald-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                            {r.name.charAt(0)}
+                          </div>
+                          {r.name}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {r.currentTask ? (
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 px-2 py-0.5 font-semibold">กำลังทำ</span>
+                            <div className="text-gray-700 font-medium">{r.currentTask.process_name} · {r.currentTask.qr_code}</div>
+                            <div className="text-gray-400">เริ่มเมื่อ {new Date(r.currentTask.logged_at).toLocaleString('th-TH')}</div>
+                          </div>
+                        ) : r.latestLog ? (
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 text-gray-600 px-2 py-0.5 font-semibold">ล่าสุด</span>
+                            <div className="text-gray-700 font-medium">{actionText[r.latestLog.action] || r.latestLog.action} · {r.latestLog.process_name} · {r.latestLog.qr_code}</div>
+                            <div className="text-gray-400">{new Date(r.latestLog.logged_at).toLocaleString('th-TH')}</div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr className="bg-emerald-50/30">
+                        <td colSpan={2} className="p-0 border-b-4 border-emerald-200">
+                          <div className="p-4 md:p-6 shadow-inner">
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide flex items-center justify-between gap-2">
+                                <span>ประวัติการทำงานล่าสุดของ {r.name}</span>
+                                <span>แสดงล่าสุด {HISTORY_LIMIT} รายการ</span>
+                              </div>
+                              <div className="overflow-x-auto max-h-[340px]">
+                                <table className="w-full text-xs">
+                                  <thead className="bg-gray-100 text-gray-500 uppercase tracking-wide sticky top-0 z-10">
+                                    <tr>
+                                      <th className="px-3 py-2 text-left">เวลา</th>
+                                      <th className="px-3 py-2 text-left">QR</th>
+                                      <th className="px-3 py-2 text-left">ขั้นตอน</th>
+                                      <th className="px-3 py-2 text-center">สถานะ</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {r.history.slice(0, HISTORY_LIMIT).map((h) => (
+                                      <tr key={h.id} className="hover:bg-gray-50">
+                                        <td className="px-3 py-2 text-gray-500 whitespace-nowrap">{new Date(h.logged_at).toLocaleString('th-TH')}</td>
+                                        <td className="px-3 py-2 text-gray-700 font-mono whitespace-nowrap">{h.qr_code}</td>
+                                        <td className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                                          <span className="text-gray-400 mr-1">#{h.sequence}</span>{h.process_name}
+                                        </td>
+                                        <td className="px-3 py-2 text-center">
+                                          <span className={`text-[11px] border rounded-full px-2 py-0.5 font-semibold ${ACTION_STYLE[h.action] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                                            {h.action}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -442,6 +685,8 @@ export default function ReportPage() {
   const [activeTab, setActiveTab] = useState('trays');
   const [summaryData, setSummaryData] = useState([]);
   const [logsData, setLogsData] = useState([]);
+  const [processesData, setProcessesData] = useState([]);
+  const [linesData, setLinesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
@@ -452,11 +697,15 @@ export default function ReportPage() {
 
     Promise.all([
       getLogsSummary(),
-      getLogs({ limit: 2000 })
+      getLogs({ limit: 2000 }),
+      getProcesses(),
+      getLines(),
     ])
-      .then(([summary, logs]) => {
+      .then(([summary, logs, processes, lines]) => {
         setSummaryData(summary);
         setLogsData(logs);
+        setProcessesData(processes);
+        setLinesData(lines);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -526,8 +775,8 @@ export default function ReportPage() {
         ) : (
           <div className="animate-fade-in-up">
             <SectionCard tab={currentTabDef}>
-              {activeTab === 'trays'     && <TrayReportPanel data={summaryData} search={search} onSearch={setSearch} c={currentTabColors} />}
-              {activeTab === 'processes' && <ProcessReportPanel logs={logsData} c={currentTabColors} />}
+              {activeTab === 'trays'     && <TrayReportPanel data={summaryData} logs={logsData} search={search} onSearch={setSearch} c={currentTabColors} />}
+              {activeTab === 'processes' && <ProcessReportPanel logs={logsData} processes={processesData} lines={linesData} c={currentTabColors} />}
               {activeTab === 'operators' && <OperatorReportPanel logs={logsData} c={currentTabColors} />}
             </SectionCard>
           </div>
