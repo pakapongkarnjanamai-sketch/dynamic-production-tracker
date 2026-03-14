@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS trays (
     qty         INTEGER      NOT NULL DEFAULT 1,
     status      VARCHAR(20)  NOT NULL DEFAULT 'pending'
                              CHECK (status IN ('pending','in_progress','completed','on_hold')),
+    started_at  TIMESTAMPTZ,
+    finished_at TIMESTAMPTZ,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );

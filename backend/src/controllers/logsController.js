@@ -105,10 +105,24 @@ const createLog = async (req, res) => {
       }
     }
 
+    // Set started_at on the first log ever recorded for this tray
     await db.query(
-      `UPDATE trays SET status = $1 WHERE id = $2`,
-      [trayStatus, tray_id]
+      `UPDATE trays SET started_at = $1 WHERE id = $2 AND started_at IS NULL`,
+      [rows[0].logged_at, tray_id]
     );
+
+    // Set finished_at when all processes are done; clear it otherwise
+    if (trayStatus === 'completed') {
+      await db.query(
+        `UPDATE trays SET status = $1, finished_at = $2 WHERE id = $3`,
+        [trayStatus, rows[0].logged_at, tray_id]
+      );
+    } else {
+      await db.query(
+        `UPDATE trays SET status = $1, finished_at = NULL WHERE id = $2`,
+        [trayStatus, tray_id]
+      );
+    }
 
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -125,6 +139,8 @@ const getLogsSummary = async (req, res) => {
               t.product,
               t.batch_no,
               t.status,
+              t.started_at,
+              t.finished_at,
               l.name      AS line_name,
               COUNT(pl.id)  FILTER (WHERE pl.action = 'finish') AS finished_processes,
               COUNT(pl.id)  FILTER (WHERE pl.action = 'ng')     AS ng_count,
@@ -132,7 +148,7 @@ const getLogsSummary = async (req, res) => {
          FROM trays t
     LEFT JOIN lines           l  ON l.id  = t.line_id
     LEFT JOIN production_logs pl ON pl.tray_id = t.id
-        GROUP BY t.id, t.qr_code, t.product, t.batch_no, t.status, l.name
+        GROUP BY t.id, t.qr_code, t.product, t.batch_no, t.status, t.started_at, t.finished_at, l.name
         ORDER BY last_activity DESC NULLS LAST`
     );
     res.json(rows);

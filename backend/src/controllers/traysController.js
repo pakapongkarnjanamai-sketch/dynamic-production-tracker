@@ -64,7 +64,11 @@ const scanTray = async (req, res) => {
       `SELECT p.id, p.name, p.sequence,
               pl.action    AS last_action,
               pl.logged_at AS last_logged_at,
-              pl.operator  AS last_operator
+              pl.operator  AS last_operator,
+              ps.logged_at AS start_logged_at,
+              ps.operator  AS start_operator,
+              pf.logged_at AS finish_logged_at,
+              pf.operator  AS finish_operator
          FROM processes p
     LEFT JOIN LATERAL (
               SELECT action, logged_at, operator
@@ -74,6 +78,24 @@ const scanTray = async (req, res) => {
                ORDER BY logged_at DESC
                LIMIT 1
               ) pl ON TRUE
+    LEFT JOIN LATERAL (
+              SELECT logged_at, operator
+                FROM production_logs
+               WHERE tray_id    = $1
+                 AND process_id = p.id
+                 AND action     = 'start'
+               ORDER BY logged_at DESC
+               LIMIT 1
+              ) ps ON TRUE
+    LEFT JOIN LATERAL (
+              SELECT logged_at, operator
+                FROM production_logs
+               WHERE tray_id    = $1
+                 AND process_id = p.id
+                 AND action     = 'finish'
+               ORDER BY logged_at DESC
+               LIMIT 1
+              ) pf ON TRUE
         WHERE p.line_id   = $2
           AND p.is_active = TRUE
         ORDER BY p.sequence ASC`,

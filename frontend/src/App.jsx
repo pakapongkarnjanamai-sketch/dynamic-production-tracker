@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import ScanPage        from './pages/ScanPage';
+import TrayDetailPage  from './pages/TrayDetailPage';
 import ShopFloor       from './pages/ShopFloor';
 import AdminDashboard  from './pages/AdminDashboard';
 import ReportPage      from './pages/ReportPage';
@@ -7,7 +8,7 @@ import ReportPage      from './pages/ReportPage';
 // Component สำหรับ Navigation Bar โดยเฉพาะ
 function Navigation() {
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => path === '/' ? location.pathname === path : location.pathname.startsWith(path);
 
   // Helper สำหรับจัดสไตล์ปุ่มเมนู
   const navItemClass = (path) => `
@@ -81,7 +82,8 @@ export default function App() {
       <Navigation />
       <Routes>
         <Route path="/"       element={<ShopFloor />} />
-        <Route path="/scan"   element={<ScanPage />} />
+        <Route path="/scan"         element={<ScanPage />} />
+        <Route path="/scan/detail"   element={<TrayDetailPage />} />
         <Route path="/admin"  element={<AdminDashboard />} />
         <Route path="/report" element={<ReportPage />} />
       </Routes>
