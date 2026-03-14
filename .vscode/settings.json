@@ -1,0 +1,50 @@
+{
+  // Editor defaults
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.inlineSuggest.enabled": true,
+
+  // File handling
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+    "*.jsx": "javascriptreact",
+    "*.js":  "javascript"
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  },
+
+  // JavaScript
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Tailwind CSS IntelliSense — autocomplete in JSX className
+  "tailwindCSS.experimental.classRegex": [
+    ["className=\"([^\"]*)\"", "([^\"\\s]+)"],
+    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "javascriptreact": "html"
+  },
+
+  // REST Client — default environment for .http test files
+  "rest-client.environmentVariables": {
+    "local": {
+      "apiBase": "http://localhost:4000"
+    }
+  },
+
+  // Spell checker — ignore project-specific words
+  "cSpell.words": [
+    "Lite", "MES", "nodemon", "dotenv", "postgres",
+    "Tailwind", "Vite", "qrcode", "qr", "trays", "tray",
+    "litemes", "shopfloor", "lineid", "batchno"
+  ]
+}

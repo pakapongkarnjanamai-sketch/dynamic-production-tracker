@@ -1,0 +1,51 @@
+{
+  "version": "0.2.0",
+  "compounds": [
+    {
+      // Starts backend debug + opens Chrome for frontend in one click
+      "name": "🚀 Start Full Stack (Backend + Frontend)",
+      "configurations": ["🖥 Debug Backend", "🌐 Open Frontend (Chrome)"],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "Lite MES",
+        "order": 1
+      }
+    }
+  ],
+  "configurations": [
+    {
+      // Debug the Express API with Node.js debugger
+      // Attach breakpoints in backend/src/**/*.js
+      "name": "🖥 Debug Backend",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/src/index.js",
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "runtimeExecutable": "node",
+      "console": "integratedTerminal",
+      "restart": true,
+      "presentation": {
+        "hidden": false,
+        "group": "Lite MES",
+        "order": 2
+      }
+    },
+    {
+      // Launch Chrome and attach to the Vite dev server
+      // Requires frontend dev server to already be running
+      "name": "🌐 Open Frontend (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "preLaunchTask": "Start Frontend Dev Server",
+      "presentation": {
+        "hidden": false,
+        "group": "Lite MES",
+        "order": 3
+      }
+    }
+  ]
+}

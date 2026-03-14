@@ -9,6 +9,12 @@
 
 ```
 dynamic-production-tracker/
+├── .vscode/
+│   ├── extensions.json   # recommended extensions
+│   ├── settings.json     # editor/Tailwind/ESLint settings
+│   ├── launch.json       # Node.js + Chrome debug configs
+│   ├── tasks.json        # dev-server tasks (Ctrl+Shift+B)
+│   └── api-tests.http    # REST Client requests for every endpoint
 ├── backend/          # Node.js + Express API (PostgreSQL)
 │   ├── database/
 │   │   └── schema.sql
@@ -28,6 +34,7 @@ dynamic-production-tracker/
 │   │   └── main.jsx
 │   ├── .env.example
 │   └── package.json
+├── dynamic-production-tracker.code-workspace  # ← เปิดใน VS Code
 └── README.md         # (this file)
 ```
 
@@ -51,6 +58,87 @@ dynamic-production-tracker/
 - **Node.js** ≥ 18
 - **PostgreSQL** ≥ 14
 - `npm` หรือ `yarn`
+
+---
+
+## 💻 เปิดใน VS Code / Open in VS Code
+
+### วิธีที่ 1 — เปิด Workspace File (แนะนำ) / Method 1 — Open Workspace File (recommended)
+
+1. **Clone** โปรเจคลงเครื่อง (ดูขั้นตอนด้านล่าง)
+2. เปิด VS Code → **File → Open Workspace from File…**
+3. เลือกไฟล์ `dynamic-production-tracker.code-workspace` ในโฟลเดอร์โปรเจค
+4. VS Code จะแสดง 2 โฟลเดอร์ (Backend + Frontend) พร้อมกันใน Explorer
+5. คลิก **"Install Extensions"** เมื่อ VS Code แจ้งเตือนให้ติดตั้ง extension ที่แนะนำ
+
+> 💡 ไฟล์ `.code-workspace` รวม settings, extensions, debug configs, และ tasks ไว้ในที่เดียว
+
+---
+
+1. **Clone** the project (see step below)
+2. Open VS Code → **File → Open Workspace from File…**
+3. Select `dynamic-production-tracker.code-workspace` inside the project folder
+4. VS Code shows both `Backend` and `Frontend` roots side-by-side in the Explorer
+5. Click **"Install Extensions"** when VS Code prompts to install the recommended extensions
+
+---
+
+### วิธีที่ 2 — เปิดโฟลเดอร์ตรง / Method 2 — Open folder directly
+
+```bash
+# Terminal / Command Prompt
+code dynamic-production-tracker
+```
+
+หรือ / or: **File → Open Folder…** → เลือกโฟลเดอร์ `dynamic-production-tracker`
+
+---
+
+### Extensions ที่แนะนำ / Recommended Extensions
+
+VS Code จะแสดง pop-up ให้ติดตั้งอัตโนมัติ หรือสามารถติดตั้งเองได้จาก Extensions panel (`Ctrl+Shift+X`):
+
+| Extension | ประโยชน์ |
+|-----------|---------|
+| **ESLint** | ตรวจสอบโค้ด JavaScript |
+| **Prettier** | จัดรูปแบบโค้ดอัตโนมัติ |
+| **Tailwind CSS IntelliSense** | Autocomplete class ของ Tailwind |
+| **Simple React Snippets** | Snippet สำหรับ React |
+| **REST Client** | ทดสอบ API ใน `.vscode/api-tests.http` |
+| **PostgreSQL** | Browser ฐานข้อมูลใน VS Code |
+| **GitLens** | Git history และ blame inline |
+
+---
+
+### เริ่ม Dev Server ทั้ง 2 ตัวพร้อมกัน / Start both dev servers at once
+
+```
+Ctrl+Shift+B   (Windows / Linux)
+Cmd+Shift+B    (macOS)
+```
+
+VS Code จะรัน `npm run dev` ใน `backend/` และ `frontend/` พร้อมกันในแท็บ Terminal แยก
+
+หรือ / or: **Terminal → Run Task… → 🚀 Start Full Stack**
+
+---
+
+### Debug / ดีบัก
+
+เปิด **Run and Debug** panel (`Ctrl+Shift+D`) แล้วเลือก:
+
+| Configuration | คำอธิบาย |
+|---------------|---------|
+| `🚀 Start Full Stack` | เปิด backend debugger + Chrome พร้อมกัน |
+| `🖥 Debug Backend` | Debug Express API — วาง breakpoint ใน `backend/src/**/*.js` |
+| `🌐 Open Frontend (Chrome)` | เปิด Chrome แบบ debug mode ที่ `http://localhost:5173` |
+
+---
+
+### ทดสอบ API ใน VS Code / Test API inside VS Code
+
+เปิดไฟล์ `.vscode/api-tests.http` แล้วคลิก **"Send Request"** เหนือ request ที่ต้องการ  
+(ต้องมี extension **REST Client** ติดตั้งก่อน)
 
 ---
 

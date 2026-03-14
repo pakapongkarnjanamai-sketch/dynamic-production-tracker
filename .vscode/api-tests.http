@@ -1,0 +1,132 @@
+### Lite MES API — REST Client test file
+### Install extension: humao.rest-client
+### Select environment: Ctrl+Alt+E → "local"
+### Run a request: click "Send Request" above each ###
+
+@apiBase = http://localhost:4000
+
+# ─────────────────────────────────────────────
+# Health
+# ─────────────────────────────────────────────
+### Health check
+GET {{apiBase}}/health
+
+# ─────────────────────────────────────────────
+# Lines
+# ─────────────────────────────────────────────
+### List all production lines
+GET {{apiBase}}/api/lines
+
+### Get line with its processes
+GET {{apiBase}}/api/lines/1/processes
+
+### Create a new line
+POST {{apiBase}}/api/lines
+Content-Type: application/json
+
+{
+  "name": "Test Line C",
+  "description": "Created from REST Client"
+}
+
+### Update a line
+PUT {{apiBase}}/api/lines/1
+Content-Type: application/json
+
+{
+  "description": "Updated description"
+}
+
+### Delete a line (⚠️ cascades to processes)
+# DELETE {{apiBase}}/api/lines/99
+
+# ─────────────────────────────────────────────
+# Processes
+# ─────────────────────────────────────────────
+### List processes for line 1
+GET {{apiBase}}/api/processes?line_id=1
+
+### Create a process
+POST {{apiBase}}/api/processes
+Content-Type: application/json
+
+{
+  "line_id": 1,
+  "name": "Quality Gate",
+  "sequence": 5
+}
+
+### Update process sequence (reorder)
+PUT {{apiBase}}/api/processes/1
+Content-Type: application/json
+
+{
+  "sequence": 1
+}
+
+# ─────────────────────────────────────────────
+# Trays — QR Scan
+# ─────────────────────────────────────────────
+### Scan QR Code (core endpoint)
+GET {{apiBase}}/api/trays/scan/TRAY-0001
+
+### Scan second tray
+GET {{apiBase}}/api/trays/scan/TRAY-0002
+
+### List all trays
+GET {{apiBase}}/api/trays
+
+### Create a new tray
+POST {{apiBase}}/api/trays
+Content-Type: application/json
+
+{
+  "qr_code": "TRAY-TEST-01",
+  "line_id": 1,
+  "product": "Widget Alpha",
+  "batch_no": "BT-2024-099",
+  "qty": 25
+}
+
+# ─────────────────────────────────────────────
+# Production Logs
+# ─────────────────────────────────────────────
+### Record "start" action on tray 1 at process 1
+POST {{apiBase}}/api/logs
+Content-Type: application/json
+
+{
+  "tray_id": 1,
+  "process_id": 1,
+  "operator": "John",
+  "action": "start"
+}
+
+### Record "finish" action
+POST {{apiBase}}/api/logs
+Content-Type: application/json
+
+{
+  "tray_id": 1,
+  "process_id": 1,
+  "operator": "John",
+  "action": "finish"
+}
+
+### Record "ng" (defect) action
+POST {{apiBase}}/api/logs
+Content-Type: application/json
+
+{
+  "tray_id": 1,
+  "process_id": 2,
+  "operator": "Jane",
+  "action": "ng",
+  "note": "Solder bridge detected"
+}
+
+### Get production report summary
+GET {{apiBase}}/api/logs/summary
+
+### Get logs for a specific tray
+GET {{apiBase}}/api/logs?tray_id=1
