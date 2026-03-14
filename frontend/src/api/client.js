@@ -1,8 +1,33 @@
 const BASE = import.meta.env.VITE_API_URL || '';
+const AUTH_TOKEN_KEY = 'mes_auth_token';
+
+let authToken = localStorage.getItem(AUTH_TOKEN_KEY) || null;
+
+export function getStoredAuthToken() {
+  return authToken;
+}
+
+export function storeAuthToken(token) {
+  authToken = token || null;
+  if (authToken) {
+    localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+  } else {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  }
+}
+
+export function clearStoredAuthToken() {
+  storeAuthToken(null);
+}
 
 async function request(path, options = {}) {
+  const mergedHeaders = { 'Content-Type': 'application/json', ...options.headers };
+  if (authToken) {
+    mergedHeaders.Authorization = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: mergedHeaders,
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
@@ -13,6 +38,10 @@ async function request(path, options = {}) {
   if (res.status === 204) return null;
   return res.json();
 }
+
+// Auth
+export const loginUser = (data) => request('/api/auth/login', { method: 'POST', body: data });
+export const getCurrentUser = () => request('/api/auth/me');
 
 // Lines
 export const getLines            = ()          => request('/api/lines');
@@ -53,3 +82,9 @@ export const getOperators    = (params = {}) => {
 export const createOperator  = (data)     => request('/api/operators',      { method: 'POST', body: data });
 export const updateOperator  = (id, data) => request(`/api/operators/${id}`, { method: 'PUT',  body: data });
 export const deleteOperator  = (id)       => request(`/api/operators/${id}`, { method: 'DELETE' });
+
+// Users
+export const getUsers        = ()         => request('/api/users');
+export const createUser      = (data)     => request('/api/users', { method: 'POST', body: data });
+export const updateUser      = (id, data) => request(`/api/users/${id}`, { method: 'PUT', body: data });
+export const deleteUser      = (id)       => request(`/api/users/${id}`, { method: 'DELETE' });

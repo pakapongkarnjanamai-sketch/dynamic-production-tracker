@@ -5,7 +5,9 @@ import {
   getTrays, createTray, updateTray, deleteTray,
   getLogs, createLog, updateLog, deleteLog,
   getOperators, createOperator, updateOperator, deleteOperator,
+  getUsers, createUser, updateUser, deleteUser,
 } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 
 // ─────────────────────────────────────────
 // UI Components ที่ใช้ร่วมกัน
@@ -99,12 +101,20 @@ const TABS = [
     icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     color: 'emerald',
   },
+  {
+    id: 'users',
+    label: 'ผู้ใช้งานระบบ',
+    enLabel: 'Users',
+    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    color: 'rose',
+  },
 ];
 
 const TAB_COLORS = {
   blue:    { tab: 'border-blue-500 bg-blue-50 text-blue-700', btn: 'bg-blue-600 hover:bg-blue-700', header: 'from-blue-500 to-blue-600', rowHover: 'hover:bg-blue-50' },
   amber:   { tab: 'border-amber-500 bg-amber-50 text-amber-700', btn: 'bg-amber-600 hover:bg-amber-700', header: 'from-amber-500 to-amber-600', rowHover: 'hover:bg-amber-50' },
   emerald: { tab: 'border-emerald-500 bg-emerald-50 text-emerald-700', btn: 'bg-emerald-600 hover:bg-emerald-700', header: 'from-emerald-500 to-emerald-600', rowHover: 'hover:bg-emerald-50' },
+  rose:    { tab: 'border-rose-500 bg-rose-50 text-rose-700', btn: 'bg-rose-600 hover:bg-rose-700', header: 'from-rose-500 to-rose-600', rowHover: 'hover:bg-rose-50' },
 };
 
 function SectionCard({ tab, count, children }) {
@@ -442,6 +452,196 @@ function OperatorsPanel() {
                     <td className="px-4 py-3 text-right space-x-3">
                       <button onClick={() => openEditForm(op)} className="text-emerald-600 hover:text-emerald-800 text-xs font-semibold">แก้ไข</button>
                       <button onClick={() => handleDelete(op.id)} className="text-red-500 hover:text-red-700 text-xs font-semibold">ลบ</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function UsersPanel({ currentRole }) {
+  const [users, setUsers] = useState([]);
+  const [operators, setOperators] = useState([]);
+  const [employeeId, setEmployeeId] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('operator');
+  const [operatorId, setOperatorId] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [editId, setEditId] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const tab = TABS[3];
+  const c = TAB_COLORS[tab.color];
+
+  const roleOptions = currentRole === 'superadmin'
+    ? ['superadmin', 'admin', 'operator', 'viewer']
+    : ['operator', 'viewer'];
+
+  const load = () => {
+    Promise.all([getUsers(), getOperators()])
+      .then(([userRows, operatorRows]) => {
+        setUsers(userRows);
+        setOperators(operatorRows);
+      })
+      .catch((e) => alert(e.message));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const openAddForm = () => {
+    setEditId(null);
+    setEmployeeId('');
+    setName('');
+    setPassword('');
+    setRole('operator');
+    setOperatorId('');
+    setIsActive(true);
+    setMsg(null);
+    setShowForm(true);
+  };
+
+  const openEditForm = (u) => {
+    setEditId(u.id);
+    setEmployeeId(u.employee_id || '');
+    setName(u.name || '');
+    setPassword('');
+    setRole(u.role);
+    setOperatorId(u.operator_id ? String(u.operator_id) : '');
+    setIsActive(Boolean(u.is_active));
+    setMsg(null);
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditId(null);
+    setEmployeeId('');
+    setName('');
+    setPassword('');
+    setRole('operator');
+    setOperatorId('');
+    setIsActive(true);
+    setMsg(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMsg(null);
+
+    const payload = {
+      employee_id: employeeId,
+      name,
+      role,
+      operator_id: operatorId ? Number(operatorId) : null,
+      is_active: isActive,
+    };
+
+    if (!editId) {
+      payload.password = password;
+    } else if (password) {
+      payload.password = password;
+    }
+
+    try {
+      if (editId) {
+        await updateUser(editId, payload);
+        setMsg('อัปเดตสำเร็จ');
+      } else {
+        await createUser(payload);
+        setMsg('เพิ่มสำเร็จ');
+      }
+      load();
+      setTimeout(closeForm, 1500);
+    } catch (err) {
+      setMsg(err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('ยืนยันการลบผู้ใช้งานระบบ?')) return;
+    try {
+      await deleteUser(id);
+      load();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  return (
+    <SectionCard tab={tab} count={users.length}>
+      <ActionHeader title="บัญชีผู้ใช้งานระบบ" onAdd={openAddForm} addText="เพิ่มผู้ใช้" c={c} />
+
+      {showForm && (
+        <FormBox title={editId ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'} onClose={closeForm}>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="รหัสพนักงาน *" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required />
+              <Input label="ชื่อ *" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input label={editId ? 'รหัสผ่านใหม่ (ถ้าต้องการเปลี่ยน)' : 'รหัสผ่าน *'} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!editId} />
+              <Input as="select" label="สิทธิ์ *" value={role} onChange={(e) => setRole(e.target.value)}>
+                {roleOptions.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </Input>
+              <Input as="select" label="ผูกกับ Operator (ถ้ามี)" value={operatorId} onChange={(e) => setOperatorId(e.target.value)}>
+                <option value="">— ไม่ผูก —</option>
+                {operators.map((op) => (
+                  <option key={op.id} value={op.id}>{op.name}{op.department ? ` (${op.department})` : ''}</option>
+                ))}
+              </Input>
+              <Input as="select" label="สถานะ" value={String(isActive)} onChange={(e) => setIsActive(e.target.value === 'true')}>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </Input>
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="submit" className={`${c.btn} text-white rounded-lg px-5 py-2 text-sm font-semibold transition-colors`}>
+                {editId ? 'บันทึก' : 'เพิ่มข้อมูล'}
+              </button>
+              <SaveMsg msg={msg} />
+            </div>
+          </form>
+        </FormBox>
+      )}
+
+      <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b">
+              <tr>
+                <th className="px-4 py-3">ชื่อ</th>
+                <th className="px-4 py-3">รหัสพนักงาน</th>
+                <th className="px-4 py-3">สิทธิ์</th>
+                <th className="px-4 py-3">Operator</th>
+                <th className="px-4 py-3 text-center">สถานะ</th>
+                <th className="px-4 py-3 text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {users.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-10 text-gray-400">ยังไม่มีผู้ใช้งานระบบ</td></tr>
+              ) : (
+                users.map((u, i) => (
+                  <tr key={u.id} className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} ${c.rowHover} transition-colors`}>
+                    <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{u.name}</td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs whitespace-nowrap">{u.employee_id}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{u.role}</td>
+                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{u.operator_name || '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${u.is_active ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                        {u.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
+                      <button onClick={() => openEditForm(u)} className="text-rose-600 hover:text-rose-800 text-xs font-semibold">แก้ไข</button>
+                      <button onClick={() => handleDelete(u.id)} className="text-red-500 hover:text-red-700 text-xs font-semibold">ลบ</button>
                     </td>
                   </tr>
                 ))
@@ -883,6 +1083,7 @@ function TraysPanel({ lines }) {
 // Main Page Export
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ManagementPage() {
+  const { user } = useAuth();
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('lines');
@@ -931,6 +1132,7 @@ export default function ManagementPage() {
             {activeTab === 'lines' && <LinesAndProcessesPanel lines={lines} onRefresh={loadLines} />}
             {activeTab === 'trays' && <TraysPanel lines={lines} />}
             {activeTab === 'operators' && <OperatorsPanel />}
+            {activeTab === 'users' && <UsersPanel currentRole={user?.role || 'admin'} />}
           </div>
         )}
       </main>
