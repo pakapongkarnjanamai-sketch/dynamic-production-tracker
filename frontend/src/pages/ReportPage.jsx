@@ -77,7 +77,6 @@ function SectionCard({ tab, children, count }) {
 // 1. Tray Report Panel & Details (Expandable Row Layout)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Sub-panel: แสดงประวัติของถาดงาน (View Only) ──
 function TrayLogsViewPanel({ tray }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +140,6 @@ function TrayLogsViewPanel({ tray }) {
   );
 }
 
-// ── Main Panel: สรุปถาดงาน ──
 function TrayReportPanel({ data, logs, search, onSearch, c }) {
   const [selectedTrayId, setSelectedTrayId] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -184,72 +182,34 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ส่วนหัวตารางและฟิลเตอร์ */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ภาพรวมถาดงาน</h3>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
-              statusFilter === 'all'
-                ? 'bg-gray-700 text-white border-gray-700'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
+          <button onClick={() => setStatusFilter('all')}
+            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${statusFilter === 'all' ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>
             ทั้งหมด: <strong>{withDelay.length}</strong>
           </button>
-
-          <button
-            onClick={() => setStatusFilter('in_progress')}
-            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
-              statusFilter === 'in_progress'
-                ? 'bg-amber-600 text-white border-amber-600'
-                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-            }`}
-          >
+          <button onClick={() => setStatusFilter('in_progress')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${statusFilter === 'in_progress' ? 'bg-amber-600 text-white border-amber-600' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
             กำลังดำเนินการ: <strong>{inProgressCount}</strong>
           </button>
-
-          <button
-            onClick={() => setStatusFilter('pending')}
-            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
-              statusFilter === 'pending'
-                ? 'bg-gray-600 text-white border-gray-600'
-                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
-            }`}
-          >
+          <button onClick={() => setStatusFilter('pending')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${statusFilter === 'pending' ? 'bg-gray-600 text-white border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}>
             รอดำเนิน: <strong>{pendingCount}</strong>
           </button>
-
-          <button
-            onClick={() => setStatusFilter('completed')}
-            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
-              statusFilter === 'completed'
-                ? 'bg-green-600 text-white border-green-600'
-                : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-            }`}
-          >
+          <button onClick={() => setStatusFilter('completed')}
+            className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${statusFilter === 'completed' ? 'bg-green-600 text-white border-green-600' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}>
             เสร็จสิ้น: <strong>{completedCount}</strong>
           </button>
-
-          <button
-            onClick={() => setStatusFilter('delayed')}
-            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
-              statusFilter === 'delayed'
-                ? 'bg-red-600 text-white border-red-600'
-                : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
-            }`}
-          >
+          <button onClick={() => setStatusFilter('delayed')}
+            className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${statusFilter === 'delayed' ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'}`}>
             ⏰ เกินกำหนด: <strong>{delayCount}</strong>
           </button>
-
           <div className="flex flex-wrap gap-2">
-            {statusFilter !== 'all' && (
-              <span className="text-xs text-gray-500 px-2 py-1">กำลังกรอง: {statusFilter}</span>
-            )}
+            {statusFilter !== 'all' && <span className="text-xs text-gray-500 px-2 py-1">กำลังกรอง: {statusFilter}</span>}
           </div>
         </div>
 
@@ -264,7 +224,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
           <span className="text-xs text-gray-500 font-medium ml-auto px-2">พบ {filtered.length} รายการ</span>
         </div>
 
-        {/* ตารางหลัก (Expandable) */}
+        {/* Master-Detail Expandable Table */}
         <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm flex-1">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -340,7 +300,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
                         </td>
                       </tr>
 
-                      {/* Detail Row (Expandable Logs) */}
+                      {/* Expanded View */}
                       {isExpanded && (
                         <tr className="bg-amber-50/30">
                           <td colSpan={6} className="p-0 border-b-4 border-amber-200">
@@ -365,18 +325,16 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Lines & Processes Report Panel
+// 2. Lines & Processes Report Panel (Expandable Rows Layout)
 // ─────────────────────────────────────────────────────────────────────────────
 function ProcessReportPanel({ logs, processes, lines, c }) {
+  const [expandedLineId, setExpandedLineId] = useState(null);
+
   const sortedLogs = [...logs].sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
-  const lineNameById = lines.reduce((acc, line) => {
-    acc[line.id] = line.name;
-    return acc;
-  }, {});
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  // Latest action per tray+process. If latest is start, that job is currently in progress.
+  // หางานที่กำลังทำอยู่ (ล่าสุดคือ start)
   const latestByTask = sortedLogs.reduce((acc, log) => {
     const taskKey = `${log.tray_id}-${log.process_id}`;
     if (!acc[taskKey]) acc[taskKey] = log;
@@ -391,120 +349,177 @@ function ProcessReportPanel({ logs, processes, lines, c }) {
     return acc;
   }, {});
 
-  // Base rows from process master so steps with no logs are still visible.
-  const stats = processes.reduce((acc, p) => {
-    const key = String(p.id);
-    acc[key] = {
-      line: lineNameById[p.line_id] || 'N/A',
+  // เตรียมโครงสร้างขั้นตอนทั้งหมดเพื่อโชว์ในตารางย่อย
+  const statsByProcess = processes.reduce((acc, p) => {
+    acc[p.id] = {
+      id: p.id,
+      line_id: p.line_id,
       process: p.name,
       seq: p.sequence,
-      activeItems: [],
+      activeItems: (activeByProcess[p.id] || []).sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at)),
+      start: 0,
+      finish: 0,
+      ng: 0
     };
     return acc;
   }, {});
 
+  // นับจำนวนสะสม
   logs.forEach((log) => {
-    const key = String(log.process_id);
-    if (!stats[key]) {
-      stats[key] = {
-        line: log.line_name || 'N/A',
-        process: log.process_name,
-        seq: log.sequence,
-        activeItems: [],
-      };
+    const key = log.process_id;
+    if (statsByProcess[key]) {
+      if (log.action === 'start') statsByProcess[key].start++;
+      if (log.action === 'finish') statsByProcess[key].finish++;
+      if (log.action === 'ng') statsByProcess[key].ng++;
     }
   });
 
-  Object.keys(stats).forEach((key) => {
-    stats[key].activeItems = (activeByProcess[key] || []).sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
-  });
+  // จับกลุ่ม Master Row ตามสายการผลิต
+  const lineData = lines.map((line) => {
+    const procs = Object.values(statsByProcess)
+      .filter((p) => p.line_id === line.id)
+      .sort((a, b) => a.seq - b.seq);
 
-  const rows = Object.values(stats).sort((a, b) => a.line.localeCompare(b.line) || a.seq - b.seq);
-  const lineRowCount = rows.reduce((acc, row) => {
-    acc[row.line] = (acc[row.line] || 0) + 1;
-    return acc;
-  }, {});
-  let currentLine = null;
+    let finishToday = 0;
+    let ngToday = 0;
+    logs.forEach((log) => {
+      const p = statsByProcess[log.process_id];
+      if (p && p.line_id === line.id) {
+        const loggedAt = new Date(log.logged_at);
+        if (loggedAt >= todayStart) {
+          if (log.action === 'finish') finishToday++;
+          if (log.action === 'ng') ngToday++;
+        }
+      }
+    });
 
-  const lineStats = lines.reduce((acc, line) => {
-    acc[line.name] = {
-      finishToday: 0,
-      ngToday: 0,
+    return {
+      ...line,
+      finishToday,
+      ngToday,
+      processes: procs
     };
-    return acc;
-  }, {});
-
-  logs.forEach((log) => {
-    const loggedAt = new Date(log.logged_at);
-    if (loggedAt < todayStart) return;
-    const lineKey = log.line_name || 'N/A';
-    if (!lineStats[lineKey]) {
-      lineStats[lineKey] = { finishToday: 0, ngToday: 0 };
-    }
-    if (log.action === 'finish') lineStats[lineKey].finishToday += 1;
-    if (log.action === 'ng') lineStats[lineKey].ngToday += 1;
   });
+
+  const toggleRow = (id) => setExpandedLineId((prev) => (prev === id ? null : id));
 
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ประสิทธิภาพรายขั้นตอน</h3>
+        <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ประสิทธิภาพรายสายการผลิต</h3>
       </div>
 
-      <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
+      <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm flex-1">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b">
+            <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-3">สายการผลิต</th>
                 <th className="px-4 py-3 text-center text-green-600">วันนี้เสร็จ (OK)</th>
                 <th className="px-4 py-3 text-center text-red-600">วันนี้เสีย (NG)</th>
-                <th className="px-4 py-3">ขั้นตอน</th>
-                <th className="px-4 py-3 text-left text-blue-600">กำลังทำอยู่</th>
+                <th className="px-4 py-3 text-right">จำนวนขั้นตอน</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {rows.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-gray-400">ยังไม่มีประวัติการทำงาน</td></tr>}
-              {rows.map((r, i) => {
-                const showLine = r.line !== currentLine;
-                currentLine = r.line;
-                const lineDaily = lineStats[r.line] || { finishToday: 0, ngToday: 0 };
+              {lineData.length === 0 && (
+                <tr><td colSpan={4} className="text-center py-8 text-gray-400">ไม่มีข้อมูลสายการผลิต</td></tr>
+              )}
+              {lineData.map((line) => {
+                const isExpanded = expandedLineId === line.id;
                 return (
-                  <tr key={i} className={`bg-white ${c.rowHover} transition-colors`}>
-                    {showLine && (
-                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle font-semibold text-gray-800 border-r border-gray-100">
-                        {r.line}
-                      </td>
-                    )}
-                    {showLine && (
-                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle text-center font-bold text-green-600 bg-green-50/50">{lineDaily.finishToday}</td>
-                    )}
-                    {showLine && (
-                      <td rowSpan={lineRowCount[r.line]} className="px-4 py-3 align-middle text-center font-bold text-red-600 bg-red-50/50">{lineDaily.ngToday}</td>
-                    )}
-                    <td className="px-4 py-3 text-gray-700 font-medium">
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">{r.seq}</span>
-                      {r.process}
-                    </td>
-                    <td className="px-4 py-3 text-xs bg-blue-50/40">
-                      {r.activeItems.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {r.activeItems.slice(0, 4).map((item) => (
-                            <span key={`${item.qr_code}-${item.logged_at}`} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 px-2 py-0.5 font-semibold">
-                              {item.qr_code}
-                            </span>
-                          ))}
-                          {r.activeItems.length > 4 && (
-                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-white text-blue-600 px-2 py-0.5 font-semibold">
-                              +{r.activeItems.length - 4}
-                            </span>
-                          )}
+                  <Fragment key={line.id}>
+                    {/* Master Row */}
+                    <tr
+                      onClick={() => toggleRow(line.id)}
+                      className={`cursor-pointer transition-all border-l-4 ${
+                        isExpanded ? 'bg-blue-50 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50'
+                      }`}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-800">
+                        <div className="flex items-center gap-2">
+                          <svg className={`w-4 h-4 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-blue-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          {line.name}
                         </div>
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-4 py-3 text-center font-bold text-green-600">
+                        {line.finishToday > 0 ? (
+                          <span className="bg-green-100 px-3 py-1 rounded-full">{line.finishToday}</span>
+                        ) : '0'}
+                      </td>
+                      <td className="px-4 py-3 text-center font-bold text-red-600">
+                        {line.ngToday > 0 ? (
+                          <span className="bg-red-100 px-3 py-1 rounded-full">{line.ngToday}</span>
+                        ) : '0'}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-600">
+                        {line.processes.length} ขั้นตอน
+                      </td>
+                    </tr>
+
+                    {/* Expanded Detail Row */}
+                    {isExpanded && (
+                      <tr className="bg-blue-50/30">
+                        <td colSpan={4} className="p-0 border-b-4 border-blue-200">
+                          <div className="p-4 md:p-6 shadow-inner">
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">
+                                รายละเอียดขั้นตอน: {line.name}
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b">
+                                    <tr>
+                                      <th className="px-4 py-3">ขั้นตอน</th>
+                                      <th className="px-4 py-3 text-center text-blue-600">เริ่มสะสม</th>
+                                      <th className="px-4 py-3 text-center text-green-600">เสร็จสะสม</th>
+                                      <th className="px-4 py-3 text-center text-red-600">NG สะสม</th>
+                                      <th className="px-4 py-3 text-left text-blue-600">กำลังทำอยู่</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {line.processes.length === 0 && (
+                                      <tr><td colSpan={5} className="text-center py-6 text-gray-400">ยังไม่มีขั้นตอนในสายการผลิตนี้</td></tr>
+                                    )}
+                                    {line.processes.map((p) => (
+                                      <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
+                                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mr-2">{p.seq}</span>
+                                          {p.process}
+                                        </td>
+                                        <td className="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/30">{p.start}</td>
+                                        <td className="px-4 py-3 text-center font-bold text-green-600 bg-green-50/30">{p.finish}</td>
+                                        <td className="px-4 py-3 text-center font-bold text-red-600 bg-red-50/30">{p.ng}</td>
+                                        <td className="px-4 py-3 text-xs bg-blue-50/20">
+                                          {p.activeItems.length > 0 ? (
+                                            <div className="flex flex-wrap gap-1.5">
+                                              {p.activeItems.slice(0, 4).map((item) => (
+                                                <span key={`${item.qr_code}-${item.logged_at}`} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 px-2 py-0.5 font-semibold">
+                                                  {item.qr_code}
+                                                </span>
+                                              ))}
+                                              {p.activeItems.length > 4 && (
+                                                <span className="inline-flex items-center rounded-full border border-blue-200 bg-white text-blue-600 px-2 py-0.5 font-semibold">
+                                                  +{p.activeItems.length - 4}
+                                                </span>
+                                              )}
+                                            </div>
+                                          ) : (
+                                            <span className="text-gray-400">—</span>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -516,7 +531,7 @@ function ProcessReportPanel({ logs, processes, lines, c }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Operator Report Panel
+// 3. Operator Report Panel (Expandable Rows Layout)
 // ─────────────────────────────────────────────────────────────────────────────
 function OperatorReportPanel({ logs, c }) {
   const [expandedOperator, setExpandedOperator] = useState(null);
@@ -524,7 +539,7 @@ function OperatorReportPanel({ logs, c }) {
 
   const sortedLogs = [...logs].sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
 
-  // Latest action by tray+process to determine who is currently working on what
+  // หางานล่าสุดที่ทำอยู่
   const latestByTask = sortedLogs.reduce((acc, log) => {
     const key = `${log.tray_id}-${log.process_id}`;
     if (!acc[key]) acc[key] = log;
@@ -568,9 +583,7 @@ function OperatorReportPanel({ logs, c }) {
     ng: 'NG',
   };
 
-  const toggleOperator = (name) => {
-    setExpandedOperator((prev) => (prev === name ? null : name));
-  };
+  const toggleOperator = (name) => setExpandedOperator((prev) => (prev === name ? null : name));
 
   return (
     <div className="flex flex-col">
@@ -588,14 +601,16 @@ function OperatorReportPanel({ logs, c }) {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {rows.length === 0 && <tr><td colSpan={2} className="text-center py-8 text-gray-400">ยังไม่มีประวัติการทำงาน</td></tr>}
-              {rows.map((r, i) => {
+              {rows.map((r) => {
                 const isExpanded = expandedOperator === r.name;
-                const baseRowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50';
                 return (
                   <Fragment key={r.name}>
+                    {/* Master Row */}
                     <tr
                       onClick={() => toggleOperator(r.name)}
-                      className={`${baseRowClass} ${c.rowHover} transition-colors cursor-pointer`}
+                      className={`cursor-pointer transition-all border-l-4 ${
+                        isExpanded ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-transparent hover:bg-gray-50'
+                      }`}
                     >
                       <td className="px-4 py-3 font-semibold text-gray-800">
                         <div className="flex items-center gap-2">
@@ -625,6 +640,7 @@ function OperatorReportPanel({ logs, c }) {
                       </td>
                     </tr>
 
+                    {/* Expanded Detail Row */}
                     {isExpanded && (
                       <tr className="bg-emerald-50/30">
                         <td colSpan={2} className="p-0 border-b-4 border-emerald-200">
