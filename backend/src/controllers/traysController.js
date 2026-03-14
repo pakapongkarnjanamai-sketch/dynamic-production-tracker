@@ -108,15 +108,38 @@ const scanTray = async (req, res) => {
   }
 };
 
+// GET /api/trays/stats
+const getTrayStats = async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT
+         COUNT(*)                                                        AS total,
+         COUNT(*) FILTER (WHERE status = 'pending')                     AS pending,
+         COUNT(*) FILTER (WHERE status = 'in_progress')                 AS in_progress,
+         COUNT(*) FILTER (WHERE status = 'completed')                   AS completed,
+         COUNT(*) FILTER (WHERE status = 'on_hold')                     AS on_hold,
+         COUNT(*) FILTER (
+           WHERE due_date IS NOT NULL
+             AND due_date < NOW()
+             AND status <> 'completed'
+         )                                                              AS delayed
+         FROM trays`
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // POST /api/trays
 const createTray = async (req, res) => {
-  const { qr_code, line_id, product, batch_no, qty = 1 } = req.body;
+  const { qr_code, line_id, product, batch_no, qty = 1, due_date } = req.body;
   if (!qr_code) return res.status(400).json({ error: 'qr_code is required' });
   try {
     const { rows } = await db.query(
-      `INSERT INTO trays (qr_code, line_id, product, batch_no, qty)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [qr_code, line_id, product, batch_no, qty]
+      `INSERT INTO trays (qr_code, line_id, product, batch_no, qty, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [qr_code, line_id, product, batch_no, qty, due_date || null]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -129,7 +152,7 @@ const createTray = async (req, res) => {
 
 // PUT /api/trays/:id
 const updateTray = async (req, res) => {
-  const { line_id, product, batch_no, qty, status } = req.body;
+  const { line_id, product, batch_no, qty, status, due_date } = req.body;
   try {
     const { rows } = await db.query(
       `UPDATE trays
@@ -137,10 +160,14 @@ const updateTray = async (req, res) => {
               product  = COALESCE($2, product),
               batch_no = COALESCE($3, batch_no),
               qty      = COALESCE($4, qty),
-              status   = COALESCE($5, status)
-        WHERE id = $6
+              status   = COALESCE($5, status),
+              due_date = CASE WHEN $6::boolean THEN $7::timestamptz ELSE due_date END
+        WHERE id = $8
         RETURNING *`,
-      [line_id, product, batch_no, qty, status, req.params.id]
+      [line_id, product, batch_no, qty, status,
+       due_date !== undefined,
+       due_date || null,
+       req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Tray not found' });
     res.json(rows[0]);
@@ -163,4 +190,4 @@ const deleteTray = async (req, res) => {
   }
 };
 
-module.exports = { getTrays, getTrayById, scanTray, createTray, updateTray, deleteTray };
+module.exports = { getTrays, getTrayById, scanTray, getTrayStats, createTray, updateTray, deleteTray };

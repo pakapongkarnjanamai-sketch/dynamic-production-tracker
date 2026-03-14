@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import { getLines } from '../api/client';
+import { getLines, getTrayStats } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 export default function ShopFloor() {
   const [lines,   setLines]   = useState([]);
+  const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getLines()
-      .then(setLines)
+    Promise.all([getLines(), getTrayStats()])
+      .then(([l, s]) => { setLines(l); setStats(s); })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -44,6 +45,51 @@ export default function ShopFloor() {
             เข้าสู่โหมดสแกนทำงาน
           </button>
         </div>
+
+        {/* ── Work Status Stats ── */}
+        {stats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                label: 'กำลังดำเนินการ', sub: 'In Progress',
+                value: stats.in_progress,
+                bg: 'bg-amber-50', border: 'border-amber-200',
+                dot: 'bg-amber-500 animate-pulse', text: 'text-amber-700', num: 'text-amber-800',
+              },
+              {
+                label: 'รอดำเนินการ', sub: 'Pending',
+                value: stats.pending,
+                bg: 'bg-gray-50', border: 'border-gray-200',
+                dot: 'bg-gray-400', text: 'text-gray-600', num: 'text-gray-800',
+              },
+              {
+                label: 'เสร็จสิ้น', sub: 'Completed',
+                value: stats.completed,
+                bg: 'bg-green-50', border: 'border-green-200',
+                dot: 'bg-green-500', text: 'text-green-700', num: 'text-green-800',
+              },
+              {
+                label: 'เกินกำหนด', sub: 'Delayed',
+                value: stats.delayed,
+                bg: Number(stats.delayed) > 0 ? 'bg-red-50' : 'bg-gray-50',
+                border: Number(stats.delayed) > 0 ? 'border-red-200' : 'border-gray-200',
+                dot: Number(stats.delayed) > 0 ? 'bg-red-500' : 'bg-gray-300',
+                text: Number(stats.delayed) > 0 ? 'text-red-700' : 'text-gray-500',
+                num: Number(stats.delayed) > 0 ? 'text-red-800' : 'text-gray-600',
+                icon: '⏰',
+              },
+            ].map((s) => (
+              <div key={s.label} className={`${s.bg} ${s.border} border rounded-2xl px-5 py-4 flex flex-col gap-1 shadow-sm`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${s.dot}`}></span>
+                  <span className={`text-xs font-semibold ${s.text}`}>{s.label}</span>
+                </div>
+                <p className={`text-3xl font-extrabold ${s.num} leading-none`}>{s.value ?? 0}</p>
+                <p className={`text-xs ${s.text} opacity-70`}>{s.sub}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* ── Status Section ── */}
         <div>

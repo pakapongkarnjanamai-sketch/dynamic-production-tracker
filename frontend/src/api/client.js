@@ -28,8 +28,9 @@ export const updateProcess = (id, data)   => request(`/api/processes/${id}`, { m
 export const deleteProcess = (id)         => request(`/api/processes/${id}`, { method: 'DELETE' });
 
 // Trays
-export const getTrays   = ()          => request('/api/trays');
-export const scanTray   = (qr)        => request(`/api/trays/scan/${encodeURIComponent(qr)}`);
+export const getTrays      = ()          => request('/api/trays');
+export const getTrayStats  = ()          => request('/api/trays/stats');
+export const scanTray      = (qr)        => request(`/api/trays/scan/${encodeURIComponent(qr)}`);
 export const createTray = (data)      => request('/api/trays',       { method: 'POST',   body: data });
 export const updateTray = (id, data)  => request(`/api/trays/${id}`, { method: 'PUT',    body: data });
 export const deleteTray = (id)        => request(`/api/trays/${id}`, { method: 'DELETE' });

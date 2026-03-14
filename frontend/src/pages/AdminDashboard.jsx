@@ -606,7 +606,7 @@ function TraysPanel({ lines }) {
   const [search, setSearch] = useState('');
   const [filterLine, setFilterLine] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [form, setForm] = useState({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending' });
+  const [form, setForm] = useState({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending', due_date: '' });
   const [editId, setEditId] = useState(null);
   const [msg, setMsg] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -636,6 +636,7 @@ function TraysPanel({ lines }) {
       batch_no: form.batch_no || null,
       qty: Number(form.qty) || 1,
       status: form.status || 'pending',
+      due_date: form.due_date || null,
     };
     try {
       if (editId) {
@@ -650,14 +651,16 @@ function TraysPanel({ lines }) {
     } catch (err) { setMsg(err.message); }
   };
 
-  const openAddForm = () => { setEditId(null); setForm({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending' }); setShowForm(true); setMsg(null); };
+  const openAddForm = () => { setEditId(null); setForm({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending', due_date: '' }); setShowForm(true); setMsg(null); };
   const openEditForm = (t, e) => {
     e.stopPropagation(); // ไม่ให้ Trigger การเลือก Row
     setEditId(t.id);
-    setForm({ qr_code: t.qr_code, line_id: String(t.line_id || ''), product: t.product || '', batch_no: t.batch_no || '', qty: String(t.qty), status: t.status || 'pending' });
+    // Convert due_date to local datetime-local input format (YYYY-MM-DDTHH:mm)
+    const dueDateLocal = t.due_date ? new Date(t.due_date).toISOString().slice(0, 16) : '';
+    setForm({ qr_code: t.qr_code, line_id: String(t.line_id || ''), product: t.product || '', batch_no: t.batch_no || '', qty: String(t.qty), status: t.status || 'pending', due_date: dueDateLocal });
     setShowForm(true); setMsg(null);
   };
-  const closeForm = () => { setShowForm(false); setEditId(null); setForm({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending' }); setMsg(null); };
+  const closeForm = () => { setShowForm(false); setEditId(null); setForm({ qr_code: '', line_id: '', product: '', batch_no: '', qty: '1', status: 'pending', due_date: '' }); setMsg(null); };
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();
@@ -800,6 +803,7 @@ function TraysPanel({ lines }) {
                   <Input label="สถานะ" as="select" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
                     {TRAY_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </Input>
+                  <Input label="กำหนดส่ง (Due Date)" type="datetime-local" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} className="col-span-2" />
                 </div>
                 <div className="flex items-center gap-2">
                   <button type="submit" className={`${c.btn} text-white rounded-lg px-5 py-2 text-sm font-semibold transition-colors`}>
@@ -818,16 +822,18 @@ function TraysPanel({ lines }) {
                   <tr>
                     <th className="px-4 py-3">QR Code / สินค้า</th>
                     <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3">กำหนดส่ง</th>
                     <th className="px-4 py-3 text-right">จัดการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filtered.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">ไม่พบข้อมูล</td></tr>}
+                  {filtered.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">ไม่พบข้อมูล</td></tr>}
                   {filtered.map((t) => {
                     const isSelected = selectedTrayId === t.id;
+                    const isDelayed = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed';
                     return (
                       <tr key={t.id} onClick={() => setSelectedTrayId(t.id)}
-                        className={`cursor-pointer transition-all border-l-4 ${isSelected ? 'bg-amber-50 border-amber-500' : 'bg-white border-transparent hover:bg-gray-50'}`}>
+                        className={`cursor-pointer transition-all border-l-4 ${isSelected ? 'bg-amber-50 border-amber-500' : isDelayed ? 'bg-red-50/60 border-red-300' : 'bg-white border-transparent hover:bg-gray-50'}`}>
                         <td className="px-4 py-3">
                           <div className={`font-mono font-semibold text-xs ${isSelected ? 'text-amber-800' : 'text-gray-800'}`}>{t.qr_code}</div>
                           <div className="text-xs text-gray-500 mt-0.5">{t.product || '—'} {t.batch_no && `· ${t.batch_no}`}</div>
@@ -836,6 +842,16 @@ function TraysPanel({ lines }) {
                           <span className={`text-xs rounded-full px-2 py-0.5 font-semibold border ${STATUS_STYLE[t.status] || 'bg-gray-100 text-gray-500'}`}>
                             {t.status}
                           </span>
+                          {isDelayed && <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          {t.due_date ? (
+                            <span className={`text-xs ${isDelayed ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                              {new Date(t.due_date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-300">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
                           <button onClick={(e) => handleDownloadQR(t, e)} className="text-gray-500 hover:text-gray-800 text-xs font-semibold">💾 Save Image</button>

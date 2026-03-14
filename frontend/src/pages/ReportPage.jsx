@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getLogsSummary, getLogs } from '../api/client';
+import { getLogsSummary, getLogs, getTrays } from '../api/client';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Configuration & Helpers
@@ -145,13 +145,25 @@ function TrayLogsViewPanel({ tray }) {
 // ── Main Panel: สรุปถาดงาน ──
 function TrayReportPanel({ data, search, onSearch, c }) {
   const [selectedTrayId, setSelectedTrayId] = useState(null);
+  const [filterDelay, setFilterDelay] = useState(false);
 
-  const filtered = data.filter(
+  const now = new Date();
+  const withDelay = data.map((r) => ({
+    ...r,
+    isDelayed: r.due_date && new Date(r.due_date) < now && r.status !== 'completed',
+  }));
+
+  const filtered = withDelay.filter(
     (r) =>
-      r.qr_code.toLowerCase().includes(search.toLowerCase()) ||
-      (r.product || '').toLowerCase().includes(search.toLowerCase()) ||
-      (r.line_name || '').toLowerCase().includes(search.toLowerCase())
+      (!filterDelay || r.isDelayed) &&
+      (
+        r.qr_code.toLowerCase().includes(search.toLowerCase()) ||
+        (r.product || '').toLowerCase().includes(search.toLowerCase()) ||
+        (r.line_name || '').toLowerCase().includes(search.toLowerCase())
+      )
   );
+
+  const delayCount = withDelay.filter((r) => r.isDelayed).length;
 
   // เลือกถาดแรกอัตโนมัติ
   useEffect(() => {
@@ -167,6 +179,30 @@ function TrayReportPanel({ data, search, onSearch, c }) {
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ภาพรวมถาดงาน</h3>
+        </div>
+
+        <div className="flex wrap items-center gap-3 mb-3">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1">
+              กำลังดำเนินการ: <strong>{withDelay.filter(r => r.status === 'in_progress').length}</strong>
+            </span>
+            <span className="text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 rounded-full px-3 py-1">
+              รอดำเนิน: <strong>{withDelay.filter(r => r.status === 'pending').length}</strong>
+            </span>
+            <span className="text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1">
+              เสร็จสิ้น: <strong>{withDelay.filter(r => r.status === 'completed').length}</strong>
+            </span>
+            {delayCount > 0 && (
+              <button
+                onClick={() => setFilterDelay(!filterDelay)}
+                className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${
+                  filterDelay ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
+                }`}
+              >
+                ⏰ เกินกำหนด: <strong>{delayCount}</strong> {filterDelay ? '(กดเพื่อแสดงทั้งหมด)' : '(กดเพื่อกรอง)'}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
@@ -188,13 +224,14 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                   <th className="px-4 py-3">QR Code</th>
                   <th className="px-4 py-3">สินค้า</th>
                   <th className="px-4 py-3 text-center">สถานะ</th>
+                  <th className="px-4 py-3">กำหนดส่ง</th>
                   <th className="px-4 py-3 text-center">เสร็จ/NG</th>
                   <th className="px-4 py-3">อัปเดตล่าสุด</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filtered.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-8 text-gray-400">ไม่พบข้อมูล</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-400">ไม่พบข้อมูล</td></tr>
                 )}
                 {filtered.map((r) => {
                   const isSelected = selectedTrayId === r.tray_id;
@@ -202,7 +239,11 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                     <tr
                       key={r.tray_id}
                       onClick={() => setSelectedTrayId(r.tray_id)}
-                      className={`cursor-pointer transition-all border-l-4 ${isSelected ? 'bg-amber-50 border-amber-500' : 'bg-white border-transparent hover:bg-gray-50'}`}
+                      className={`cursor-pointer transition-all border-l-4 ${
+                        isSelected ? 'bg-amber-50 border-amber-500'
+                        : r.isDelayed ? 'bg-red-50/60 border-red-300'
+                        : 'bg-white border-transparent hover:bg-gray-50'
+                      }`}
                     >
                       <td className="px-4 py-3">
                         <div className={`font-mono font-semibold text-xs ${isSelected ? 'text-amber-800' : 'text-gray-800'}`}>{r.qr_code}</div>
@@ -216,6 +257,18 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                         <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${TRAY_STATUS_COLORS[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                           {r.status}
                         </span>
+                        {r.isDelayed && (
+                          <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {r.due_date ? (
+                          <span className={`text-xs whitespace-nowrap ${r.isDelayed ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                            {new Date(r.due_date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="font-bold text-green-600 mr-2">{r.finished_processes ?? 0}</span>

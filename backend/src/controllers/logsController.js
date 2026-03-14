@@ -139,6 +139,7 @@ const getLogsSummary = async (req, res) => {
               t.product,
               t.batch_no,
               t.status,
+              t.due_date,
               t.started_at,
               t.finished_at,
               l.name      AS line_name,
@@ -148,7 +149,7 @@ const getLogsSummary = async (req, res) => {
          FROM trays t
     LEFT JOIN lines           l  ON l.id  = t.line_id
     LEFT JOIN production_logs pl ON pl.tray_id = t.id
-        GROUP BY t.id, t.qr_code, t.product, t.batch_no, t.status, t.started_at, t.finished_at, l.name
+        GROUP BY t.id, t.qr_code, t.product, t.batch_no, t.status, t.due_date, t.started_at, t.finished_at, l.name
         ORDER BY last_activity DESC NULLS LAST`
     );
     res.json(rows);
