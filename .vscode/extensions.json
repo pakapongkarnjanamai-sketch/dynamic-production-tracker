@@ -1,0 +1,27 @@
+{
+  // Extensions recommended for this monorepo
+  // VS Code will prompt you to install these when you open the project
+  "recommendations": [
+    // JavaScript / Node.js
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "christian-kohler.path-intellisense",
+
+    // React / Frontend
+    "bradlc.vscode-tailwindcss",
+    "burkeholland.simple-react-snippets",
+    "formulahendry.auto-rename-tag",
+    "naumovs.color-highlight",
+
+    // API testing (use .http files to test endpoints)
+    "humao.rest-client",
+
+    // Database
+    "ckolkman.vscode-postgres",
+
+    // Git / general productivity
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "gruntfuggly.todo-tree"
+  ]
+}

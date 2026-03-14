@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global touch-friendly defaults */
+body {
+  @apply bg-gray-50 text-gray-900 font-sans;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  @apply select-none;
+}

@@ -1,0 +1,223 @@
+{
+  // Multi-root workspace: opens backend/ and frontend/ as separate roots
+  // วิธีเปิด: File → Open Workspace from File... → เลือกไฟล์นี้
+  // How to open: File → Open Workspace from File... → select this file
+  "folders": [
+    {
+      "name": "🖥 Backend (Express + PostgreSQL)",
+      "path": "backend"
+    },
+    {
+      "name": "🎨 Frontend (React + Vite + Tailwind)",
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    // Editor
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.rulers": [100],
+    "editor.bracketPairColorization.enabled": true,
+    "editor.inlineSuggest.enabled": true,
+
+    // Files
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.associations": {
+      "*.jsx": "javascriptreact",
+      "*.js":  "javascript"
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    },
+
+    // JavaScript / ESLint
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+
+    // Tailwind CSS IntelliSense — show completions inside JSX className=""
+    "tailwindCSS.experimental.classRegex": [
+      ["className=\"([^\"]*)\"", "([^\"\\s]+)"],
+      ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ],
+    "tailwindCSS.includeLanguages": {
+      "javascriptreact": "html"
+    },
+
+    // REST Client: default env for .http files
+    "rest-client.environmentVariables": {
+      "local": {
+        "apiBase": "http://localhost:4000"
+      }
+    },
+
+    // Spell checker — ignore common technical terms
+    "cSpell.words": [
+      "Lite", "MES", "nodemon", "dotenv", "postgres",
+      "Tailwind", "Vite", "qrcode", "qr", "trays", "tray",
+      "litemes", "shopfloor", "lineid", "batchno"
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      // JavaScript / Node.js
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "christian-kohler.path-intellisense",
+
+      // React / Frontend
+      "bradlc.vscode-tailwindcss",
+      "burkeholland.simple-react-snippets",
+      "formulahendry.auto-rename-tag",
+      "naumovs.color-highlight",
+
+      // API testing
+      "humao.rest-client",
+
+      // Database
+      "ckolkman.vscode-postgres",
+
+      // Git / general
+      "eamodio.gitlens",
+      "streetsidesoftware.code-spell-checker",
+      "gruntfuggly.todo-tree"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "compounds": [
+      {
+        "name": "🚀 Start Full Stack (Backend + Frontend)",
+        "configurations": ["🖥 Debug Backend", "🌐 Open Frontend (Chrome)"],
+        "stopAll": true,
+        "presentation": {
+          "hidden": false,
+          "group": "Lite MES",
+          "order": 1
+        }
+      }
+    ],
+    "configurations": [
+      {
+        "name": "🖥 Debug Backend",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder:🖥 Backend (Express + PostgreSQL)}/src/index.js",
+        "cwd": "${workspaceFolder:🖥 Backend (Express + PostgreSQL)}",
+        "envFile": "${workspaceFolder:🖥 Backend (Express + PostgreSQL)}/.env",
+        "runtimeExecutable": "node",
+        "console": "integratedTerminal",
+        "restart": true,
+        "presentation": {
+          "hidden": false,
+          "group": "Lite MES",
+          "order": 2
+        }
+      },
+      {
+        "name": "🌐 Open Frontend (Chrome)",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:5173",
+        "webRoot": "${workspaceFolder:🎨 Frontend (React + Vite + Tailwind)}/src",
+        "preLaunchTask": "Start Frontend Dev Server",
+        "presentation": {
+          "hidden": false,
+          "group": "Lite MES",
+          "order": 3
+        }
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start Backend Dev Server",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:🖥 Backend (Express + PostgreSQL)}"
+        },
+        "group": "build",
+        "isBackground": true,
+        "problemMatcher": {
+          "pattern": { "regexp": ".", "file": 1, "location": 2, "message": 3 },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^.*nodemon.*",
+            "endsPattern":   "^.*running on http.*"
+          }
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "devServers"
+        }
+      },
+      {
+        "label": "Start Frontend Dev Server",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:🎨 Frontend (React + Vite + Tailwind)}"
+        },
+        "group": "build",
+        "isBackground": true,
+        "problemMatcher": {
+          "pattern": { "regexp": ".", "file": 1, "location": 2, "message": 3 },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern":  "^.*vite.*",
+            "endsPattern":    "^.*Local:.*http://localhost"
+          }
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "devServers"
+        }
+      },
+      {
+        "label": "🚀 Start Full Stack",
+        "dependsOn": [
+          "Start Backend Dev Server",
+          "Start Frontend Dev Server"
+        ],
+        "dependsOrder": "parallel",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Install All Dependencies",
+        "type": "shell",
+        "command": "npm install",
+        "options": { "cwd": "${workspaceFolder:🖥 Backend (Express + PostgreSQL)}" },
+        "group": "build",
+        "presentation": { "reveal": "always", "panel": "shared" },
+        "problemMatcher": [],
+        "dependsOn": ["Install Frontend Dependencies"]
+      },
+      {
+        "label": "Install Frontend Dependencies",
+        "type": "shell",
+        "command": "npm install",
+        "options": { "cwd": "${workspaceFolder:🎨 Frontend (React + Vite + Tailwind)}" },
+        "group": "build",
+        "presentation": { "reveal": "always", "panel": "shared" },
+        "problemMatcher": []
+      }
+    ]
+  }
+}
