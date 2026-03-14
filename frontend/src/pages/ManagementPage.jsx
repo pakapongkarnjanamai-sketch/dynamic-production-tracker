@@ -886,7 +886,7 @@ function TraysPanel({ lines }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page Export
 // ─────────────────────────────────────────────────────────────────────────────
-export default function AdminDashboard() {
+export default function ManagementPage() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('lines');
@@ -899,7 +899,7 @@ export default function AdminDashboard() {
       <header className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-extrabold text-gray-800 tracking-tight">ระบบจัดการข้อมูล <span className="text-blue-600">Admin</span></h1>
+            <h1 className="text-xl font-extrabold text-gray-800 tracking-tight">จัดการระบบ <span className="text-blue-600">Management</span></h1>
             <p className="text-xs text-gray-500 mt-1">ตั้งค่าสายการผลิต ขั้นตอนการทำงาน และข้อมูลหลัก</p>
           </div>
         </div>

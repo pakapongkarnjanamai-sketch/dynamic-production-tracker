@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getLines, getTrayStats } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
-export default function ShopFloor() {
+export default function HomePage() {
   const [lines,   setLines]   = useState([]);
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);

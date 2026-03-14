@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import ScanPage        from './pages/ScanPage';
 import TrayDetailPage  from './pages/TrayDetailPage';
-import ShopFloor       from './pages/ShopFloor';
-import AdminDashboard  from './pages/AdminDashboard';
+import HomePage        from './pages/HomePage';
+import ManagementPage  from './pages/ManagementPage';
 import ReportPage      from './pages/ReportPage';
 
 // Component สำหรับ Navigation Bar โดยเฉพาะ
@@ -81,10 +81,10 @@ export default function App() {
     <BrowserRouter>
       <Navigation />
       <Routes>
-        <Route path="/"       element={<ShopFloor />} />
+        <Route path="/"       element={<HomePage />} />
         <Route path="/scan"         element={<ScanPage />} />
         <Route path="/scan/detail"   element={<TrayDetailPage />} />
-        <Route path="/admin"  element={<AdminDashboard />} />
+        <Route path="/admin"  element={<ManagementPage />} />
         <Route path="/report" element={<ReportPage />} />
       </Routes>
     </BrowserRouter>
