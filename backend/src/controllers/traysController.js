@@ -62,11 +62,12 @@ const scanTray = async (req, res) => {
     // Fetch processes for the tray's line (active, ordered by sequence)
     const procResult = await db.query(
       `SELECT p.id, p.name, p.sequence,
-              pl.action  AS last_action,
-              pl.logged_at AS last_logged_at
+              pl.action    AS last_action,
+              pl.logged_at AS last_logged_at,
+              pl.operator  AS last_operator
          FROM processes p
     LEFT JOIN LATERAL (
-              SELECT action, logged_at
+              SELECT action, logged_at, operator
                 FROM production_logs
                WHERE tray_id    = $1
                  AND process_id = p.id

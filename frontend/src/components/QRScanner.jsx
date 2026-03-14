@@ -27,11 +27,8 @@ export default function QRScanner({ onScan, onError, fps = 10, qrbox = 250 }) {
         (decodedText) => {
           onScan(decodedText);
         },
-        (errorMsg) => {
-          // Suppress "QR code not found" noise
-          if (!errorMsg?.includes('NotFoundException')) {
-            onError?.(errorMsg);
-          }
+        () => {
+          // Per-frame "no QR found" errors are normal — suppress all of them
         }
       )
       .then(() => setStarted(true))
@@ -49,19 +46,26 @@ export default function QRScanner({ onScan, onError, fps = 10, qrbox = 250 }) {
   }, []);
 
   return (
-    <div className="w-full max-w-sm mx-auto">
+    <div className="h-full w-full relative">
+      {/* Force html5-qrcode video to fill the container */}
+      <style>{`
+        #qr-reader { height: 100% !important; width: 100% !important; border: none !important; padding: 0 !important; }
+        #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
+        #qr-reader__scan_region { height: 100% !important; }
+        #qr-reader__scan_region img { display: none !important; }
+        #qr-reader__dashboard { display: none !important; }
+      `}</style>
       {err && (
-        <p className="text-red-600 text-sm mb-2 text-center">
-          ⚠️ ไม่สามารถเปิดกล้องได้: {err}
-        </p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10 p-6">
+          <p className="text-red-400 text-sm text-center">⚠️ ไม่สามารถเปิดกล้องได้: {err}</p>
+        </div>
       )}
       {!started && !err && (
-        <p className="text-gray-500 text-sm mb-2 text-center animate-pulse">
-          กำลังเปิดกล้อง…
-        </p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+          <p className="text-white/60 text-sm animate-pulse">กำลังเปิดกล้อง…</p>
+        </div>
       )}
-      {/* html5-qrcode renders its video here */}
-      <div id={containerId} className="rounded-2xl overflow-hidden border-2 border-gray-300 shadow" />
+      <div id={containerId} className="h-full w-full" />
     </div>
   );
 }

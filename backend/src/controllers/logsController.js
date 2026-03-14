@@ -80,9 +80,30 @@ const createLog = async (req, res) => {
     );
 
     // Update tray status to reflect current state
-    const trayStatus = action === 'start' ? 'in_progress'
-      : action === 'finish' ? 'in_progress'
-      : 'on_hold'; // ng
+    let trayStatus = action === 'ng' ? 'on_hold' : 'in_progress';
+
+    if (action === 'finish') {
+      // Check if all processes for this tray's line are now finished
+      const { rows: notDone } = await db.query(
+        `SELECT p.id
+           FROM processes p
+           JOIN trays t ON t.line_id = p.line_id AND t.id = $1
+           LEFT JOIN LATERAL (
+             SELECT action
+               FROM production_logs
+              WHERE tray_id    = $1
+                AND process_id = p.id
+              ORDER BY logged_at DESC
+              LIMIT 1
+           ) pl ON TRUE
+          WHERE p.is_active = TRUE
+            AND COALESCE(pl.action, '') <> 'finish'`,
+        [tray_id]
+      );
+      if (notDone.length === 0) {
+        trayStatus = 'completed';
+      }
+    }
 
     await db.query(
       `UPDATE trays SET status = $1 WHERE id = $2`,

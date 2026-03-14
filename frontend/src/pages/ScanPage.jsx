@@ -1,79 +1,64 @@
-import { useState, useCallback, useEffect } from 'react';
-import QRScanner   from '../components/QRScanner';
-import { scanTray, createLog, getOperators, getLines, getProcesses } from '../api/client';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import QRScanner from '../components/QRScanner';
+import { scanTray, createLog, getOperators } from '../api/client';
 
-const LS_OPERATOR     = 'mes_operator';
-const LS_LINE_ID      = 'mes_line_id';
-const LS_LINE_NAME    = 'mes_line_name';
-const LS_PROCESS_ID   = 'mes_process_id';
-const LS_PROCESS_NAME = 'mes_process_name';
+const LS_OPERATOR = 'mes_operator';
 
 function getInitialStep() {
-  if (!localStorage.getItem(LS_OPERATOR)) return 'operator';
-  if (!localStorage.getItem(LS_LINE_ID))  return 'lineprocess';
-  return 'done';
+  return localStorage.getItem(LS_OPERATOR) ? 'done' : 'operator';
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function ScanPage() {
-  const [setupStep,  setSetupStep]  = useState(getInitialStep);
+  const [setupStep, setSetupStep] = useState(getInitialStep);
 
-  // operator
-  const [operators,  setOperators]  = useState([]);
-  const [operator,   setOperator]   = useState(() => localStorage.getItem(LS_OPERATOR) || '');
-
-  // line + process
-  const [lines,          setLines]          = useState([]);
-  const [selectedLineId, setSelectedLineId] = useState(() => localStorage.getItem(LS_LINE_ID) || '');
-  const [lineProcesses,  setLineProcesses]  = useState([]);
-  const [selectedProcId, setSelectedProcId] = useState(() => localStorage.getItem(LS_PROCESS_ID) || '');
+  const [operators, setOperators] = useState([]);
+  const [operator,  setOperator]  = useState(() => localStorage.getItem(LS_OPERATOR) || '');
 
   const [scanning,   setScanning]   = useState(true);
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState(null);
   const [result,     setResult]     = useState(null);
-  const [lastAction, setLastAction] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Ref guard — survives stale closures inside QRScanner's useEffect
+  const processingRef = useRef(false);
 
   useEffect(() => {
     getOperators({ active_only: 'true' }).then(setOperators).catch(() => {});
-    getLines().then(setLines).catch(() => {});
   }, []);
 
+  // Auto-dismiss toast after 2.5 s
   useEffect(() => {
-    if (!selectedLineId) { setLineProcesses([]); return; }
-    getProcesses(selectedLineId).then(setLineProcesses).catch(() => setLineProcesses([]));
-  }, [selectedLineId]);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const saveOperator = (e) => {
     e.preventDefault();
     localStorage.setItem(LS_OPERATOR, operator);
-    setSetupStep('lineprocess');
-  };
-
-  const saveLineProcess = (e) => {
-    e.preventDefault();
-    const line = lines.find((l) => String(l.id) === String(selectedLineId));
-    const proc = lineProcesses.find((p) => String(p.id) === String(selectedProcId));
-    if (!line || !proc) return;
-    localStorage.setItem(LS_LINE_ID,       line.id);
-    localStorage.setItem(LS_LINE_NAME,     line.name);
-    localStorage.setItem(LS_PROCESS_ID,    proc.id);
-    localStorage.setItem(LS_PROCESS_NAME,  proc.name);
     setSetupStep('done');
   };
 
   const clearSetup = () => {
-    [LS_OPERATOR, LS_LINE_ID, LS_LINE_NAME, LS_PROCESS_ID, LS_PROCESS_NAME].forEach((k) =>
-      localStorage.removeItem(k)
-    );
+    processingRef.current = false;
+    localStorage.removeItem(LS_OPERATOR);
     setOperator('');
-    setSelectedLineId('');
-    setSelectedProcId('');
     setSetupStep('operator');
-    reset();
+    setScanning(true);
+    setResult(null);
+    setError(null);
+    setToast(null);
   };
 
   const handleScan = useCallback(async (qrCode) => {
-    if (!scanning || loading) return;
+    if (processingRef.current) return;
+    processingRef.current = true;
     setScanning(false);
     setLoading(true);
     setError(null);
@@ -85,7 +70,8 @@ export default function ScanPage() {
     } finally {
       setLoading(false);
     }
-  }, [scanning, loading]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // intentionally empty — processingRef is a stable ref, not reactive state
 
   const handleAction = useCallback(async (process, action) => {
     if (!result) return;
@@ -98,17 +84,20 @@ export default function ScanPage() {
         operator:   operator || null,
         action,
       });
-      setResult((prev) => ({
-        ...prev,
-        processes: prev.processes.map((p) =>
-          p.id === process.id ? { ...p, last_action: action } : p
-        ),
-      }));
-      setLastAction({ process: process.name, action });
-
-      // ให้หน้าจอสั่นเล็กน้อยเพื่อเป็น feedback (ถ้ามือถือรองรับ)
       if (navigator.vibrate) navigator.vibrate(100);
-
+      const actionLabel = action === 'start' ? 'เริ่มงาน' : action === 'finish' ? 'เสร็จสิ้น' : 'NG';
+      setToast(`${process.name} — ${actionLabel}`);
+      if (action === 'start') {
+        // อยู่หน้าเดิม re-fetch เพื่ออัปเดตสถานะ
+        const fresh = await scanTray(result.tray.qr_code);
+        setResult(fresh);
+      } else {
+        // finish / ng → กลับหน้าสแกนรอถาดถัดไป
+        processingRef.current = false;
+        setScanning(true);
+        setResult(null);
+        setError(null);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -117,13 +106,22 @@ export default function ScanPage() {
   }, [result, operator]);
 
   const reset = () => {
+    processingRef.current = false;
     setScanning(true);
     setResult(null);
     setError(null);
-    setLastAction(null);
   };
 
-  // ── Step 1: Select Operator ───────────────────────────────────
+  // Derive current process state from scan result
+  // currentProcess = first process (by sequence) that hasn't been 'finish'-ed
+  const currentProcess = result?.processes.find((p) => p.last_action !== 'finish') ?? null;
+  const trayComplete   = !!result && result.processes.length > 0 &&
+                         result.processes.every((p) => p.last_action === 'finish');
+  const doneCount      = result?.processes.filter((p) => p.last_action === 'finish').length ?? 0;
+  const totalCount     = result?.processes.length ?? 0;
+
+
+  // ── Step 1: Operator Setup ────────────────────────────────────
   if (setupStep === 'operator') {
     return (
       <main className="min-h-screen bg-gray-100 flex flex-col p-4">
@@ -175,83 +173,17 @@ export default function ScanPage() {
     );
   }
 
-  // ── Step 2: Select Line + Process ────────────────────────────
-  if (setupStep === 'lineprocess') {
-    return (
-      <main className="min-h-screen bg-gray-100 flex flex-col p-4">
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            </div>
-            <h1 className="text-3xl font-extrabold text-gray-800">สถานีทำงาน</h1>
-            <p className="text-gray-500 mt-2">เลือกสายการผลิตและขั้นตอนของคุณ</p>
-          </div>
-
-          <form onSubmit={saveLineProcess} className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 space-y-5">
-            <label className="flex flex-col gap-2 text-lg font-semibold text-gray-700">
-              สายการผลิต
-              <select
-                className="border-2 border-gray-300 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 bg-gray-50"
-                value={selectedLineId}
-                onChange={(e) => { setSelectedLineId(e.target.value); setSelectedProcId(''); }}
-                required
-              >
-                <option value="">— เลือกสาย —</option>
-                {lines.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-              </select>
-            </label>
-
-            <label className="flex flex-col gap-2 text-lg font-semibold text-gray-700">
-              ขั้นตอน
-              <select
-                className="border-2 border-gray-300 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 disabled:opacity-50"
-                value={selectedProcId}
-                onChange={(e) => setSelectedProcId(e.target.value)}
-                required
-                disabled={!selectedLineId || lineProcesses.length === 0}
-              >
-                <option value="">— เลือกขั้นตอน —</option>
-                {lineProcesses.map((p) => <option key={p.id} value={p.id}>{p.sequence}. {p.name}</option>)}
-              </select>
-            </label>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={() => setSetupStep('operator')}
-                className="w-1/3 border-2 border-gray-300 text-gray-600 rounded-2xl py-4 text-lg font-bold active:scale-95 transition-transform"
-              >
-                กลับ
-              </button>
-              <button
-                type="submit"
-                className="w-2/3 bg-blue-600 text-white rounded-2xl py-4 text-lg font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform inline-flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                </svg>
-                เริ่มสแกน
-              </button>
-            </div>
-          </form>
-        </div>
-      </main>
-    );
-  }
-
-  // ── Step 3: Main Scanning & Action ───────────────────────────
-  const lineName    = localStorage.getItem(LS_LINE_NAME)    || '';
-  const processName = localStorage.getItem(LS_PROCESS_NAME) || '';
-  const activeProcessId = Number(localStorage.getItem(LS_PROCESS_ID));
-
-  const visibleProcesses = result ? result.processes.filter((p) => p.id === activeProcessId) : [];
-  const activeProcess = visibleProcesses[0]; // ขั้นตอนปัจจุบันที่ operator กำลังทำ
-
+  // ── Step 2: Scan & Act ────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col">
-      {/* ── Status Header ── */}
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 whitespace-nowrap">
+          <span className="text-green-400 text-xl">✓</span>
+          <span className="font-semibold">บันทึกสำเร็จ — {toast}</span>
+        </div>
+      )}
+      {/* Header */}
       <div className="bg-gray-900 text-white px-4 py-3 pb-4 shadow-md rounded-b-3xl">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
@@ -261,7 +193,7 @@ export default function ScanPage() {
             <div className="leading-tight">
               <div className="font-bold text-lg">{operator}</div>
               <div className="text-blue-200 text-xs">
-                {lineName} ➔ {processName}
+                {result ? (result.tray.line_name || 'N/A') : 'พร้อมสแกน'}
               </div>
             </div>
           </div>
@@ -271,24 +203,30 @@ export default function ScanPage() {
         </div>
       </div>
 
-      <div className="flex-1 p-4 max-w-md mx-auto w-full flex flex-col">
+      <div className={`flex-1 flex flex-col ${scanning && !loading ? '' : 'p-4 max-w-md mx-auto w-full gap-4'}`}>
 
-        {/* ── Scanner View ── */}
-        {scanning && (
-          <div className="flex-1 flex flex-col justify-center">
-            <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-200">
-              <div className="text-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">สแกน QR Code</h2>
-                <p className="text-gray-500 text-sm">สแกนใบนำงาน หรือ ถาดงาน</p>
-              </div>
-              <div className="rounded-2xl overflow-hidden bg-black relative">
-                <QRScanner onScan={handleScan} onError={(e) => setError(e)} />
+        {/* Scanner — edge-to-edge full height */}
+        {scanning && !loading && (
+          <div className="flex-1 relative bg-black overflow-hidden">
+            <QRScanner onScan={handleScan} onError={(e) => setError('ไม่สามารถเปิดกล้องได้: ' + e)} />
+            {/* Text overlay at top */}
+            <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent px-4 pt-5 pb-10 text-center pointer-events-none">
+              <h2 className="text-2xl font-bold text-white drop-shadow">สแกน QR Code</h2>
+              <p className="text-white/70 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
+            </div>
+            {/* Scan frame guide */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-56 h-56 border-2 border-white/50 rounded-2xl relative">
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl"></div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Loading State ── */}
+        {/* Loading */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
             <svg className="animate-spin w-12 h-12 mb-4 text-blue-600" fill="none" viewBox="0 0 24 24">
@@ -299,9 +237,9 @@ export default function ScanPage() {
           </div>
         )}
 
-        {/* ── Error State ── */}
+        {/* Error */}
         {error && !loading && (
-          <div className="flex-1 flex flex-col justify-center mt-4">
+          <div className="flex-1 flex flex-col justify-center">
             <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-6 text-center">
               <div className="flex justify-center mb-4">
                 <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,31 +249,27 @@ export default function ScanPage() {
               </div>
               <h2 className="text-xl font-bold text-red-700 mb-2">เกิดข้อผิดพลาด</h2>
               <p className="text-red-600 mb-6">{error}</p>
-              <button
-                onClick={reset}
-                className="w-full bg-red-600 text-white rounded-2xl py-4 text-lg font-bold active:scale-95 transition-transform shadow-md"
-              >
+              <button onClick={reset} className="w-full bg-red-600 text-white rounded-2xl py-4 text-lg font-bold active:scale-95 transition-transform shadow-md">
                 ลองสแกนใหม่
               </button>
             </div>
           </div>
         )}
 
-        {/* ── Result & Action View ── */}
+        {/* Result View */}
         {result && !error && !loading && (
-          <div className="flex flex-col gap-4 py-2 animate-fade-in-up">
-
-            {/* Tray Info Card (Ticket Style) */}
+          <>
+            {/* Tray Info */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="bg-blue-50 px-5 py-3 border-b border-blue-100 flex justify-between items-center">
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">ข้อมูลถาดงาน</span>
+                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">ถาดงาน</span>
                 <span className="text-xs font-bold bg-blue-200 text-blue-800 px-2 py-1 rounded-lg">QTY: {result.tray.qty}</span>
               </div>
               <div className="p-5">
-                <div className="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
-                  <p className="text-4xl font-black text-gray-800 font-mono tracking-tight">{result.tray.qr_code}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <p className="text-4xl font-black text-gray-800 font-mono tracking-tight text-center border-b border-dashed border-gray-300 pb-4 mb-4">
+                  {result.tray.qr_code}
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
                     <p className="text-gray-400 font-medium mb-0.5">สินค้า</p>
                     <p className="font-bold text-gray-800 text-base">{result.tray.product || '—'}</p>
@@ -345,74 +279,129 @@ export default function ScanPage() {
                     <p className="font-bold text-gray-800 text-base font-mono">{result.tray.batch_no || '—'}</p>
                   </div>
                 </div>
+                {/* Progress bar */}
+                {totalCount > 0 && (
+                  <div>
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>ความคืบหน้า</span>
+                      <span>{doneCount}/{totalCount} ขั้นตอน</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 rounded-full transition-all duration-500"
+                        style={{ width: `${totalCount > 0 ? (doneCount / totalCount) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Success Feedback Banner */}
-            {lastAction && (
-              <div className="bg-green-100 border-2 border-green-400 rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-xl flex-shrink-0">✓</div>
-                <div>
-                  <p className="text-green-800 font-bold leading-tight">บันทึกข้อมูลสำเร็จ!</p>
-                  <p className="text-green-700 text-sm">สถานะ: {lastAction.action.toUpperCase()}</p>
-                </div>
+            {/* Process Progress List */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">ขั้นตอนการผลิต</span>
               </div>
-            )}
+              <div className="divide-y divide-gray-100">
+                {result.processes.length === 0 ? (
+                  <div className="p-5 text-center text-gray-400">ไม่มีขั้นตอนที่กำหนดสำหรับสายนี้</div>
+                ) : result.processes.map((p) => {
+                  const isCurrent = !trayComplete && currentProcess?.id === p.id;
+                  const isDone    = p.last_action === 'finish';
+                  const isNG      = p.last_action === 'ng';
+                  const isStarted = p.last_action === 'start';
+                  return (
+                    <div key={p.id} className={`px-5 py-4 flex items-center gap-4 ${isCurrent ? 'bg-blue-50' : ''}`}>
+                      {/* Status circle */}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+                        isDone    ? 'bg-green-500 text-white' :
+                        isNG      ? 'bg-red-500 text-white' :
+                        isStarted ? 'bg-blue-500 text-white' :
+                        isCurrent ? 'bg-white text-blue-600 border-2 border-blue-400' :
+                        'bg-gray-100 text-gray-400'
+                      }`}>
+                        {isDone ? '✓' : isNG ? '✗' : isStarted ? '▶' : p.sequence}
+                      </div>
+                      {/* Name + meta */}
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-bold truncate ${
+                          isCurrent ? 'text-blue-800' :
+                          isDone    ? 'text-green-700' :
+                          isNG      ? 'text-red-700' :
+                          'text-gray-400'
+                        }`}>
+                          {p.name}
+                        </div>
+                        {(isDone || isNG || isStarted) && (
+                          <div className="text-xs text-gray-500 mt-0.5 flex gap-2 flex-wrap">
+                            {p.last_operator && <span>👤 {p.last_operator}</span>}
+                            {p.last_logged_at && <span>🕐 {formatTime(p.last_logged_at)}</span>}
+                          </div>
+                        )}
+                        {isCurrent && !p.last_action && <div className="text-xs text-blue-500 font-medium mt-0.5">← ขั้นตอนถัดไป</div>}
+                        {isCurrent && isStarted       && <div className="text-xs text-blue-500 font-medium mt-0.5">← กำลังดำเนินการ</div>}
+                        {isCurrent && isNG            && <div className="text-xs text-red-500 font-medium mt-0.5">← ต้องแก้ไข</div>}
+                      </div>
+                      {/* Badge */}
+                      {isDone    && <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-lg flex-shrink-0">เสร็จ</span>}
+                      {isNG && !isCurrent && <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded-lg flex-shrink-0">NG</span>}
+                      {isCurrent && <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-lg flex-shrink-0 animate-pulse">ดำเนินการ</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-            {/* Action Buttons */}
-            {activeProcess ? (
+            {/* Action Buttons — shown only for current process */}
+            {trayComplete ? (
+              <div className="bg-green-50 border-2 border-green-400 rounded-3xl p-6 text-center">
+                <div className="text-5xl mb-3">🎉</div>
+                <h2 className="text-2xl font-black text-green-700 mb-1">เสร็จสมบูรณ์!</h2>
+                <p className="text-green-600">ถาดนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว</p>
+              </div>
+            ) : currentProcess && (
               <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-200">
-                <p className="text-center text-gray-500 font-medium text-sm mb-4">เลือกการทำงานสำหรับขั้นตอนนี้</p>
+                <p className="text-center font-bold text-gray-800 text-lg mb-1">{currentProcess.name}</p>
+                <p className="text-center text-gray-500 text-sm mb-4">ขั้นตอนที่ {currentProcess.sequence} — เลือกสถานะ</p>
                 <div className="grid gap-3">
                   <button
-                    onClick={() => handleAction(activeProcess, 'start')}
-                    className="flex items-center justify-center gap-3 bg-blue-600 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md"
+                    onClick={() => handleAction(currentProcess, 'start')}
+                    disabled={currentProcess.last_action === 'start'}
+                    className="flex items-center justify-center gap-3 bg-blue-600 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>▶</span> เริ่มงาน
                   </button>
                   <button
-                    onClick={() => handleAction(activeProcess, 'finish')}
-                    className="flex items-center justify-center gap-3 bg-green-500 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md"
+                    onClick={() => handleAction(currentProcess, 'finish')}
+                    disabled={!currentProcess.last_action}
+                    className="flex items-center justify-center gap-3 bg-green-500 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>✔</span> เสร็จสิ้น
                   </button>
                   <button
-                    onClick={() => handleAction(activeProcess, 'ng')}
-                    className="flex items-center justify-center gap-3 bg-red-500 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md"
+                    onClick={() => handleAction(currentProcess, 'ng')}
+                    disabled={!currentProcess.last_action}
+                    className="flex items-center justify-center gap-3 bg-red-500 text-white rounded-2xl py-5 text-2xl font-bold active:scale-95 transition-transform shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>✖</span> ของเสีย (NG)
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center text-yellow-800">
-                ไม่พบขั้นตอน <span className="font-bold">{processName}</span> ในถาดนี้
-              </div>
             )}
 
-            {/* Scan Next Button */}
+            {/* Scan Next */}
             <button
               onClick={reset}
-              className="mt-2 w-full bg-gray-800 text-white rounded-2xl py-5 text-xl font-bold active:bg-gray-700 active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-gray-800 text-white rounded-2xl py-5 text-xl font-bold active:bg-gray-700 active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2 mb-4"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
               สแกนถาดต่อไป
             </button>
-
-          </div>
+          </>
         )}
       </div>
-
-      {/* CSS Animation for smooth entrance */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.3s ease-out forwards;
-        }
-      `}} />
     </main>
   );
 }
