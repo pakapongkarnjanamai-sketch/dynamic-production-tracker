@@ -280,10 +280,6 @@ Admins can:
 - ถาดหนึ่งใบแทน batch ของชิ้นงาน
 - สแกนเพื่อบันทึก start / finish / ng ต่อขั้นตอน
 
-**ระดับชิ้นงาน (Work Item)** — ระบบใหม่ผ่าน `/qrcodes`
-- ลงทะเบียนชิ้นงานแต่ละชิ้นพร้อม serial_no, batch_no, product
-- เชื่อมโยงกับสายการผลิตและถาดได้ (optional)
-- `GET /api/qrcodes/scan/:code` ค้นหาชิ้นงานและคืน process list จาก tray ที่ผูกไว้
 
 **Scan Event Log** — ทุกการสแกนทั้ง 2 ระดับจะถูกบันทึกใน `qr_scan_events` อัตโนมัติ พร้อม:
 - `operator` — ชื่อผู้สแกน (กรอกครั้งแรกแล้วจำไว้ใน localStorage)
