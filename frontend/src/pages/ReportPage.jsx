@@ -35,7 +35,7 @@ export default function ReportPage() {
   return (
     <main className="min-h-screen bg-gray-100 p-6 max-w-5xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-3xl font-bold">📊 รายงานการผลิต</h1>
+        <h1 className="text-3xl font-bold">รายงานการผลิต</h1>
         <div className="flex gap-2">
           <input
             type="search"
@@ -48,13 +48,13 @@ export default function ReportPage() {
             onClick={load}
             className="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-blue-700"
           >
-            🔄 รีเฟรช
+            รีเฟรช
           </button>
         </div>
       </div>
 
       {loading && <p className="text-gray-400 animate-pulse text-center">กำลังโหลด…</p>}
-      {error   && <p className="text-red-500 text-center">⚠️ {error}</p>}
+      {error   && <p className="text-red-500 text-center">{error}</p>}
 
       {!loading && !error && (
         <div className="bg-white rounded-2xl border shadow-sm overflow-x-auto">

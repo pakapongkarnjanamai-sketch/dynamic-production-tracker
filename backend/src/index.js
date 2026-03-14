@@ -3,10 +3,11 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 
-const linesRouter     = require('./routes/lines');
-const processesRouter = require('./routes/processes');
-const traysRouter     = require('./routes/trays');
-const logsRouter      = require('./routes/logs');
+const linesRouter      = require('./routes/lines');
+const processesRouter  = require('./routes/processes');
+const traysRouter      = require('./routes/trays');
+const logsRouter       = require('./routes/logs');
+const operatorsRouter  = require('./routes/operators');
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -38,10 +39,11 @@ app.get('/health', (_req, res) => {
 // ---------------------------------------------------------------------------
 // API routes
 // ---------------------------------------------------------------------------
-app.use('/api/lines',     linesRouter);
-app.use('/api/processes', processesRouter);
-app.use('/api/trays',     traysRouter);
-app.use('/api/logs',      logsRouter);
+app.use('/api/lines',      linesRouter);
+app.use('/api/processes',  processesRouter);
+app.use('/api/trays',      traysRouter);
+app.use('/api/logs',       logsRouter);
+app.use('/api/operators',  operatorsRouter);
 
 // ---------------------------------------------------------------------------
 // 404 fallback

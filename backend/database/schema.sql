@@ -67,6 +67,19 @@ CREATE TABLE IF NOT EXISTS production_logs (
 );
 
 -- ---------------------------------------------------------------
+-- 5. Operators  (ข้อมูลผู้ปฏิบัติงาน)
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS operators (
+    id           SERIAL PRIMARY KEY,
+    name         VARCHAR(120) NOT NULL,
+    employee_id  VARCHAR(40)  UNIQUE,
+    department   VARCHAR(80),
+    is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- ---------------------------------------------------------------
 -- Indexes
 -- ---------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_processes_line_id   ON processes(line_id);
@@ -75,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_trays_line_id        ON trays(line_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_tray_id    ON production_logs(tray_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_process_id ON production_logs(process_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_logged_at  ON production_logs(logged_at DESC);
+CREATE INDEX IF NOT EXISTS idx_operators_employee_id ON operators(employee_id);
 
 -- ---------------------------------------------------------------
 -- Trigger: keep updated_at current on lines / processes / trays
@@ -91,7 +105,7 @@ DO $$
 DECLARE
     t TEXT;
 BEGIN
-    FOREACH t IN ARRAY ARRAY['lines','processes','trays'] LOOP
+    FOREACH t IN ARRAY ARRAY['lines','processes','trays','operators'] LOOP
         IF NOT EXISTS (
             SELECT 1 FROM pg_trigger
             WHERE tgname = 'trg_' || t || '_updated_at'
@@ -131,7 +145,14 @@ INSERT INTO trays (id, qr_code, line_id, product, batch_no, qty) VALUES
     (2, 'TRAY-0002', 2, 'Widget-Pro',  'BT-2024-002', 30)
 ON CONFLICT (id) DO NOTHING;
 
+-- Demo operators (ผู้ปฏิบัติงานตัวอย่าง)
+INSERT INTO operators (id, name, employee_id, department) VALUES
+    (1, 'สมชาย ใจดี',    'EMP-001', 'SMT'),
+    (2, 'สมหญิง รักงาน', 'EMP-002', 'Assembly')
+ON CONFLICT (id) DO NOTHING;
+
 -- Reset sequences after seed
-SELECT setval('lines_id_seq',     (SELECT MAX(id) FROM lines));
-SELECT setval('processes_id_seq', (SELECT MAX(id) FROM processes));
-SELECT setval('trays_id_seq',     (SELECT MAX(id) FROM trays));
+SELECT setval('lines_id_seq',      (SELECT MAX(id) FROM lines));
+SELECT setval('processes_id_seq',  (SELECT MAX(id) FROM processes));
+SELECT setval('trays_id_seq',      (SELECT MAX(id) FROM trays));
+SELECT setval('operators_id_seq',  (SELECT MAX(id) FROM operators));

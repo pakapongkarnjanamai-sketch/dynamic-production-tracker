@@ -28,10 +28,11 @@ export const updateProcess = (id, data)   => request(`/api/processes/${id}`, { m
 export const deleteProcess = (id)         => request(`/api/processes/${id}`, { method: 'DELETE' });
 
 // Trays
-export const getTrays   = ()      => request('/api/trays');
-export const scanTray   = (qr)    => request(`/api/trays/scan/${encodeURIComponent(qr)}`);
-export const createTray = (data)  => request('/api/trays', { method: 'POST', body: data });
-export const deleteTray = (id)    => request(`/api/trays/${id}`, { method: 'DELETE' });
+export const getTrays   = ()          => request('/api/trays');
+export const scanTray   = (qr)        => request(`/api/trays/scan/${encodeURIComponent(qr)}`);
+export const createTray = (data)      => request('/api/trays',       { method: 'POST',   body: data });
+export const updateTray = (id, data)  => request(`/api/trays/${id}`, { method: 'PUT',    body: data });
+export const deleteTray = (id)        => request(`/api/trays/${id}`, { method: 'DELETE' });
 
 // Logs
 export const getLogs        = (params = {}) => {
@@ -40,3 +41,12 @@ export const getLogs        = (params = {}) => {
 };
 export const createLog      = (data) => request('/api/logs', { method: 'POST', body: data });
 export const getLogsSummary = ()     => request('/api/logs/summary');
+
+// Operators
+export const getOperators    = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/api/operators${qs ? `?${qs}` : ''}`);
+};
+export const createOperator  = (data)     => request('/api/operators',      { method: 'POST', body: data });
+export const updateOperator  = (id, data) => request(`/api/operators/${id}`, { method: 'PUT',  body: data });
+export const deleteOperator  = (id)       => request(`/api/operators/${id}`, { method: 'DELETE' });
