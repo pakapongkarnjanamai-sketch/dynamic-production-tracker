@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { getLogsSummary, getLogs, getTrays } from '../api/client';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ function SectionCard({ tab, children, count }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Tray Report Panel & Details (Master-Detail)
+// 1. Tray Report Panel & Details (Expandable Row Layout)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Sub-panel: แสดงประวัติของถาดงาน (View Only) ──
@@ -84,7 +84,6 @@ function TrayLogsViewPanel({ tray }) {
 
   useEffect(() => {
     setLoading(true);
-    // ดึงประวัติเฉพาะของ tray_id ที่ถูกเลือก
     getLogs({ tray_id: tray.tray_id })
       .then(setLogs)
       .catch((e) => alert(e.message))
@@ -92,42 +91,42 @@ function TrayLogsViewPanel({ tray }) {
   }, [tray.tray_id]);
 
   return (
-    <div className="flex-1 flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-3">
         <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">
           ประวัติการผลิต: <span className="font-mono text-amber-700">{tray.qr_code}</span>
         </h3>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm flex-1">
-        <div className="overflow-x-auto max-h-[600px]">
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+        <div className="overflow-x-auto max-h-[400px]">
           <table className="w-full text-sm">
             <thead className="bg-gray-100 text-xs text-gray-500 uppercase tracking-wide border-b sticky top-0 z-10">
               <tr>
-                <th className="px-3 py-3 text-left">เวลา</th>
-                <th className="px-3 py-3 text-left">ขั้นตอน</th>
-                <th className="px-3 py-3 text-left">ผู้ปฏิบัติ</th>
-                <th className="px-3 py-3 text-center">สถานะ</th>
+                <th className="px-4 py-3 text-left">เวลา</th>
+                <th className="px-4 py-3 text-left">ขั้นตอน</th>
+                <th className="px-4 py-3 text-left">ผู้ปฏิบัติ</th>
+                <th className="px-4 py-3 text-center">สถานะ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={4} className="text-center py-10 text-gray-400">กำลังโหลดข้อมูล...</td></tr>
+                <tr><td colSpan={4} className="text-center py-8 text-gray-400">กำลังโหลดข้อมูล...</td></tr>
               ) : logs.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-10 text-gray-400">ยังไม่มีประวัติการผลิต</td></tr>
+                <tr><td colSpan={4} className="text-center py-8 text-gray-400">ยังไม่มีประวัติการผลิต</td></tr>
               ) : (
                 logs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-3 py-3 text-gray-500 text-xs whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                       {new Date(log.logged_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
-                    <td className="px-3 py-3 text-gray-700 whitespace-nowrap">
-                      <span className="font-mono text-gray-400 text-xs mr-1">#{log.sequence}</span>
+                    <td className="px-4 py-3 text-gray-800 whitespace-nowrap font-medium">
+                      <span className="font-mono text-gray-400 text-xs mr-2">#{log.sequence}</span>
                       {log.process_name}
                     </td>
-                    <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{log.operator || '—'}</td>
-                    <td className="px-3 py-3 text-center">
-                      <span className={`text-xs border rounded-full px-2 py-0.5 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{log.operator || '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`text-xs border rounded-full px-3 py-1 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>
                         {log.action}
                       </span>
                     </td>
@@ -165,17 +164,11 @@ function TrayReportPanel({ data, search, onSearch, c }) {
 
   const delayCount = withDelay.filter((r) => r.isDelayed).length;
 
-  // เลือกถาดแรกอัตโนมัติ
-  useEffect(() => {
-    if (!selectedTrayId && filtered.length > 0) setSelectedTrayId(filtered[0].tray_id);
-    else if (filtered.length > 0 && !filtered.find(t => t.tray_id === selectedTrayId)) setSelectedTrayId(filtered[0].tray_id);
-  }, [filtered, selectedTrayId]);
-
-  const selectedTray = filtered.find(t => t.tray_id === selectedTrayId);
+  const toggleRow = (id) => setSelectedTrayId(prev => prev === id ? null : id);
 
   return (
-    <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8">
-      {/* ฝั่งซ้าย: ตารางสรุปถาดงาน */}
+    <div className="flex flex-col gap-6">
+      {/* ส่วนหัวตารางและฟิลเตอร์ */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">ภาพรวมถาดงาน</h3>
@@ -216,8 +209,9 @@ function TrayReportPanel({ data, search, onSearch, c }) {
           <span className="text-xs text-gray-500 font-medium ml-auto px-2">พบ {filtered.length} รายการ</span>
         </div>
 
+        {/* ตารางหลัก (Expandable) */}
         <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm flex-1">
-          <div className="overflow-x-auto max-h-[600px]">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 text-left text-gray-500 text-xs uppercase tracking-wide border-b sticky top-0 z-10">
                 <tr>
@@ -234,50 +228,69 @@ function TrayReportPanel({ data, search, onSearch, c }) {
                   <tr><td colSpan={6} className="text-center py-8 text-gray-400">ไม่พบข้อมูล</td></tr>
                 )}
                 {filtered.map((r) => {
-                  const isSelected = selectedTrayId === r.tray_id;
+                  const isExpanded = selectedTrayId === r.tray_id;
                   return (
-                    <tr
-                      key={r.tray_id}
-                      onClick={() => setSelectedTrayId(r.tray_id)}
-                      className={`cursor-pointer transition-all border-l-4 ${
-                        isSelected ? 'bg-amber-50 border-amber-500'
-                        : r.isDelayed ? 'bg-red-50/60 border-red-300'
-                        : 'bg-white border-transparent hover:bg-gray-50'
-                      }`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className={`font-mono font-semibold text-xs ${isSelected ? 'text-amber-800' : 'text-gray-800'}`}>{r.qr_code}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{r.line_name || '—'}</div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        <div>{r.product ?? '—'}</div>
-                        {r.batch_no && <div className="text-xs text-gray-400 font-mono mt-0.5">{r.batch_no}</div>}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${TRAY_STATUS_COLORS[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                          {r.status}
-                        </span>
-                        {r.isDelayed && (
-                          <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {r.due_date ? (
-                          <span className={`text-xs whitespace-nowrap ${r.isDelayed ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
-                            {new Date(r.due_date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                    <Fragment key={r.tray_id}>
+                      <tr
+                        onClick={() => toggleRow(r.tray_id)}
+                        className={`cursor-pointer transition-all border-l-4 ${
+                          isExpanded ? 'bg-amber-50 border-amber-500'
+                          : r.isDelayed ? 'bg-red-50/60 border-red-300'
+                          : 'bg-white border-transparent hover:bg-gray-50'
+                        }`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <svg className={`w-4 h-4 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-amber-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            <div>
+                              <div className={`font-mono font-semibold text-xs ${isExpanded ? 'text-amber-800' : 'text-gray-800'}`}>{r.qr_code}</div>
+                              <div className="text-xs text-gray-500 mt-0.5">{r.line_name || '—'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div>{r.product ?? '—'}</div>
+                          {r.batch_no && <div className="text-xs text-gray-400 font-mono mt-0.5">{r.batch_no}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${TRAY_STATUS_COLORS[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                            {r.status}
                           </span>
-                        ) : (
-                          <span className="text-xs text-gray-300">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="font-bold text-green-600 mr-2">{r.finished_processes ?? 0}</span>
-                        <span className="font-bold text-red-600">{r.ng_count ?? 0}</span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">
-                        {r.last_activity ? new Date(r.last_activity).toLocaleString('th-TH') : '—'}
-                      </td>
-                    </tr>
+                          {r.isDelayed && (
+                            <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {r.due_date ? (
+                            <span className={`text-xs whitespace-nowrap ${r.isDelayed ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                              {new Date(r.due_date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="font-bold text-green-600 mr-2">{r.finished_processes ?? 0}</span>
+                          <span className="font-bold text-red-600">{r.ng_count ?? 0}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-400 text-xs">
+                          {r.last_activity ? new Date(r.last_activity).toLocaleString('th-TH') : '—'}
+                        </td>
+                      </tr>
+
+                      {/* Detail Row (Expandable Logs) */}
+                      {isExpanded && (
+                        <tr className="bg-amber-50/30">
+                          <td colSpan={6} className="p-0 border-b-4 border-amber-200">
+                            <div className="p-4 md:p-6 shadow-inner">
+                              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                                <TrayLogsViewPanel tray={r} />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   );
                 })}
               </tbody>
@@ -285,18 +298,6 @@ function TrayReportPanel({ data, search, onSearch, c }) {
           </div>
         </div>
       </div>
-
-      {/* ฝั่งขวา: รายละเอียดประวัติ (Logs) */}
-      <div className="flex flex-col border-t pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-8 border-gray-200">
-        {selectedTray ? (
-          <TrayLogsViewPanel tray={selectedTray} />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full py-20 text-gray-400">
-            <p>กรุณาเลือกถาดงานจากรายชื่อด้านซ้าย เพื่อดูประวัติการผลิต</p>
-          </div>
-        )}
-      </div>
-
     </div>
   );
 }
