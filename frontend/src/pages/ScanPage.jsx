@@ -173,7 +173,7 @@ export default function ScanPage() {
     );
   }
 
-  // ── Step 2: Scan & Act ────────────────────────────────────────
+// ── Step 2: Scan & Act ────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col">
       {/* Toast notification */}
@@ -184,10 +184,10 @@ export default function ScanPage() {
         </div>
       )}
       {/* Header */}
-      <div className="bg-gray-900 text-white px-4 py-3 pb-4 shadow-md rounded-b-3xl">
+      <div className="bg-gray-900 text-white px-4 py-3 pb-4 shadow-md z-20 relative">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-lg">
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-lg shadow-inner">
               {operator.charAt(0)}
             </div>
             <div className="leading-tight">
@@ -197,35 +197,39 @@ export default function ScanPage() {
               </div>
             </div>
           </div>
-          <button onClick={clearSetup} className="bg-gray-800 border border-gray-600 text-white text-xs px-3 py-2 rounded-xl active:bg-gray-700">
+          <button onClick={clearSetup} className="bg-gray-800 border border-gray-600 text-white text-xs px-4 py-2 rounded-xl active:bg-gray-700 hover:bg-gray-700 transition-colors">
             เปลี่ยน
           </button>
         </div>
       </div>
 
-      <div className={`flex-1 flex flex-col ${scanning && !loading ? '' : 'p-4 max-w-md mx-auto w-full gap-4'}`}>
+      <div className={`flex-1 flex flex-col w-full ${scanning && !loading ? '' : 'p-4 max-w-md mx-auto gap-4'}`}>
 
         {/* Scanner — edge-to-edge full height */}
         {scanning && !loading && (
-          <div className="flex-1 relative bg-black overflow-hidden">
+          <div className="flex-1 w-full relative bg-black overflow-hidden flex items-center justify-center">
+
             <QRScanner onScan={handleScan} onError={(e) => setError('ไม่สามารถเปิดกล้องได้: ' + e)} />
+
             {/* Text overlay at top */}
-            <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent px-4 pt-5 pb-10 text-center pointer-events-none">
-              <h2 className="text-2xl font-bold text-white drop-shadow">สแกน QR Code</h2>
-              <p className="text-white/70 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
+            <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent px-4 pt-6 pb-12 text-center pointer-events-none z-10">
+              <h2 className="text-2xl font-bold text-white tracking-wide">สแกน QR Code</h2>
+              <p className="text-white/80 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
             </div>
-            {/* Scan frame guide */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-56 h-56 border-2 border-white/50 rounded-2xl relative">
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl"></div>
+
+            {/* Scan frame guide + Darkened surroundings */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
+              {/* Box shadow creates the dark overlay outside the transparent center */}
+              <div className="w-64 h-64 border-2 border-white/20 relative shadow-[0_0_0_4000px_rgba(0,0,0,0.5)] rounded-xl">
+                {/* 4 Corners */}
+                <div className="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
+                <div className="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
+                <div className="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
+                <div className="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-white rounded-br-xl"></div>
               </div>
             </div>
           </div>
         )}
-
         {/* Loading */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
