@@ -244,7 +244,7 @@ npm run dev
 | `/` | 🏭 Shop Floor | ภาพรวมสายการผลิต + ปุ่มสแกน QR |
 | `/scan` | 📷 Scan QR | กรอก Operator + Station → สแกน QR Code → กด Start / Finish / NG |
 | `/qrcodes` | 🔖 QR Codes | ลงทะเบียนชิ้นงาน / ดูทะเบียน QR / ดูประวัติการสแกนทุกครั้ง |
-| `/admin` | 🛠 Admin Dashboard | CRUD Lines & Processes แบบ Dynamic |
+| `/admin` | 🛠 Admin Dashboard | จัดการ Lines, Processes, Trays & Operators — UI แบบ Tab แยกชัดเจน 3 แท็บ |
 | `/report` | 📊 Report | รายงาน Real-time ต่อถาดงาน |
 
 ---
@@ -257,6 +257,20 @@ Admins can:
 - **เพิ่ม/ลบ/แก้ไข** สายการผลิต (Production Lines) ผ่านหน้า `/admin`
 - **เพิ่ม/จัดลำดับ/ลบ** ขั้นตอน (Processes) ในแต่ละสายได้อิสระ
 - หน้า Shop Floor และ Scan จะ **อัปเดตอัตโนมัติ** ตาม Config ที่ตั้งไว้ **โดยไม่ต้องแก้โค้ด**
+
+### 🛠 Admin Dashboard UI
+
+หน้า `/admin` ออกแบบเป็น **Tab Navigation** แบ่งเป็น 3 แท็บชัดเจน:
+
+| แท็บ | ประกอบด้วย | สี |
+|------|------------|----|
+| 🏭 สายการผลิต & ขั้นตอน | จัดการ Lines + Processes ในหน้าเดียว | น้ำเงิน |
+| 📦 ถาดงาน | CRUD Trays พร้อม Filter และ Search | เหลือง/Amber |
+| 👷 ผู้ปฏิบัติงาน | CRUD Operators พร้อม Toggle Active/Inactive | เขียว/Emerald |
+
+- แต่ละแท็บมี **Header gradient** และ badge แสดงจำนวนรายการ
+- Layout แบ่ง **ฟอร์ม (ซ้าย) / ตาราง (ขวา)** ในหน้าจอขนาดกลางขึ้นไป
+- แท็บ **สายการผลิต & ขั้นตอน** แสดง 2 ส่วนซ้อนกัน (Lines → Processes) เพื่อให้เห็นความสัมพันธ์ได้ทันที
 
 ## 🔖 QR Code Tracking
 
