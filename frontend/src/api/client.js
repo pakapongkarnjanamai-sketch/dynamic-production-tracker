@@ -1,0 +1,42 @@
+const BASE = import.meta.env.VITE_API_URL || '';
+
+async function request(path, options = {}) {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    ...options,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || res.statusText);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+// Lines
+export const getLines            = ()          => request('/api/lines');
+export const getLineWithProcesses= (id)        => request(`/api/lines/${id}/processes`);
+export const createLine          = (data)      => request('/api/lines',    { method: 'POST', body: data });
+export const updateLine          = (id, data)  => request(`/api/lines/${id}`, { method: 'PUT', body: data });
+export const deleteLine          = (id)        => request(`/api/lines/${id}`, { method: 'DELETE' });
+
+// Processes
+export const getProcesses  = (lineId)     => request(`/api/processes${lineId ? `?line_id=${lineId}` : ''}`);
+export const createProcess = (data)       => request('/api/processes',     { method: 'POST', body: data });
+export const updateProcess = (id, data)   => request(`/api/processes/${id}`, { method: 'PUT', body: data });
+export const deleteProcess = (id)         => request(`/api/processes/${id}`, { method: 'DELETE' });
+
+// Trays
+export const getTrays   = ()      => request('/api/trays');
+export const scanTray   = (qr)    => request(`/api/trays/scan/${encodeURIComponent(qr)}`);
+export const createTray = (data)  => request('/api/trays', { method: 'POST', body: data });
+export const deleteTray = (id)    => request(`/api/trays/${id}`, { method: 'DELETE' });
+
+// Logs
+export const getLogs        = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/api/logs${qs ? `?${qs}` : ''}`);
+};
+export const createLog      = (data) => request('/api/logs', { method: 'POST', body: data });
+export const getLogsSummary = ()     => request('/api/logs/summary');

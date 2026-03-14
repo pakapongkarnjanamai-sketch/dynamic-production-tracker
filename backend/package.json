@@ -1,0 +1,23 @@
+{
+  "name": "lite-mes-backend",
+  "version": "1.0.0",
+  "description": "Lite MES Backend - Express API for Dynamic Production Tracker",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "db:migrate": "psql $DATABASE_URL -f database/schema.sql"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
