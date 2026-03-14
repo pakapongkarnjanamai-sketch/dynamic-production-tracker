@@ -14,8 +14,8 @@ export default function QRScanner({ onScan, onError, fps = 10 }) {
     scanner
       .start(
         { facingMode: 'environment' },
-        // เอา qrbox ออกเพื่อให้กล้องทำงานเต็มกรอบ 100%
-        { fps },
+        // qrbox เป็น function คืน full-frame เสมอ ไม่ว่าจะหมุนหรือขนาดใด
+        { fps, qrbox: (w, h) => ({ width: w, height: h }) },
         (decodedText) => {
           onScan(decodedText);
         },
@@ -51,8 +51,8 @@ export default function QRScanner({ onScan, onError, fps = 10 }) {
           top: 0; left: 0;
         }
         #qr-reader__dashboard { display: none !important; }
-        #qr-reader__scan_region > img,
-        #qr-reader__scan_region > canvas { display: none !important; }
+        #qr-reader__scan_region > img { display: none !important; }
+        #qr-reader__scan_region > canvas { position: absolute; opacity: 0; pointer-events: none; }
       `}</style>
 
       {err && (
