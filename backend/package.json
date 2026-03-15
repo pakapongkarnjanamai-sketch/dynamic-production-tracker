@@ -12,6 +12,7 @@
     "test": "node --test tests/**/*.test.js",
     "test:smoke": "npm test",
     "db:migrate": "psql $DATABASE_URL -f database/schema.sql",
+    "db:migrate:all": "./scripts/migrate-all.sh",
     "bootstrap:superadmin": "node src/scripts/bootstrapSuperAdmin.js"
   },
   "dependencies": {

@@ -54,3 +54,12 @@ dynamic-production-tracker/
     │   ├── App.jsx                           # ระบบ Router และ Navigation Bar
     │   └── main.jsx
     └── package.json
+```
+
+---
+
+## 🚀 Deployment (Hostinger Ubuntu 24.04)
+
+เริ่ม deploy แบบ VPS เครื่องเดียวได้จากคู่มือ:
+
+- `deploy/hostinger/README.md`
