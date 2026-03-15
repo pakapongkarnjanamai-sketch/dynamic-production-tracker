@@ -46,10 +46,10 @@ ssh deploy@YOUR_SERVER_IP
 cd /opt/dynamic-production-tracker/deploy/hostinger
 chmod +x deploy-app.sh
 REPO_URL=https://github.com/YOUR_ORG/YOUR_REPO.git \
+DEPLOY_DOMAIN=bpsgroup.cloud \
 DB_PASSWORD='replace-with-strong-db-password' \
 JWT_SECRET='replace-with-long-random-secret' \
 SUPERADMIN_PASSWORD='replace-with-strong-password' \
-ALLOWED_ORIGINS='http://YOUR_SERVER_IP' \
 ./deploy-app.sh
 ```
 
@@ -72,6 +72,53 @@ sudo systemctl status nginx --no-pager
 - Disable password authentication and use SSH keys only
 - Add domain and HTTPS (Certbot)
 - Set ALLOWED_ORIGINS to your domain and redeploy
+
+## 7. Domain + HTTPS quick setup
+
+1. Point `A` records for `bpsgroup.cloud` and `www.bpsgroup.cloud` to your VPS IP.
+2. Ensure Nginx site uses `deploy/hostinger/nginx-lite-mes.conf`.
+3. Issue certificate:
+
+```bash
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d bpsgroup.cloud -d www.bpsgroup.cloud
+```
+
+4. Verify renewal:
+
+```bash
+sudo certbot renew --dry-run
+```
+
+If renewal fails with `Invalid response` on `/.well-known/acme-challenge/*`, confirm the ACME location block is present and served from `/var/www/html` in both HTTP and HTTPS server blocks.
+
+## 8. Troubleshooting (from live rollout)
+
+### PM2 `EADDRINUSE: 4000`
+
+Cause: backend started twice (one plain `node` process + one PM2 process, or PM2 under both root and deploy).
+
+Fix:
+
+```bash
+pm2 delete all || true
+pm2 kill || true
+sudo fuser -k 4000/tcp || true
+sudo -u deploy bash -lc 'cd /srv/dynamic-production-tracker/backend && NODE_ENV=production PORT=4000 pm2 start src/index.js --name lite-mes-backend'
+sudo -u deploy pm2 save
+```
+
+Always run PM2 using deploy user to avoid duplicate PM2 homes (`/root/.pm2` and `/home/deploy/.pm2`).
+
+### Login returns `{"error":"Internal server error"}`
+
+Verify backend process health and that only one backend process is bound to port `4000`.
+
+```bash
+sudo -u deploy pm2 list
+sudo lsof -iTCP:4000 -sTCP:LISTEN -n -P
+curl -sS http://127.0.0.1:4000/ready
+```
 
 ## Included files
 

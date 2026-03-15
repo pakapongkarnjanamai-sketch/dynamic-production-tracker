@@ -63,3 +63,9 @@ dynamic-production-tracker/
 เริ่ม deploy แบบ VPS เครื่องเดียวได้จากคู่มือ:
 
 - `deploy/hostinger/README.md`
+
+สถานะ production rollout ปัจจุบัน:
+
+- Domain: `bpsgroup.cloud`
+- HTTPS: เปิดใช้งานแล้ว (Let's Encrypt)
+- Backend process manager: PM2 (run as deploy user)

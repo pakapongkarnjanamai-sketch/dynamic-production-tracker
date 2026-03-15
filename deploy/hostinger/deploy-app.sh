@@ -15,7 +15,14 @@ DB_NAME="${DB_NAME:-lite_mes}"
 DB_USER="${DB_USER:-lite_mes}"
 DB_PASSWORD="${DB_PASSWORD:-change-this-db-password}"
 JWT_SECRET="${JWT_SECRET:-change-this-jwt-secret}"
-ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-http://$(hostname -I | awk '{print $1}')}"
+DEPLOY_DOMAIN="${DEPLOY_DOMAIN:-}"
+SERVER_IP="$(hostname -I | awk '{print $1}')"
+if [[ -n "$DEPLOY_DOMAIN" ]]; then
+  ALLOWED_ORIGINS_DEFAULT="https://${DEPLOY_DOMAIN},https://www.${DEPLOY_DOMAIN},http://${DEPLOY_DOMAIN},http://www.${DEPLOY_DOMAIN}"
+else
+  ALLOWED_ORIGINS_DEFAULT="http://${SERVER_IP},https://${SERVER_IP}"
+fi
+ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-$ALLOWED_ORIGINS_DEFAULT}"
 SUPERADMIN_EMPLOYEE_ID="${SUPERADMIN_EMPLOYEE_ID:-ADMIN-0001}"
 SUPERADMIN_NAME="${SUPERADMIN_NAME:-Administrator}"
 SUPERADMIN_PASSWORD="${SUPERADMIN_PASSWORD:-change-me-now}"
@@ -81,6 +88,8 @@ mkdir -p "$HOME/.pm2"
 cp "$APP_DIR/deploy/hostinger/ecosystem.config.cjs" "$HOME/ecosystem.config.cjs"
 pm2 start "$HOME/ecosystem.config.cjs"
 pm2 save
+
+# Keep PM2 owned by deploy user. Avoid running PM2 commands as root to prevent duplicate process trees.
 sudo env PATH="$PATH" pm2 startup systemd -u "$USER" --hp "$HOME"
 
 sudo cp "$APP_DIR/deploy/hostinger/nginx-lite-mes.conf" /etc/nginx/sites-available/lite-mes
