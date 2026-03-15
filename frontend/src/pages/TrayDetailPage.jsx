@@ -134,7 +134,7 @@ export default function TrayDetailPage() {
             {/* Tray Info */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="bg-blue-50 px-5 py-3 border-b border-blue-100 flex justify-between items-center">
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">ถาดงาน</span>
+                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">งาน</span>
                 <span className="text-xs font-bold bg-blue-200 text-blue-800 px-2 py-1 rounded-lg">QTY: {result.tray.qty}</span>
               </div>
               <div className="p-5">
@@ -237,7 +237,7 @@ export default function TrayDetailPage() {
               <div className="bg-green-50 border-2 border-green-400 rounded-3xl p-6 text-center">
                 <div className="text-5xl mb-3">🎉</div>
                 <h2 className="text-2xl font-black text-green-700 mb-1">เสร็จสมบูรณ์!</h2>
-                <p className="text-green-600">ถาดนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว</p>
+                <p className="text-green-600">งานนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว</p>
               </div>
             ) : currentProcess && (
               <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-200">
