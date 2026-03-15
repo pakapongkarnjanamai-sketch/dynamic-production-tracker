@@ -1,4 +1,5 @@
-const BASE = import.meta.env.VITE_API_URL || '';
+const RAW_BASE = (import.meta.env.VITE_API_URL || '').trim();
+const BASE = RAW_BASE.endsWith('/') ? RAW_BASE.slice(0, -1) : RAW_BASE;
 const AUTH_TOKEN_KEY = 'mes_auth_token';
 
 let authToken = localStorage.getItem(AUTH_TOKEN_KEY) || null;

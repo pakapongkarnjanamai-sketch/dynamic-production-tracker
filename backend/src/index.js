@@ -1,10 +1,12 @@
 require('dotenv').config();
 
+const crypto = require('crypto');
 const express = require('express');
 const cors    = require('cors');
 const helmet  = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { getAllowedOrigins, validateEnv } = require('./config/env');
+const db = require('./config/database');
 
 const authRouter       = require('./routes/auth');
 const linesRouter      = require('./routes/lines');
@@ -18,6 +20,21 @@ validateEnv();
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
+
+function logEvent(level, message, details = {}) {
+  const payload = {
+    ts: new Date().toISOString(),
+    level,
+    message,
+    ...details,
+  };
+  const serialized = JSON.stringify(payload);
+  if (level === 'error' || level === 'warn') {
+    console.error(serialized);
+    return;
+  }
+  console.log(serialized);
+}
 
 // ---------------------------------------------------------------------------
 // Middleware
@@ -51,12 +68,31 @@ app.use('/api/auth/login', rateLimit({
   legacyHeaders: false,
 }));
 app.use(express.json());
+app.use((req, res, next) => {
+  const requestId = req.headers['x-request-id'] || crypto.randomUUID();
+  req.requestId = String(requestId);
+  res.setHeader('X-Request-Id', req.requestId);
+  next();
+});
 
 // ---------------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------------
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
+app.get('/ready', async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.json({ status: 'ready', ts: new Date().toISOString(), request_id: req.requestId });
+  } catch (err) {
+    logEvent('error', 'Readiness check failed', {
+      request_id: req.requestId,
+      error: err.message,
+    });
+    res.status(503).json({ error: 'Service unavailable', request_id: req.requestId });
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -80,16 +116,59 @@ app.use((_req, res) => {
 // ---------------------------------------------------------------------------
 // Global error handler
 // ---------------------------------------------------------------------------
-app.use((err, _req, res, _next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+app.use((err, req, res, _next) => {
+  logEvent('error', 'Unhandled request error', {
+    request_id: req.requestId,
+    path: req.originalUrl,
+    method: req.method,
+    error: err.message,
+    stack: err.stack,
+  });
+  res.status(500).json({ error: 'Internal server error', request_id: req.requestId });
 });
 
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-app.listen(PORT, () => {
-  console.log(`Lite MES API running on http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+  logEvent('info', `Lite MES API running on http://localhost:${PORT}`);
+});
+
+let isShuttingDown = false;
+
+async function shutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  logEvent('info', `Received ${signal}, starting graceful shutdown`);
+
+  server.close(async (serverErr) => {
+    if (serverErr) {
+      logEvent('error', 'Failed to close HTTP server cleanly', { error: serverErr.message });
+    }
+
+    try {
+      await db.pool.end();
+      logEvent('info', 'PostgreSQL pool closed');
+      process.exit(serverErr ? 1 : 0);
+    } catch (poolErr) {
+      logEvent('error', 'Failed to close PostgreSQL pool', { error: poolErr.message });
+      process.exit(1);
+    }
+  });
+
+  setTimeout(() => {
+    logEvent('warn', 'Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000).unref();
+}
+
+process.on('SIGTERM', () => {
+  shutdown('SIGTERM');
+});
+
+process.on('SIGINT', () => {
+  shutdown('SIGINT');
 });
 
 module.exports = app;

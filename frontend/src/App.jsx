@@ -106,7 +106,7 @@ function RoleLanding() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Navigation />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
