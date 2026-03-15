@@ -1,21 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import QRScanner from '../components/QRScanner';
-import { scanTray, getOperators } from '../api/client';
-
-const LS_OPERATOR = 'mes_operator';
-
-function getInitialStep() {
-  return localStorage.getItem(LS_OPERATOR) ? 'done' : 'operator';
-}
+import { scanTray } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 
 export default function ScanPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const [setupStep, setSetupStep] = useState(getInitialStep);
-
-  const [operators, setOperators] = useState([]);
-  const [operator,  setOperator]  = useState(() => localStorage.getItem(LS_OPERATOR) || '');
+  const operator = (user?.operator_name || user?.name || '').trim();
 
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState(null);
@@ -34,22 +27,6 @@ export default function ScanPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    getOperators({ active_only: 'true' }).then(setOperators).catch(() => {});
-  }, []);
-
-  const saveOperator = (e) => {
-    e.preventDefault();
-    localStorage.setItem(LS_OPERATOR, operator);
-    setSetupStep('done');
-  };
-
-  const clearSetup = () => {
-    localStorage.removeItem(LS_OPERATOR);
-    setOperator('');
-    setSetupStep('operator');
-  };
 
   const handleScan = useCallback(async (qrCode) => {
     if (processingRef.current) return;
@@ -85,59 +62,6 @@ export default function ScanPage() {
     await handleScan(manualCode);
   };
 
-
-  // ── Step 1: Operator Setup ────────────────────────────────────
-  if (setupStep === 'operator') {
-    return (
-      <main className="min-h-screen bg-gray-100 flex flex-col p-4">
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </div>
-            <h1 className="text-3xl font-extrabold text-gray-800">ผู้ปฏิบัติงาน</h1>
-            <p className="text-gray-500 mt-2">กรุณาระบุตัวตนเพื่อเริ่มงาน</p>
-          </div>
-
-          <form onSubmit={saveOperator} className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 space-y-6">
-            <label className="flex flex-col gap-2 text-lg font-semibold text-gray-700">
-              เลือกชื่อของคุณ
-              {operators.length > 0 ? (
-                <select
-                  className="border-2 border-gray-300 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 bg-gray-50"
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value)}
-                  required
-                >
-                  <option value="">— เลือกรายชื่อ —</option>
-                  {operators.map((op) => (
-                    <option key={op.id} value={op.name}>
-                      {op.name} {op.department ? `(${op.department})` : ''}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  className="border-2 border-gray-300 rounded-2xl px-4 py-4 text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 bg-gray-50"
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value)}
-                  placeholder="พิมพ์ชื่อของคุณ..."
-                  required
-                />
-              )}
-            </label>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white rounded-2xl py-5 text-xl font-bold shadow-lg shadow-blue-200 active:scale-95 transition-transform"
-            >
-              ถัดไป ➔
-            </button>
-          </form>
-        </div>
-      </main>
-    );
-  }
-
 // ── Step 2: Scan ────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col">
@@ -153,9 +77,6 @@ export default function ScanPage() {
               <div className="text-blue-200 text-xs">พร้อมสแกน</div>
             </div>
           </div>
-          <button onClick={clearSetup} className="bg-gray-800 border border-gray-600 text-white text-xs px-4 py-2 rounded-xl active:bg-gray-700 hover:bg-gray-700 transition-colors">
-            เปลี่ยน
-          </button>
         </div>
       </div>
 
