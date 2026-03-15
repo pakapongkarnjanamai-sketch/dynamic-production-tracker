@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { internalServerError } = require('../utils/httpErrors');
 
 // GET /api/operators
 const getOperators = async (req, res) => {
@@ -10,7 +11,7 @@ const getOperators = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'operators.getOperators');
   }
 };
 
@@ -24,7 +25,7 @@ const getOperatorById = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Operator not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'operators.getOperatorById');
   }
 };
 
@@ -43,7 +44,7 @@ const createOperator = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Employee ID already exists' });
     }
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'operators.createOperator');
   }
 };
 
@@ -67,7 +68,7 @@ const updateOperator = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Employee ID already exists' });
     }
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'operators.updateOperator');
   }
 };
 
@@ -81,7 +82,7 @@ const deleteOperator = async (req, res) => {
     if (!rowCount) return res.status(404).json({ error: 'Operator not found' });
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'operators.deleteOperator');
   }
 };
 

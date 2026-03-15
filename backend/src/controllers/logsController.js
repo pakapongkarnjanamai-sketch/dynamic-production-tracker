@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { internalServerError } = require('../utils/httpErrors');
 
 /**
  * GET /api/logs
@@ -44,7 +45,7 @@ const getLogs = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'logs.getLogs');
   }
 };
 
@@ -126,7 +127,7 @@ const createLog = async (req, res) => {
 
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'logs.createLog');
   }
 };
 
@@ -154,7 +155,7 @@ const getLogsSummary = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'logs.getLogsSummary');
   }
 };
 
@@ -284,7 +285,7 @@ const updateLog = async (req, res) => {
     await recalcTrayStatus(rows[0].tray_id);
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'logs.updateLog');
   }
 };
 
@@ -303,7 +304,7 @@ const deleteLog = async (req, res) => {
     await recalcTrayStatus(rows[0].tray_id);
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'logs.deleteLog');
   }
 };
 

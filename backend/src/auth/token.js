@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
-
-const DEFAULT_SECRET = 'dev-change-me';
+const { getRequiredEnvValue } = require('../config/env');
 
 function getJwtSecret() {
-  return process.env.JWT_SECRET || DEFAULT_SECRET;
+  return getRequiredEnvValue('JWT_SECRET');
 }
 
 function getJwtExpiry() {

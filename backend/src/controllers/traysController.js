@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { internalServerError } = require('../utils/httpErrors');
 
 // GET /api/trays
 const getTrays = async (req, res) => {
@@ -11,7 +12,7 @@ const getTrays = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.getTrays');
   }
 };
 
@@ -28,7 +29,7 @@ const getTrayById = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Tray not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.getTrayById');
   }
 };
 
@@ -55,7 +56,7 @@ const scanTray = async (req, res) => {
       [req.params.qrCode]
     );
     if (!trayResult.rows.length) {
-      return res.status(404).json({ error: 'Tray not found for QR code: ' + req.params.qrCode });
+      return res.status(404).json({ error: 'Tray not found' });
     }
     const tray = trayResult.rows[0];
 
@@ -104,7 +105,7 @@ const scanTray = async (req, res) => {
 
     res.json({ tray, processes: procResult.rows });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.scanTray');
   }
 };
 
@@ -127,7 +128,7 @@ const getTrayStats = async (req, res) => {
     );
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.getTrayStats');
   }
 };
 
@@ -146,7 +147,7 @@ const createTray = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'QR code already exists' });
     }
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.createTray');
   }
 };
 
@@ -172,7 +173,7 @@ const updateTray = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Tray not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.updateTray');
   }
 };
 
@@ -186,7 +187,7 @@ const deleteTray = async (req, res) => {
     if (!rowCount) return res.status(404).json({ error: 'Tray not found' });
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'trays.deleteTray');
   }
 };
 

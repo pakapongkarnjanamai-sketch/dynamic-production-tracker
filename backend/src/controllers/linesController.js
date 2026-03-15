@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { internalServerError } = require('../utils/httpErrors');
 
 // GET /api/lines
 const getLines = async (req, res) => {
@@ -8,7 +9,7 @@ const getLines = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.getLines');
   }
 };
 
@@ -22,7 +23,7 @@ const getLineById = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Line not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.getLineById');
   }
 };
 
@@ -37,7 +38,7 @@ const createLine = async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.createLine');
   }
 };
 
@@ -57,7 +58,7 @@ const updateLine = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Line not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.updateLine');
   }
 };
 
@@ -71,7 +72,7 @@ const deleteLine = async (req, res) => {
     if (!rowCount) return res.status(404).json({ error: 'Line not found' });
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.deleteLine');
   }
 };
 
@@ -90,7 +91,7 @@ const getLineWithProcesses = async (req, res) => {
     );
     res.json({ ...lineResult.rows[0], processes: procResult.rows });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'lines.getLineWithProcesses');
   }
 };
 

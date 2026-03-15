@@ -2,8 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const cors    = require('cors');
+const helmet  = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { getAllowedOrigins, validateEnv } = require('./config/env');
 
-const { ROLES } = require('./auth/roles');
 const authRouter       = require('./routes/auth');
 const linesRouter      = require('./routes/lines');
 const processesRouter  = require('./routes/processes');
@@ -12,24 +14,42 @@ const logsRouter       = require('./routes/logs');
 const operatorsRouter  = require('./routes/operators');
 const usersRouter      = require('./routes/users');
 
+validateEnv();
+
 const app  = express();
 const PORT = process.env.PORT || 4000;
 
 // ---------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
+const allowedOrigins = getAllowedOrigins();
 
 app.use(
   cors({
-    origin: allowedOrigins.length ? allowedOrigins : '*',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origin not allowed by CORS'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+app.use(helmet());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+app.use('/api/auth/login', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 app.use(express.json());
 
 // ---------------------------------------------------------------------------

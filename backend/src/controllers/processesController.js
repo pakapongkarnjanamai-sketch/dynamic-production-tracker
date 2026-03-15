@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { internalServerError } = require('../utils/httpErrors');
 
 // GET /api/processes  (optionally filter by ?line_id=)
 const getProcesses = async (req, res) => {
@@ -12,7 +13,7 @@ const getProcesses = async (req, res) => {
       : await db.query('SELECT * FROM processes ORDER BY line_id, sequence ASC');
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'processes.getProcesses');
   }
 };
 
@@ -26,7 +27,7 @@ const getProcessById = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Process not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'processes.getProcessById');
   }
 };
 
@@ -47,7 +48,7 @@ const createProcess = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Sequence already used for this line' });
     }
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'processes.createProcess');
   }
 };
 
@@ -71,7 +72,7 @@ const updateProcess = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Sequence already used for this line' });
     }
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'processes.updateProcess');
   }
 };
 
@@ -85,7 +86,7 @@ const deleteProcess = async (req, res) => {
     if (!rowCount) return res.status(404).json({ error: 'Process not found' });
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    internalServerError(res, err, 'processes.deleteProcess');
   }
 };
 
