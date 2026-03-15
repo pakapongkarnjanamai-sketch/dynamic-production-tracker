@@ -141,7 +141,7 @@ function SectionCard({ tab, count, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Lines + Processes Panel (Expandable Rows Layout)
+// 1. Lines + Processes Panel
 // ─────────────────────────────────────────────────────────────────────────────
 function LinesAndProcessesPanel({ lines, onRefresh }) {
   const tab = TABS[0];
@@ -223,7 +223,6 @@ function LinesManager({ lines, onRefresh, c }) {
                 const isExpanded = selectedLineId === l.id;
                 return (
                   <Fragment key={l.id}>
-                    {/* Master Row */}
                     <tr onClick={() => toggleRow(l.id)}
                       className={`cursor-pointer transition-all border-l-4 ${isExpanded ? 'bg-blue-50 border-blue-500' : 'bg-white border-transparent hover:bg-gray-50'}`}>
                       <td className="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
@@ -238,8 +237,6 @@ function LinesManager({ lines, onRefresh, c }) {
                         <button onClick={(e) => handleDelete(l.id, e)} className="text-red-500 hover:text-red-700 text-xs font-semibold">ลบ</button>
                       </td>
                     </tr>
-
-                    {/* Detail Row (Expandable) */}
                     {isExpanded && (
                       <tr className="bg-blue-50/30">
                         <td colSpan={3} className="p-0 border-b-4 border-blue-200">
@@ -446,7 +443,7 @@ function OperatorsPanel() {
                         className={`text-xs rounded-full px-3 py-1 font-semibold transition-colors border ${
                           op.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                         }`}>
-                        {op.is_active ? 'Active' : 'Inactive'}
+                        {op.is_active ? 'ใช้งาน' : 'ระงับการใช้งาน'}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right space-x-3">
@@ -597,8 +594,8 @@ function UsersPanel({ currentRole }) {
                 ))}
               </Input>
               <Input as="select" label="สถานะ" value={String(isActive)} onChange={(e) => setIsActive(e.target.value === 'true')}>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+                <option value="true">ใช้งาน</option>
+                <option value="false">ระงับการใช้งาน</option>
               </Input>
             </div>
             <div className="flex items-center gap-2">
@@ -636,7 +633,7 @@ function UsersPanel({ currentRole }) {
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{u.operator_name || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${u.is_active ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                        {u.is_active ? 'Active' : 'Inactive'}
+                        {u.is_active ? 'ใช้งาน' : 'ระงับการใช้งาน'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
@@ -655,14 +652,26 @@ function UsersPanel({ currentRole }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Trays Panel & Logs (Expandable Rows Layout)
+// 3. Trays Panel & Logs
 // ─────────────────────────────────────────────────────────────────────────────
 const TRAY_STATUS = ['pending', 'in_progress', 'completed', 'on_hold'];
+const STATUS_LABELS = {
+  pending: 'รอดำเนินการ',
+  in_progress: 'กำลังดำเนินการ',
+  completed: 'เสร็จสิ้น',
+  on_hold: 'หยุดพัก / รอแก้ไข',
+};
 const STATUS_STYLE = {
   pending: 'bg-gray-100 text-gray-600 border-gray-200',
   in_progress: 'bg-amber-100 text-amber-700 border-amber-200',
   completed: 'bg-green-100 text-green-700 border-green-200',
   on_hold: 'bg-red-100 text-red-700 border-red-200',
+};
+
+const ACTION_LABELS = {
+  start: 'เริ่มงาน',
+  finish: 'เสร็จสิ้น (OK)',
+  ng: 'ของเสีย (NG)',
 };
 const ACTION_STYLE = {
   start:  'bg-blue-100 text-blue-700 border-blue-200',
@@ -670,7 +679,6 @@ const ACTION_STYLE = {
   ng:     'bg-red-100 text-red-600 border-red-200',
 };
 
-// ── Sub-panel: Tray Logs (แสดงข้างในแถวที่กางออกมา) ──
 function TrayLogsPanel({ tray, onRefreshTray, c }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -742,7 +750,7 @@ function TrayLogsPanel({ tray, onRefreshTray, c }) {
             </Input>
             <Input label="ผู้ปฏิบัติ" value={formOperator} onChange={e => setFormOperator(e.target.value)} placeholder="ชื่อผู้ทำ" />
             <Input label="สถานะ (Action) *" as="select" value={formAction} onChange={e => setFormAction(e.target.value)}>
-              <option value="start">start</option><option value="finish">finish</option><option value="ng">ng</option>
+              <option value="start">เริ่มงาน</option><option value="finish">เสร็จสิ้น (OK)</option><option value="ng">ของเสีย (NG)</option>
             </Input>
             <Input label="หมายเหตุ" value={formNote} onChange={e => setFormNote(e.target.value)} placeholder="ไม่บังคับ" />
             <div className="sm:col-span-4 flex items-center gap-2 pt-2">
@@ -777,7 +785,7 @@ function TrayLogsPanel({ tray, onRefreshTray, c }) {
                     <td className="px-4 py-2"><input className="border border-gray-300 rounded px-2 py-1 text-xs w-full min-w-[100px] bg-white" value={editLog.operator} onChange={e => setEditLog(v => ({ ...v, operator: e.target.value }))} /></td>
                     <td className="px-4 py-2 text-center">
                       <select className="border border-gray-300 rounded px-2 py-1 text-xs bg-white" value={editLog.action} onChange={e => setEditLog(v => ({ ...v, action: e.target.value }))}>
-                        <option value="start">start</option><option value="finish">finish</option><option value="ng">ng</option>
+                        <option value="start">เริ่มงาน</option><option value="finish">เสร็จสิ้น (OK)</option><option value="ng">ของเสีย (NG)</option>
                       </select>
                     </td>
                     <td className="px-4 py-2"><input className="border border-gray-300 rounded px-2 py-1 text-xs w-full min-w-[120px] bg-white" value={editLog.note} onChange={e => setEditLog(v => ({ ...v, note: e.target.value }))} /></td>
@@ -791,7 +799,7 @@ function TrayLogsPanel({ tray, onRefreshTray, c }) {
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{new Date(log.logged_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}</td>
                     <td className="px-4 py-3 text-gray-800 whitespace-nowrap font-medium"><span className="font-mono text-gray-400 text-xs mr-1">#{log.sequence}</span>{log.process_name}</td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{log.operator || '—'}</td>
-                    <td className="px-4 py-3 text-center"><span className={`text-xs border rounded-full px-2 py-0.5 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>{log.action}</span></td>
+                    <td className="px-4 py-3 text-center"><span className={`text-xs border rounded-full px-2 py-0.5 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>{ACTION_LABELS[log.action] || log.action}</span></td>
                     <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate">{log.note || '—'}</td>
                     <td className="px-4 py-3 text-right whitespace-nowrap space-x-3">
                       <button onClick={() => setEditLog({ id: log.id, operator: log.operator || '', action: log.action, note: log.note || '' })} className="text-blue-600 hover:text-blue-800 text-xs font-medium">แก้ไข</button>
@@ -965,10 +973,7 @@ function TraysPanel({ lines }) {
           <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
             value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">ทุกสถานะ</option>
-            <option value="pending">pending</option>
-            <option value="in_progress">in_progress</option>
-            <option value="completed">completed</option>
-            <option value="on_hold">on_hold</option>
+            {TRAY_STATUS.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
           </select>
         </div>
 
@@ -985,7 +990,7 @@ function TraysPanel({ lines }) {
                 <Input label="Batch No." value={form.batch_no} onChange={(e) => setForm((f) => ({ ...f, batch_no: e.target.value }))} className="font-mono" />
                 <Input label="จำนวน (qty)" type="number" min="1" value={form.qty} onChange={(e) => setForm((f) => ({ ...f, qty: e.target.value }))} />
                 <Input label="สถานะ" as="select" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
-                  {TRAY_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {TRAY_STATUS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
                 </Input>
                 <Input label="กำหนดส่ง (Due Date)" type="datetime-local" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} className="md:col-span-2" />
               </div>
@@ -1035,9 +1040,9 @@ function TraysPanel({ lines }) {
                         <td className="px-4 py-3 text-gray-600">{t.line_name || '—'}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs rounded-full px-2 py-0.5 font-semibold border ${STATUS_STYLE[t.status] || 'bg-gray-100 text-gray-500'}`}>
-                            {t.status}
+                            {STATUS_LABELS[t.status] || t.status}
                           </span>
-                          {isDelayed && <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">Delay</span>}
+                          {isDelayed && <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">ล่าช้า</span>}
                         </td>
                         <td className="px-4 py-3">
                           {t.due_date ? (
@@ -1055,7 +1060,7 @@ function TraysPanel({ lines }) {
                         </td>
                       </tr>
 
-                      {/* Detail Row (Expandable) */}
+                      {/* Detail Row */}
                       {isExpanded && (
                         <tr className="bg-amber-50/30">
                           <td colSpan={6} className="p-0 border-b-4 border-amber-200">

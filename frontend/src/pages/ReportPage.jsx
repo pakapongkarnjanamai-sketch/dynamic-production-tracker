@@ -11,6 +11,19 @@ const TRAY_STATUS_COLORS = {
   on_hold:     'bg-red-100 text-red-700 border-red-200',
 };
 
+const STATUS_LABELS = {
+  pending: 'รอดำเนินการ',
+  in_progress: 'กำลังดำเนินการ',
+  completed: 'เสร็จสิ้น',
+  on_hold: 'หยุดพัก / รอแก้ไข',
+};
+
+const ACTION_LABELS = {
+  start: 'เริ่มงาน',
+  finish: 'เสร็จสิ้น (OK)',
+  ng: 'ของเสีย (NG)',
+};
+
 const ACTION_STYLE = {
   start:  'bg-blue-100 text-blue-700 border-blue-200',
   finish: 'bg-green-100 text-green-700 border-green-200',
@@ -74,7 +87,7 @@ function SectionCard({ tab, children, count }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Tray Report Panel & Details (Expandable Row Layout)
+// 1. Tray Report Panel & Details
 // ─────────────────────────────────────────────────────────────────────────────
 
 function TrayLogsViewPanel({ tray }) {
@@ -126,7 +139,7 @@ function TrayLogsViewPanel({ tray }) {
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{log.operator || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-xs border rounded-full px-3 py-1 font-semibold ${ACTION_STYLE[log.action] || 'bg-gray-100 text-gray-500'}`}>
-                        {log.action}
+                        {ACTION_LABELS[log.action] || log.action}
                       </span>
                     </td>
                   </tr>
@@ -198,7 +211,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
           </button>
           <button onClick={() => setStatusFilter('pending')}
             className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${statusFilter === 'pending' ? 'bg-gray-600 text-white border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}>
-            รอดำเนิน: <strong>{pendingCount}</strong>
+            รอดำเนินการ: <strong>{pendingCount}</strong>
           </button>
           <button onClick={() => setStatusFilter('completed')}
             className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${statusFilter === 'completed' ? 'bg-green-600 text-white border-green-600' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}>
@@ -206,7 +219,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
           </button>
           <button onClick={() => setStatusFilter('delayed')}
             className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${statusFilter === 'delayed' ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'}`}>
-            เกินกำหนด: <strong>{delayCount}</strong>
+            ล่าช้า: <strong>{delayCount}</strong>
           </button>
           <div className="flex flex-wrap gap-2">
             {statusFilter !== 'all' && <span className="text-xs text-gray-500 px-2 py-1">กำลังกรอง: {statusFilter}</span>}
@@ -224,7 +237,6 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
           <span className="text-xs text-gray-500 font-medium ml-auto px-2">พบ {filtered.length} รายการ</span>
         </div>
 
-        {/* Master-Detail Expandable Table */}
         <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm flex-1">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -283,10 +295,10 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`text-xs rounded-full px-3 py-1 font-semibold border ${TRAY_STATUS_COLORS[r.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                            {r.status}
+                            {STATUS_LABELS[r.status] || r.status}
                           </span>
                           {r.isDelayed && (
-                            <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">เกินกำหนด</span>
+                            <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">ล่าช้า</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -325,7 +337,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Lines & Processes Report Panel (Expandable Rows Layout)
+// 2. Lines & Processes Report Panel
 // ─────────────────────────────────────────────────────────────────────────────
 function ProcessReportPanel({ logs, processes, lines, c }) {
   const [expandedLineId, setExpandedLineId] = useState(null);
@@ -374,7 +386,6 @@ function ProcessReportPanel({ logs, processes, lines, c }) {
     }
   });
 
-  // จับกลุ่ม Master Row ตามสายการผลิต
   const lineData = lines.map((line) => {
     const procs = Object.values(statsByProcess)
       .filter((p) => p.line_id === line.id)
@@ -393,12 +404,7 @@ function ProcessReportPanel({ logs, processes, lines, c }) {
       }
     });
 
-    return {
-      ...line,
-      finishToday,
-      ngToday,
-      processes: procs
-    };
+    return { ...line, finishToday, ngToday, processes: procs };
   });
 
   const toggleRow = (id) => setExpandedLineId((prev) => (prev === id ? null : id));
@@ -531,7 +537,7 @@ function ProcessReportPanel({ logs, processes, lines, c }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Operator Report Panel (Expandable Rows Layout)
+// 3. Operator Report Panel
 // ─────────────────────────────────────────────────────────────────────────────
 function OperatorReportPanel({ logs, c }) {
   const [expandedOperator, setExpandedOperator] = useState(null);
@@ -576,12 +582,6 @@ function OperatorReportPanel({ logs, c }) {
   });
 
   const rows = Object.values(stats).sort((a, b) => b.finish - a.finish);
-
-  const actionText = {
-    start: 'เริ่มงาน',
-    finish: 'เสร็จสิ้น',
-    ng: 'NG',
-  };
 
   const toggleOperator = (name) => setExpandedOperator((prev) => (prev === name ? null : name));
 
@@ -631,7 +631,7 @@ function OperatorReportPanel({ logs, c }) {
                         ) : r.latestLog ? (
                           <div className="space-y-1">
                             <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 text-gray-600 px-2 py-0.5 font-semibold">ล่าสุด</span>
-                            <div className="text-gray-700 font-medium">{actionText[r.latestLog.action] || r.latestLog.action} · {r.latestLog.process_name} · {r.latestLog.qr_code}</div>
+                            <div className="text-gray-700 font-medium">{ACTION_LABELS[r.latestLog.action] || r.latestLog.action} · {r.latestLog.process_name} · {r.latestLog.qr_code}</div>
                             <div className="text-gray-400">{new Date(r.latestLog.logged_at).toLocaleString('th-TH')}</div>
                           </div>
                         ) : (
@@ -670,7 +670,7 @@ function OperatorReportPanel({ logs, c }) {
                                         </td>
                                         <td className="px-3 py-2 text-center">
                                           <span className={`text-[11px] border rounded-full px-2 py-0.5 font-semibold ${ACTION_STYLE[h.action] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                                            {h.action}
+                                            {ACTION_LABELS[h.action] || h.action}
                                           </span>
                                         </td>
                                       </tr>
