@@ -174,6 +174,19 @@ INSERT INTO operators (id, name, employee_id, department) VALUES
     (2, 'สมหญิง รักงาน', 'EMP-002', 'Assembly')
 ON CONFLICT (id) DO NOTHING;
 
+-- Demo users (บัญชีผู้ใช้ระบบตัวอย่าง)
+-- Password for all seeded users: Demo@1234
+INSERT INTO users (employee_id, name, password_hash, role, operator_id, is_active) VALUES
+    ('SA-0001', 'SuperAdmin One', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', NULL, TRUE),
+    ('SA-0002', 'SuperAdmin Two', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', NULL, TRUE),
+    ('AD-0001', 'Admin One',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      NULL, TRUE),
+    ('AD-0002', 'Admin Two',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      NULL, TRUE),
+    ('OP-0001', 'Operator One',   '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'operator',   1,    TRUE),
+    ('OP-0002', 'Operator Two',   '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'operator',   2,    TRUE),
+    ('VW-0001', 'Viewer One',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     NULL, TRUE),
+    ('VW-0002', 'Viewer Two',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     NULL, TRUE)
+ON CONFLICT (employee_id) DO NOTHING;
+
 -- Reset sequences after seed
 SELECT setval('lines_id_seq',      (SELECT MAX(id) FROM lines));
 SELECT setval('processes_id_seq',  (SELECT MAX(id) FROM processes));
