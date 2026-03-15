@@ -1037,7 +1037,7 @@ function TraysPanel({ lines }) {
                           <span className={`text-xs rounded-full px-2 py-0.5 font-semibold border ${STATUS_STYLE[t.status] || 'bg-gray-100 text-gray-500'}`}>
                             {t.status}
                           </span>
-                          {isDelayed && <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>}
+                          {isDelayed && <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">Delay</span>}
                         </td>
                         <td className="px-4 py-3">
                           {t.due_date ? (
@@ -1049,7 +1049,7 @@ function TraysPanel({ lines }) {
                           )}
                         </td>
                         <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
-                          <button onClick={(e) => handleDownloadQR(t, e)} className="text-gray-500 hover:text-gray-800 text-xs font-semibold">💾 ปริ้นท์ QR</button>
+                          <button onClick={(e) => handleDownloadQR(t, e)} className="text-gray-500 hover:text-gray-800 text-xs font-semibold">ปริ้นท์ QR</button>
                           <button onClick={(e) => openEditForm(t, e)} className="text-amber-600 hover:text-amber-800 text-xs font-semibold">แก้ไข</button>
                           <button onClick={(e) => handleDelete(t.id, e)} className="text-red-500 hover:text-red-700 text-xs font-semibold">ลบ</button>
                         </td>

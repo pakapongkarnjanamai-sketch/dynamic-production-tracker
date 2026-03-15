@@ -206,7 +206,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
           </button>
           <button onClick={() => setStatusFilter('delayed')}
             className={`text-xs font-semibold rounded-full px-3 py-1 border transition-colors ${statusFilter === 'delayed' ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'}`}>
-            ⏰ เกินกำหนด: <strong>{delayCount}</strong>
+            เกินกำหนด: <strong>{delayCount}</strong>
           </button>
           <div className="flex flex-wrap gap-2">
             {statusFilter !== 'all' && <span className="text-xs text-gray-500 px-2 py-1">กำลังกรอง: {statusFilter}</span>}
@@ -286,7 +286,7 @@ function TrayReportPanel({ data, logs, search, onSearch, c }) {
                             {r.status}
                           </span>
                           {r.isDelayed && (
-                            <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">⏰ Delay</span>
+                            <span className="ml-1 text-xs rounded-full px-2 py-0.5 font-semibold border bg-red-100 text-red-700 border-red-300">เกินกำหนด</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
