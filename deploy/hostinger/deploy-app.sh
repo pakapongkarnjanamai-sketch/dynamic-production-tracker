@@ -92,8 +92,8 @@ pm2 save
 # Keep PM2 owned by deploy user. Avoid running PM2 commands as root to prevent duplicate process trees.
 sudo env PATH="$PATH" pm2 startup systemd -u "$USER" --hp "$HOME"
 
-sudo cp "$APP_DIR/deploy/hostinger/nginx-lite-mes.conf" /etc/nginx/sites-available/lite-mes
-sudo ln -sf /etc/nginx/sites-available/lite-mes /etc/nginx/sites-enabled/lite-mes
+sudo cp "$APP_DIR/deploy/hostinger/nginx-vs-mes.conf" /etc/nginx/sites-available/vs-mes
+sudo ln -sf /etc/nginx/sites-available/vs-mes /etc/nginx/sites-enabled/vs-mes
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl reload nginx

@@ -76,7 +76,7 @@ sudo systemctl status nginx --no-pager
 ## 7. Domain + HTTPS quick setup
 
 1. Point `A` records for `bpsgroup.cloud` and `www.bpsgroup.cloud` to your VPS IP.
-2. Ensure Nginx site uses `deploy/hostinger/nginx-lite-mes.conf`.
+2. Ensure Nginx site uses `deploy/hostinger/nginx-vs-mes.conf`.
 3. Issue certificate:
 
 ```bash
@@ -104,7 +104,7 @@ Fix:
 pm2 delete all || true
 pm2 kill || true
 sudo fuser -k 4000/tcp || true
-sudo -u deploy bash -lc 'cd /srv/dynamic-production-tracker/backend && NODE_ENV=production PORT=4000 pm2 start src/index.js --name lite-mes-backend'
+sudo -u deploy bash -lc 'cd /srv/dynamic-production-tracker/backend && NODE_ENV=production PORT=4000 pm2 start src/index.js --name vs-mes-backend'
 sudo -u deploy pm2 save
 ```
 
@@ -124,5 +124,5 @@ curl -sS http://127.0.0.1:4000/ready
 
 - bootstrap-server.sh: install packages and baseline host setup
 - deploy-app.sh: clone, configure env, migrate DB, build frontend, start PM2, configure Nginx
-- nginx-lite-mes.conf: Nginx site config for SPA + API proxy
+- nginx-vs-mes.conf: Nginx site config for SPA + API proxy
 - ecosystem.config.cjs: PM2 app process definition

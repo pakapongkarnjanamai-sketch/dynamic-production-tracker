@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'lite-mes-backend',
+      name: 'vs-mes-backend',
       cwd: '/srv/dynamic-production-tracker/backend',
       script: 'src/index.js',
       instances: 1,

@@ -1,7 +1,7 @@
 {
-  "name": "lite-mes-frontend",
+  "name": "vs-mes-frontend",
   "version": "1.0.0",
-  "description": "Lite MES Frontend — React + Tailwind CSS",
+  "description": "VS MES Frontend — React + Tailwind CSS",
   "private": true,
   "type": "module",
   "scripts": {

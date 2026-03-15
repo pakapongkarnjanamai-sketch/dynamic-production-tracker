@@ -43,8 +43,8 @@
 
   // Spell checker — ignore project-specific words
   "cSpell.words": [
-    "Lite", "MES", "nodemon", "dotenv", "postgres",
+    "VS", "MES", "nodemon", "dotenv", "postgres",
     "Tailwind", "Vite", "qrcode", "qr", "trays", "tray",
-    "litemes", "shopfloor", "lineid", "batchno"
+    "vsmes", "shopfloor", "lineid", "batchno"
   ]
 }

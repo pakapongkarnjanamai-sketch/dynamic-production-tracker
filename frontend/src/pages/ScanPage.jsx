@@ -98,7 +98,7 @@ export default function ScanPage() {
           <div className="flex-1 flex flex-col items-center justify-start gap-4 pt-2">
             <div className="text-center">
               <h2 className="text-xl font-bold text-gray-800">สแกน QR Code</h2>
-              <p className="text-gray-500 text-sm mt-1">สแกนถาดงานเพื่อบันทึกขั้นตอน</p>
+
             </div>
 
             {!error && (

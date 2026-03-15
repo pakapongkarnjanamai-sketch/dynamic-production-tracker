@@ -34,7 +34,7 @@ function Navigation() {
 
         {/* Logo */}
         <div className="flex items-center gap-2 font-black text-xl tracking-tight text-white flex-shrink-0 mr-2 sm:mr-4">
-          <span className="text-blue-500">Lite</span>MES
+          <span className="text-blue-500">VS</span> MES
         </div>
 
         {/* Menu Items */}
@@ -86,9 +86,14 @@ function Navigation() {
             )}
             <button
               onClick={logout}
-              className="ml-1 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 border border-gray-700 hover:bg-gray-700"
+              aria-label="ออกจากระบบ"
+              title="ออกจากระบบ"
+              className="ml-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 border border-gray-700 hover:bg-gray-700 flex items-center gap-1.5"
             >
-              ออกจากระบบ
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />
+              </svg>
+              <span className="hidden sm:inline">ออกจากระบบ</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 -- =============================================================
--- Lite MES — Database Schema
+-- VS MES — Database Schema
 -- PostgreSQL  >=14
 -- Run:  psql $DATABASE_URL -f database/schema.sql
 -- =============================================================

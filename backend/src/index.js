@@ -131,7 +131,7 @@ app.use((err, req, res, _next) => {
 // Start
 // ---------------------------------------------------------------------------
 const server = app.listen(PORT, () => {
-  logEvent('info', `Lite MES API running on http://localhost:${PORT}`);
+  logEvent('info', `VS MES API running on http://localhost:${PORT}`);
 });
 
 let isShuttingDown = false;

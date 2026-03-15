@@ -1,7 +1,7 @@
 {
-  "name": "lite-mes-backend",
+  "name": "vs-mes-backend",
   "version": "1.0.0",
-  "description": "Lite MES Backend - Express API for Dynamic Production Tracker",
+  "description": "VS MES Backend - Express API for Dynamic Production Tracker",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

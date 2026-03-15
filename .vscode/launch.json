@@ -8,7 +8,7 @@
       "stopAll": true,
       "presentation": {
         "hidden": false,
-        "group": "Lite MES",
+        "group": "VS MES",
         "order": 1
       }
     }
@@ -28,7 +28,7 @@
       "restart": true,
       "presentation": {
         "hidden": false,
-        "group": "Lite MES",
+        "group": "VS MES",
         "order": 2
       }
     },
@@ -43,7 +43,7 @@
       "preLaunchTask": "Start Frontend Dev Server",
       "presentation": {
         "hidden": false,
-        "group": "Lite MES",
+        "group": "VS MES",
         "order": 3
       }
     }

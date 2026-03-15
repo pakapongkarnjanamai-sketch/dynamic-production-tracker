@@ -34,54 +34,55 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-hidden">
-        <div className="bg-gray-900 px-8 py-8 text-white">
-          <div className="text-sm uppercase tracking-[0.3em] text-blue-300 mb-2">Lite MES</div>
-          <h1 className="text-3xl font-black tracking-tight">Sign In</h1>
-          <p className="text-sm text-gray-300 mt-2">เข้าสู่ระบบด้วยรหัสพนักงานและรหัสผ่าน</p>
-        </div>
+    <main className="min-h-screen bg-gray-100 px-4 pt-6 pb-10 sm:px-6 sm:pt-10 lg:px-8 lg:pt-14">
+      <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-sm lg:grid lg:grid-cols-[1.05fr_1fr]">
+        <section className="bg-gray-900 px-6 py-7 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <div className="text-sm uppercase tracking-[0.3em] text-blue-300 mb-2">VS MES</div>
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Sign In</h1>
+        </section>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-            รหัสพนักงาน
-            <input
-              className="border border-gray-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              placeholder="เช่น EMP-001"
-              autoComplete="username"
-              required
-            />
-          </label>
+        <section className="px-6 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+              รหัสพนักงาน
+              <input
+                className="border border-gray-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                placeholder="เช่น EMP-001"
+                autoComplete="username"
+                required
+              />
+            </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-            รหัสผ่าน
-            <input
-              type="password"
-              className="border border-gray-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="กรอกรหัสผ่าน"
-              autoComplete="current-password"
-              required
-            />
-          </label>
+            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+              รหัสผ่าน
+              <input
+                type="password"
+                className="border border-gray-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="กรอกรหัสผ่าน"
+                autoComplete="current-password"
+                required
+              />
+            </label>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl px-4 py-3 text-sm">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl px-4 py-3 text-sm">
+                {error}
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-2xl py-3.5 font-bold transition-colors"
-          >
-            {submitting ? 'กำลังเข้าสู่ระบบ…' : 'เข้าสู่ระบบ'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-2xl py-3.5 font-bold transition-colors"
+            >
+              {submitting ? 'กำลังเข้าสู่ระบบ…' : 'เข้าสู่ระบบ'}
+            </button>
+          </form>
+        </section>
       </div>
     </main>
   );

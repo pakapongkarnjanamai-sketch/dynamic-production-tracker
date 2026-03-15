@@ -1,4 +1,4 @@
-# Lite MES — Frontend
+# VS MES — Frontend
 
 React 18 + Vite + Tailwind CSS
 

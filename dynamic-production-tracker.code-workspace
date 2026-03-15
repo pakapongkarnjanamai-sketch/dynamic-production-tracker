@@ -57,9 +57,9 @@
 
     // Spell checker — ignore common technical terms
     "cSpell.words": [
-      "Lite", "MES", "nodemon", "dotenv", "postgres",
+      "VS", "MES", "nodemon", "dotenv", "postgres",
       "Tailwind", "Vite", "qrcode", "qr", "trays", "tray",
-      "litemes", "shopfloor", "lineid", "batchno"
+      "vsmes", "shopfloor", "lineid", "batchno"
     ]
   },
   "extensions": {
@@ -96,7 +96,7 @@
         "stopAll": true,
         "presentation": {
           "hidden": false,
-          "group": "Lite MES",
+          "group": "VS MES",
           "order": 1
         }
       }
@@ -114,7 +114,7 @@
         "restart": true,
         "presentation": {
           "hidden": false,
-          "group": "Lite MES",
+          "group": "VS MES",
           "order": 2
         }
       },
@@ -127,7 +127,7 @@
         "preLaunchTask": "Start Frontend Dev Server",
         "presentation": {
           "hidden": false,
-          "group": "Lite MES",
+          "group": "VS MES",
           "order": 3
         }
       }
