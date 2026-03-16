@@ -313,6 +313,12 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
 
   return (
     <div className="space-y-4">
+      <SearchInput
+        placeholder="ค้นหา QR Code, สินค้า หรือสายการผลิต"
+        value={search}
+        onChange={(event) => onSearch(event.target.value)}
+      />
+
       <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
         {filters.map((filter) => (
           <button
@@ -330,12 +336,6 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
           </button>
         ))}
       </div>
-
-      <SearchInput
-        placeholder="ค้นหา QR Code, สินค้า หรือสายการผลิต"
-        value={search}
-        onChange={(event) => onSearch(event.target.value)}
-      />
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -429,6 +429,7 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
 
 function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
   const [expandedLineId, setExpandedLineId] = useState(null);
+  const [activityFilter, setActivityFilter] = useState("all");
 
   const sortedLogs = [...logs].sort(
     (a, b) => new Date(b.logged_at) - new Date(a.logged_at),
@@ -518,7 +519,46 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
           processItem.process.toLowerCase().includes(keyword),
         )
       );
+    })
+    .filter((line) => {
+      if (activityFilter === "all") return true;
+      const hasActive = line.processes.some((p) => p.activeItems.length > 0);
+      const hasNG = line.ngToday > 0;
+      if (activityFilter === "active") return hasActive;
+      if (activityFilter === "no_ng") return !hasNG;
+      if (activityFilter === "has_ng") return hasNG;
+      return true;
     });
+
+  const allLineData = lines.map((line) => {
+    const processItems = Object.values(statsByProcess)
+      .filter((processItem) => processItem.line_id === line.id)
+      .sort((a, b) => a.seq - b.seq);
+    let ngT = 0;
+    logs.forEach((log) => {
+      const processItem = statsByProcess[log.process_id];
+      if (processItem && processItem.line_id === line.id) {
+        const loggedAt = new Date(log.logged_at);
+        if (loggedAt >= todayStart && log.action === "ng") ngT += 1;
+      }
+    });
+    const hasActive = processItems.some((p) => p.activeItems.length > 0);
+    return { ...line, ngToday: ngT, hasActive, processes: processItems };
+  });
+
+  const processCounts = {
+    all: allLineData.length,
+    active: allLineData.filter((l) => l.hasActive).length,
+    no_ng: allLineData.filter((l) => l.ngToday === 0).length,
+    has_ng: allLineData.filter((l) => l.ngToday > 0).length,
+  };
+
+  const processFilters = [
+    { id: "all", label: "ทั้งหมด", count: processCounts.all },
+    { id: "active", label: "มีงานอยู่", count: processCounts.active },
+    { id: "no_ng", label: "ไม่มี NG", count: processCounts.no_ng },
+    { id: "has_ng", label: "มี NG", count: processCounts.has_ng },
+  ];
 
   if (lineData.length === 0) {
     return (
@@ -528,6 +568,23 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
           value={search}
           onChange={(event) => onSearch(event.target.value)}
         />
+        <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+          {processFilters.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => setActivityFilter(filter.id)}
+              className={joinClasses(
+                "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+                activityFilter === filter.id
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+              )}
+            >
+              {filter.label}: {filter.count}
+            </button>
+          ))}
+        </div>
         <EmptyState
           title={keyword ? "ไม่พบสายการผลิตที่ค้นหา" : "ไม่มีข้อมูลสายการผลิต"}
           description={
@@ -547,6 +604,24 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
         value={search}
         onChange={(event) => onSearch(event.target.value)}
       />
+
+      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+        {processFilters.map((filter) => (
+          <button
+            key={filter.id}
+            type="button"
+            onClick={() => setActivityFilter(filter.id)}
+            className={joinClasses(
+              "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+              activityFilter === filter.id
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+            )}
+          >
+            {filter.label}: {filter.count}
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {lineData.map((line) => {
           const isExpanded = expandedLineId === line.id;
@@ -713,6 +788,7 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
 
 function OperatorReportPanel({ logs, search, onSearch }) {
   const [expandedOperator, setExpandedOperator] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
   const historyLimit = 5;
 
   const sortedLogs = [...logs].sort(
@@ -759,7 +835,24 @@ function OperatorReportPanel({ logs, search, onSearch }) {
   });
 
   const keyword = search.trim().toLowerCase();
-  const rows = Object.values(stats)
+  const allRows = Object.values(stats)
+    .sort((a, b) => b.finish - a.finish);
+
+  const operatorCounts = {
+    all: allRows.length,
+    working: allRows.filter((r) => r.currentTask).length,
+    idle: allRows.filter((r) => !r.currentTask).length,
+    has_ng: allRows.filter((r) => r.ng > 0).length,
+  };
+
+  const operatorFilters = [
+    { id: "all", label: "ทั้งหมด", count: operatorCounts.all },
+    { id: "working", label: "กำลังทำ", count: operatorCounts.working },
+    { id: "idle", label: "ว่าง", count: operatorCounts.idle },
+    { id: "has_ng", label: "มี NG", count: operatorCounts.has_ng },
+  ];
+
+  const rows = allRows
     .filter((row) => {
       if (!keyword) {
         return true;
@@ -774,7 +867,13 @@ function OperatorReportPanel({ logs, search, onSearch }) {
         )
       );
     })
-    .sort((a, b) => b.finish - a.finish);
+    .filter((row) => {
+      if (statusFilter === "all") return true;
+      if (statusFilter === "working") return !!row.currentTask;
+      if (statusFilter === "idle") return !row.currentTask;
+      if (statusFilter === "has_ng") return row.ng > 0;
+      return true;
+    });
 
   if (rows.length === 0) {
     return (
@@ -784,6 +883,23 @@ function OperatorReportPanel({ logs, search, onSearch }) {
           value={search}
           onChange={(event) => onSearch(event.target.value)}
         />
+        <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+          {operatorFilters.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => setStatusFilter(filter.id)}
+              className={joinClasses(
+                "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+                statusFilter === filter.id
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+              )}
+            >
+              {filter.label}: {filter.count}
+            </button>
+          ))}
+        </div>
         <EmptyState
           title={
             keyword
@@ -807,6 +923,24 @@ function OperatorReportPanel({ logs, search, onSearch }) {
         value={search}
         onChange={(event) => onSearch(event.target.value)}
       />
+
+      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+        {operatorFilters.map((filter) => (
+          <button
+            key={filter.id}
+            type="button"
+            onClick={() => setStatusFilter(filter.id)}
+            className={joinClasses(
+              "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+              statusFilter === filter.id
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+            )}
+          >
+            {filter.label}: {filter.count}
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => {
           const isExpanded = expandedOperator === row.name;
