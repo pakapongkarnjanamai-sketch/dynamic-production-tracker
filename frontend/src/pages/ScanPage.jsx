@@ -127,17 +127,34 @@ export default function ScanPage() {
         {/* Scanner + Manual Input */}
         {!loading && (
           <div className="flex-1 flex flex-col items-center justify-start gap-4">
-            <div className="text-center space-y-1">
-              <h2 className="text-lg font-bold text-neutral-900 sm:text-xl">
-                สแกน QR Code
-              </h2>
-              <p className="text-sm text-neutral-500">
-                เล็งกล้องไปที่ QR Code หรือพิมพ์รหัสด้านล่าง
-              </p>
-            </div>
+            <form
+              onSubmit={submitManualCode}
+              className="w-full rounded-[24px] border border-neutral-200 bg-white shadow-sm p-4"
+            >
+              <div className="flex gap-2">
+                <input
+                  ref={manualInputRef}
+                  autoFocus
+                  className="flex-1 min-h-12 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 font-mono"
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value)}
+                  placeholder="เช่น TRAY-000123"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  className="shrink-0 inline-flex items-center justify-center rounded-xl border border-primary-700 bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 active:bg-primary-800 disabled:opacity-50"
+                  disabled={loading}
+                >
+                  ยืนยัน
+                </button>
+              </div>
+            </form>
 
             {!error && (
-              <div className="w-full aspect-video rounded-[24px] overflow-hidden border border-neutral-200 shadow-sm bg-black">
+              <div className="w-full aspect-square rounded-[24px] overflow-hidden border border-neutral-200 shadow-sm bg-black">
                 <QRScanner
                   key={scanKey}
                   onScan={handleScan}
@@ -177,38 +194,6 @@ export default function ScanPage() {
                 </button>
               </div>
             )}
-
-            <form
-              onSubmit={submitManualCode}
-              className="w-full rounded-[24px] border border-neutral-200 bg-white shadow-sm p-4 space-y-3"
-            >
-              <label className="block text-sm font-semibold text-neutral-700">
-                สแกนด้วยเครื่องอ่านหรือพิมพ์รหัส
-              </label>
-              <div className="flex gap-2">
-                <input
-                  ref={manualInputRef}
-                  autoFocus
-                  className="flex-1 min-h-12 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 font-mono"
-                  value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value)}
-                  placeholder="เช่น TRAY-000123"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  className="shrink-0 inline-flex items-center justify-center rounded-xl border border-primary-700 bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 active:bg-primary-800 disabled:opacity-50"
-                  disabled={loading}
-                >
-                  ยืนยัน
-                </button>
-              </div>
-              <p className="text-xs font-normal text-neutral-400">
-                กด Enter ได้ทันที เหมาะกับเครื่องอ่านบาร์โค้ดแบบคีย์บอร์ด
-              </p>
-            </form>
           </div>
         )}
       </div>
