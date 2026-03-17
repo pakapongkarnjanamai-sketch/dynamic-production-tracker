@@ -209,9 +209,9 @@ export default function TraysSection({ lines }) {
 							<MobileCard key={tray.id}>
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-1">
-										<h3 className="font-mono text-base font-black text-slate-900">{tray.qr_code}</h3>
-										<p className="text-sm font-semibold text-slate-700">{tray.product || 'ไม่มีชื่อสินค้า'}</p>
-										<p className="text-xs text-slate-500">
+										<h3 className="font-mono text-base font-black text-neutral-900">{tray.qr_code}</h3>
+										<p className="text-sm font-semibold text-neutral-700">{tray.product || 'ไม่มีชื่อสินค้า'}</p>
+										<p className="text-xs text-neutral-500">
 											{tray.line_name || 'ไม่ระบุสายการผลิต'}
 											{tray.batch_no ? ` • Batch: ${tray.batch_no}` : ''}
 										</p>
@@ -242,13 +242,13 @@ export default function TraysSection({ lines }) {
 						]}
 					>
 						{filteredTrays.map((tray) => (
-							<tr key={tray.id} className="hover:bg-slate-50/80">
-								<td className="px-5 py-4 font-mono font-bold text-slate-900">{tray.qr_code}</td>
+							<tr key={tray.id} className="hover:bg-neutral-50/80">
+								<td className="px-5 py-4 font-mono font-bold text-neutral-900">{tray.qr_code}</td>
 								<td className="px-5 py-4">
-									<div className="font-medium text-slate-900">{tray.product || '—'}</div>
-									<div className="mt-1 text-xs text-slate-500">{tray.batch_no ? `Batch: ${tray.batch_no}` : ''}</div>
+									<div className="font-medium text-neutral-900">{tray.product || '—'}</div>
+									<div className="mt-1 text-xs text-neutral-500">{tray.batch_no ? `Batch: ${tray.batch_no}` : ''}</div>
 								</td>
-								<td className="px-5 py-4 text-sm text-slate-500">{tray.line_name || '—'}</td>
+								<td className="px-5 py-4 text-sm text-neutral-500">{tray.line_name || '—'}</td>
 								<td className="px-5 py-4">
 									<Badge color={STATUS_COLORS[tray.status]}>{STATUS_LABELS[tray.status]}</Badge>
 								</td>
@@ -375,10 +375,10 @@ function TrayLogs({ trayId }) {
 	return (
 		<Stack>
 			{logs.map((log) => (
-				<div key={log.id} className="flex items-start justify-between gap-3 rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+				<div key={log.id} className="flex items-start justify-between gap-3 rounded-[22px] border border-neutral-200 bg-neutral-50 p-4">
 					<div className="space-y-1">
-						<h4 className="font-semibold text-slate-900">{log.process_name}</h4>
-						<p className="text-xs text-slate-500">
+						<h4 className="font-semibold text-neutral-900">{log.process_name}</h4>
+						<p className="text-xs text-neutral-500">
 							{log.operator || 'ไม่ระบุ'}
 							{' • '}
 							{new Date(log.logged_at).toLocaleString('th-TH', {
@@ -386,7 +386,7 @@ function TrayLogs({ trayId }) {
 								timeStyle: 'short',
 							})}
 						</p>
-						{log.note ? <p className="text-xs text-slate-400">Note: {log.note}</p> : null}
+						{log.note ? <p className="text-xs text-neutral-400">Note: {log.note}</p> : null}
 					</div>
 					<Badge color={log.action === 'finish' ? 'green' : log.action === 'ng' ? 'red' : 'blue'}>
 						{String(log.action || '').toUpperCase()}

@@ -155,8 +155,8 @@ export default function LinesSection({ lines, onRefresh, loading = false, error 
 						{filteredLines.map((line) => (
 							<MobileCard key={line.id}>
 								<div className="space-y-1">
-									<h3 className="text-base font-bold text-slate-900">{line.name}</h3>
-									<p className="text-sm text-slate-500">{line.description || 'ไม่มีรายละเอียด'}</p>
+									<h3 className="text-base font-bold text-neutral-900">{line.name}</h3>
+									<p className="text-sm text-neutral-500">{line.description || 'ไม่มีรายละเอียด'}</p>
 								</div>
 								<div className="mt-4">
 									<FormActions>
@@ -180,9 +180,9 @@ export default function LinesSection({ lines, onRefresh, loading = false, error 
 						]}
 					>
 						{filteredLines.map((line) => (
-							<tr key={line.id} className="hover:bg-slate-50/80">
-								<td className="px-5 py-4 font-semibold text-slate-900">{line.name}</td>
-								<td className="px-5 py-4 text-slate-500">{line.description || '—'}</td>
+							<tr key={line.id} className="hover:bg-neutral-50/80">
+								<td className="px-5 py-4 font-semibold text-neutral-900">{line.name}</td>
+								<td className="px-5 py-4 text-neutral-500">{line.description || '—'}</td>
 								<td className="px-5 py-4">
 									<div className="flex justify-end gap-2">
 										<Button variant="secondary" onClick={() => openProcessModal(line)}>
@@ -333,10 +333,10 @@ function ProcessManager({ lineId }) {
 
 	return (
 		<div className="space-y-5">
-			<form className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4" onSubmit={handleSubmit}>
+			<form className="space-y-4 rounded-[24px] border border-neutral-200 bg-neutral-50 p-4" onSubmit={handleSubmit}>
 				<div>
-					<h4 className="text-sm font-bold text-slate-900">{editId ? 'แก้ไขขั้นตอน' : 'เพิ่มขั้นตอนใหม่'}</h4>
-					<p className="mt-1 text-sm text-slate-500">กำหนดลำดับก่อนหลังของ process ในสายการผลิตนี้</p>
+					<h4 className="text-sm font-bold text-neutral-900">{editId ? 'แก้ไขขั้นตอน' : 'เพิ่มขั้นตอนใหม่'}</h4>
+					<p className="mt-1 text-sm text-neutral-500">กำหนดลำดับก่อนหลังของ process ในสายการผลิตนี้</p>
 				</div>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
 					<Input
@@ -384,16 +384,16 @@ function ProcessManager({ lineId }) {
 					{processes.map((processItem) => (
 						<div
 							key={processItem.id}
-							className="flex flex-col gap-3 rounded-[22px] border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+							className="flex flex-col gap-3 rounded-[22px] border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
 						>
 							<div className="flex items-start gap-3">
-								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">
 									{processItem.sequence}
 								</div>
 								<div>
-									<h5 className="font-semibold text-slate-900">{processItem.name}</h5>
+									<h5 className="font-semibold text-neutral-900">{processItem.name}</h5>
 									{processItem.description ? (
-										<p className="mt-1 text-sm text-slate-500">{processItem.description}</p>
+										<p className="mt-1 text-sm text-neutral-500">{processItem.description}</p>
 									) : null}
 								</div>
 							</div>

@@ -76,19 +76,19 @@ export default function TrayDetailPage() {
     <main className="min-h-screen bg-white flex flex-col pb-24 md:pb-0">
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-28 md:bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl bg-slate-900 text-white px-5 py-3 shadow-2xl flex items-center gap-3 whitespace-nowrap">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold">✓</span>
+        <div className="fixed bottom-28 md:bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl bg-neutral-900 text-white px-5 py-3 shadow-2xl flex items-center gap-3 whitespace-nowrap">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success-500 text-xs font-bold">✓</span>
           <span className="font-semibold text-sm">บันทึกสำเร็จ — {toast}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="bg-slate-900 text-white px-4 py-3 shadow-sm z-20 relative">
+      <div className="bg-neutral-900 text-white px-4 py-3 shadow-sm z-20 relative">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
             <button
               onClick={() => goScan(navigate)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-600 bg-slate-800 text-slate-300 transition hover:bg-slate-700 active:bg-slate-600"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-600 bg-neutral-800 text-neutral-300 transition hover:bg-neutral-700 active:bg-neutral-600"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -96,14 +96,14 @@ export default function TrayDetailPage() {
             </button>
             <div className="leading-tight">
               <div className="font-bold text-base font-mono">{result.tray.qr_code}</div>
-              <div className="text-slate-400 text-xs">{result.tray.line_name || 'N/A'}</div>
+              <div className="text-neutral-400 text-xs">{result.tray.line_name || 'N/A'}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-white border border-slate-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-700 text-sm font-bold text-white border border-neutral-600">
               {operator.charAt(0)}
             </div>
-            <span className="text-sm font-medium text-slate-300">{operator}</span>
+            <span className="text-sm font-medium text-neutral-300">{operator}</span>
           </div>
         </div>
       </div>
@@ -114,8 +114,8 @@ export default function TrayDetailPage() {
         {/* Loading overlay */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-sm font-medium text-slate-500 w-full">
-              <svg className="animate-spin w-10 h-10 mb-3 text-slate-400 mx-auto" fill="none" viewBox="0 0 24 24">
+            <div className="rounded-[24px] border border-dashed border-neutral-200 bg-white px-4 py-10 text-center text-sm font-medium text-neutral-500 w-full">
+              <svg className="animate-spin w-10 h-10 mb-3 text-neutral-400 mx-auto" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
@@ -128,44 +128,44 @@ export default function TrayDetailPage() {
           <>
             {/* Error */}
             {error && (
-              <div className="space-y-4 rounded-[24px] border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-700">
+              <div className="space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700">
                 <p>{error}</p>
               </div>
             )}
 
             {/* Tray Info */}
-            <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 flex justify-between items-center">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">งาน</span>
-                <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-sky-700">QTY: {result.tray.qty}</span>
+            <div className="rounded-[28px] border border-neutral-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-3 flex justify-between items-center">
+                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">งาน</span>
+                <span className="inline-flex items-center rounded-full border border-info-200 bg-info-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-info-700">QTY: {result.tray.qty}</span>
               </div>
               <div className="p-5">
-                <p className="text-3xl font-black text-slate-900 font-mono tracking-tight text-center border-b border-dashed border-slate-200 pb-4 mb-4">
+                <p className="text-3xl font-black text-neutral-900 font-mono tracking-tight text-center border-b border-dashed border-neutral-200 pb-4 mb-4">
                   {result.tray.qr_code}
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
-                    <p className="text-slate-400 font-medium text-xs mb-0.5">สินค้า</p>
-                    <p className="font-bold text-slate-900 text-base">{result.tray.product || '—'}</p>
+                    <p className="text-neutral-400 font-medium text-xs mb-0.5">สินค้า</p>
+                    <p className="font-bold text-neutral-900 text-base">{result.tray.product || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400 font-medium text-xs mb-0.5">Batch</p>
-                    <p className="font-bold text-slate-900 text-base font-mono">{result.tray.batch_no || '—'}</p>
+                    <p className="text-neutral-400 font-medium text-xs mb-0.5">Batch</p>
+                    <p className="font-bold text-neutral-900 text-base font-mono">{result.tray.batch_no || '—'}</p>
                   </div>
                 </div>
                 {totalCount > 0 && (
                   <div>
-                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                    <div className="flex justify-between text-xs text-neutral-500 mb-1">
                       <span>ความคืบหน้า</span>
                       <span className="font-semibold">{doneCount}/{totalCount} ขั้นตอน</span>
                     </div>
-                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                        className="h-full bg-success-500 rounded-full transition-all duration-500"
                         style={{ width: `${totalCount > 0 ? (doneCount / totalCount) * 100 : 0}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-slate-400 mt-2">
+                    <div className="flex justify-between text-xs text-neutral-400 mt-2">
                       <span>เริ่ม: {startTime ? formatTime(startTime) : '—'}</span>
                       <span>เสร็จ: {finishTime ? formatTime(finishTime) : '—'}</span>
                     </div>
@@ -175,59 +175,59 @@ export default function TrayDetailPage() {
             </div>
 
             {/* Process Progress List */}
-            <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-b border-slate-100 bg-slate-50 px-5 py-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">ขั้นตอนการผลิต</span>
+            <div className="rounded-[28px] border border-neutral-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">ขั้นตอนการผลิต</span>
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-neutral-100">
                 {result.processes.length === 0 ? (
-                  <div className="px-4 py-10 text-center text-sm text-slate-500">ไม่มีขั้นตอนที่กำหนดสำหรับสายนี้</div>
+                  <div className="px-4 py-10 text-center text-sm text-neutral-500">ไม่มีขั้นตอนที่กำหนดสำหรับสายนี้</div>
                 ) : result.processes.map((p) => {
                   const isCurrent = !trayComplete && currentProcess?.id === p.id;
                   const isDone    = p.last_action === 'finish';
                   const isNG      = p.last_action === 'ng';
                   const isStarted = p.last_action === 'start';
                   return (
-                    <div key={p.id} className={`px-5 py-4 flex items-center gap-4 ${isCurrent ? 'bg-sky-50' : ''}`}>
+                    <div key={p.id} className={`px-5 py-4 flex items-center gap-4 ${isCurrent ? 'bg-info-50' : ''}`}>
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                        isDone    ? 'bg-emerald-500 text-white' :
-                        isNG      ? 'bg-red-500 text-white' :
-                        isStarted ? 'bg-sky-500 text-white' :
-                        isCurrent ? 'bg-white text-sky-600 border-2 border-sky-400' :
-                        'bg-slate-100 text-slate-400'
+                        isDone    ? 'bg-success-500 text-white' :
+                        isNG      ? 'bg-danger-500 text-white' :
+                        isStarted ? 'bg-info-500 text-white' :
+                        isCurrent ? 'bg-white text-info-600 border-2 border-info-400' :
+                        'bg-neutral-100 text-neutral-400'
                       }`}>
                         {isDone ? '✓' : isNG ? '✗' : isStarted ? '▶' : p.sequence}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`font-bold truncate ${
-                          isCurrent ? 'text-sky-800' :
-                          isDone    ? 'text-emerald-700' :
-                          isNG      ? 'text-red-700' :
-                          'text-slate-400'
+                          isCurrent ? 'text-info-800' :
+                          isDone    ? 'text-success-700' :
+                          isNG      ? 'text-danger-700' :
+                          'text-neutral-400'
                         }`}>
                           {p.name}
                         </div>
                         {(isDone || isNG || isStarted) && (
-                          <div className="text-xs text-slate-500 mt-0.5 flex flex-col gap-0.5">
+                          <div className="text-xs text-neutral-500 mt-0.5 flex flex-col gap-0.5">
                             {p.start_logged_at && (
                               <span>▶ เริ่ม {formatTime(p.start_logged_at)}{p.start_operator ? ` · ${p.start_operator}` : ''}</span>
                             )}
                             {p.finish_logged_at && (
-                              <span className={p.last_action === 'ng' ? 'text-red-500' : 'text-emerald-600'}>
+                              <span className={p.last_action === 'ng' ? 'text-danger-500' : 'text-success-600'}>
                                 {p.last_action === 'ng' ? '✗ NG' : '✓ เสร็จ'} {formatTime(p.finish_logged_at)}{p.finish_operator ? ` · ${p.finish_operator}` : ''}
                               </span>
                             )}
                           </div>
                         )}
-                        {isCurrent && !p.last_action && <div className="text-xs text-sky-500 font-medium mt-0.5">← ขั้นตอนถัดไป</div>}
-                        {isCurrent && isStarted       && <div className="text-xs text-sky-500 font-medium mt-0.5">← กำลังดำเนินการ</div>}
-                        {isCurrent && isNG            && <div className="text-xs text-red-500 font-medium mt-0.5">← ต้องแก้ไข</div>}
+                        {isCurrent && !p.last_action && <div className="text-xs text-info-500 font-medium mt-0.5">← ขั้นตอนถัดไป</div>}
+                        {isCurrent && isStarted       && <div className="text-xs text-info-500 font-medium mt-0.5">← กำลังดำเนินการ</div>}
+                        {isCurrent && isNG            && <div className="text-xs text-danger-500 font-medium mt-0.5">← ต้องแก้ไข</div>}
                       </div>
-                      {isDone && <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700 shrink-0">เสร็จ</span>}
-                      {isNG && !isCurrent && <span className="inline-flex items-center rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-700 shrink-0">NG</span>}
-                      {isCurrent && !p.last_action && <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700 shrink-0">ขั้นตอนถัดไป</span>}
-                      {isCurrent && isStarted && <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700 shrink-0 animate-pulse">ดำเนินการ</span>}
-                      {isCurrent && isNG && <span className="inline-flex items-center rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-700 shrink-0">ต้องแก้ไข</span>}
+                      {isDone && <span className="inline-flex items-center rounded-full border border-success-200 bg-success-100 px-2.5 py-1 text-[11px] font-bold text-success-700 shrink-0">เสร็จ</span>}
+                      {isNG && !isCurrent && <span className="inline-flex items-center rounded-full border border-danger-200 bg-danger-100 px-2.5 py-1 text-[11px] font-bold text-danger-700 shrink-0">NG</span>}
+                      {isCurrent && !p.last_action && <span className="inline-flex items-center rounded-full border border-info-200 bg-info-100 px-2.5 py-1 text-[11px] font-bold text-info-700 shrink-0">ขั้นตอนถัดไป</span>}
+                      {isCurrent && isStarted && <span className="inline-flex items-center rounded-full border border-info-200 bg-info-100 px-2.5 py-1 text-[11px] font-bold text-info-700 shrink-0 animate-pulse">ดำเนินการ</span>}
+                      {isCurrent && isNG && <span className="inline-flex items-center rounded-full border border-danger-200 bg-danger-100 px-2.5 py-1 text-[11px] font-bold text-danger-700 shrink-0">ต้องแก้ไข</span>}
                     </div>
                   );
                 })}
@@ -236,34 +236,34 @@ export default function TrayDetailPage() {
 
             {/* Action Buttons */}
             {trayComplete ? (
-              <div className="rounded-[28px] border-2 border-emerald-300 bg-emerald-50 p-6 text-center">
+              <div className="rounded-[28px] border-2 border-success-300 bg-success-50 p-6 text-center">
                 <div className="text-5xl mb-3">🎉</div>
-                <h2 className="text-2xl font-black text-emerald-700 mb-1">เสร็จสมบูรณ์!</h2>
-                <p className="text-emerald-600 text-sm">งานนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว</p>
+                <h2 className="text-2xl font-black text-success-700 mb-1">เสร็จสมบูรณ์!</h2>
+                <p className="text-success-600 text-sm">งานนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว</p>
               </div>
             ) : currentProcess && (
-              <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-center font-bold text-slate-900 text-lg mb-1">{currentProcess.name}</p>
-                <p className="text-center text-slate-500 text-sm mb-4">ขั้นตอนที่ {currentProcess.sequence} — เลือกสถานะ</p>
+              <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm">
+                <p className="text-center font-bold text-neutral-900 text-lg mb-1">{currentProcess.name}</p>
+                <p className="text-center text-neutral-500 text-sm mb-4">ขั้นตอนที่ {currentProcess.sequence} — เลือกสถานะ</p>
                 <div className="grid gap-3">
                   <button
                     onClick={() => handleAction(currentProcess, 'start')}
                     disabled={currentProcess.last_action === 'start'}
-                    className="flex items-center justify-center gap-3 rounded-2xl border border-sky-600 bg-sky-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-sky-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-3 rounded-2xl border border-info-600 bg-info-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-info-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>▶</span> เริ่มงาน
                   </button>
                   <button
                     onClick={() => handleAction(currentProcess, 'finish')}
                     disabled={!currentProcess.last_action}
-                    className="flex items-center justify-center gap-3 rounded-2xl border border-emerald-600 bg-emerald-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-emerald-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-3 rounded-2xl border border-success-600 bg-success-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-success-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>✔</span> เสร็จสิ้น (OK)
                   </button>
                   <button
                     onClick={() => handleAction(currentProcess, 'ng')}
                     disabled={!currentProcess.last_action}
-                    className="flex items-center justify-center gap-3 rounded-2xl border border-red-600 bg-red-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-3 rounded-2xl border border-danger-600 bg-danger-600 py-5 text-2xl font-bold text-white shadow-sm transition-colors hover:bg-danger-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>✖</span> ของเสีย (NG)
                   </button>
@@ -274,7 +274,7 @@ export default function TrayDetailPage() {
             {/* Scan Next */}
             <button
               onClick={() => goScan(navigate)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-900 bg-slate-900 py-5 text-xl font-bold text-white shadow-sm transition-colors hover:bg-slate-800 active:scale-95 mb-4"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-700 bg-primary-600 py-5 text-xl font-bold text-white shadow-sm transition-colors hover:bg-primary-700 active:scale-95 mb-4"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />

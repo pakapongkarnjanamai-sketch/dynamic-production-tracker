@@ -23,21 +23,21 @@ export default function HomePage() {
       <div className="mx-auto max-w-4xl w-full space-y-6 px-4 py-4 sm:px-6 md:px-8 md:py-6">
 
         {/* ── Hero Section ── */}
-        <div className="rounded-[28px] border border-slate-200 bg-white p-8 sm:p-12 shadow-sm text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-slate-50 opacity-50 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-slate-50 opacity-50 pointer-events-none"></div>
+        <div className="rounded-[28px] border border-neutral-200 bg-white p-8 sm:p-12 shadow-sm text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-neutral-50 opacity-50 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-neutral-50 opacity-50 pointer-events-none"></div>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400 relative z-10">VS MES</p>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 relative z-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400 relative z-10">VS MES</p>
+          <h1 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-neutral-900 relative z-10">
             ยินดีต้อนรับสู่พื้นที่ปฏิบัติงาน
           </h1>
-          <p className="mt-2 max-w-lg mx-auto text-sm text-slate-500 sm:text-base relative z-10">
+          <p className="mt-2 max-w-lg mx-auto text-sm text-neutral-500 sm:text-base relative z-10">
             เลือกระบบสแกน QR Code เพื่อเริ่มต้นบันทึกการทำงานของคุณ
           </p>
 
           <button
             onClick={() => navigate('/scan')}
-            className="relative z-10 mt-8 group inline-flex items-center justify-center gap-3 rounded-2xl border border-slate-900 bg-slate-900 px-8 py-5 sm:px-12 sm:py-6 text-xl sm:text-2xl font-bold text-white shadow-sm transition-colors hover:bg-slate-800 active:scale-95"
+            className="relative z-10 mt-8 group inline-flex items-center justify-center gap-3 rounded-2xl border border-primary-700 bg-primary-600 px-8 py-5 sm:px-12 sm:py-6 text-xl sm:text-2xl font-bold text-white shadow-sm transition-colors hover:bg-primary-700 active:scale-95"
           >
             <svg className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -54,29 +54,29 @@ export default function HomePage() {
               {
                 label: 'กำลังดำเนินการ', sub: 'In Progress',
                 value: stats.in_progress,
-                bg: 'bg-amber-50', border: 'border-amber-200',
-                dot: 'bg-amber-500 animate-pulse', text: 'text-amber-700', num: 'text-amber-800',
+                bg: 'bg-warning-50', border: 'border-warning-200',
+                dot: 'bg-warning-500 animate-pulse', text: 'text-warning-700', num: 'text-warning-800',
               },
               {
                 label: 'รอดำเนินการ', sub: 'Pending',
                 value: stats.pending,
-                bg: 'bg-slate-50', border: 'border-slate-200',
-                dot: 'bg-slate-400', text: 'text-slate-600', num: 'text-slate-800',
+                bg: 'bg-neutral-50', border: 'border-neutral-200',
+                dot: 'bg-neutral-400', text: 'text-neutral-600', num: 'text-neutral-800',
               },
               {
                 label: 'เสร็จสิ้น', sub: 'Completed',
                 value: stats.completed,
-                bg: 'bg-emerald-50', border: 'border-emerald-200',
-                dot: 'bg-emerald-500', text: 'text-emerald-700', num: 'text-emerald-800',
+                bg: 'bg-success-50', border: 'border-success-200',
+                dot: 'bg-success-500', text: 'text-success-700', num: 'text-success-800',
               },
               {
                 label: 'เกินกำหนด', sub: 'Delayed',
                 value: stats.delayed,
-                bg: Number(stats.delayed) > 0 ? 'bg-red-50' : 'bg-slate-50',
-                border: Number(stats.delayed) > 0 ? 'border-red-200' : 'border-slate-200',
-                dot: Number(stats.delayed) > 0 ? 'bg-red-500' : 'bg-slate-300',
-                text: Number(stats.delayed) > 0 ? 'text-red-700' : 'text-slate-500',
-                num: Number(stats.delayed) > 0 ? 'text-red-800' : 'text-slate-600',
+                bg: Number(stats.delayed) > 0 ? 'bg-danger-50' : 'bg-neutral-50',
+                border: Number(stats.delayed) > 0 ? 'border-danger-200' : 'border-neutral-200',
+                dot: Number(stats.delayed) > 0 ? 'bg-danger-500' : 'bg-neutral-300',
+                text: Number(stats.delayed) > 0 ? 'text-danger-700' : 'text-neutral-500',
+                num: Number(stats.delayed) > 0 ? 'text-danger-800' : 'text-neutral-600',
               },
             ].map((s) => (
               <div key={s.label} className={`${s.bg} ${s.border} border rounded-[24px] px-5 py-4 flex flex-col gap-1 shadow-sm`}>
@@ -94,8 +94,8 @@ export default function HomePage() {
         {/* ── Status Section ── */}
         <div>
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="text-lg font-bold text-slate-900 sm:text-xl flex items-center gap-2">
-              <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <h2 className="text-lg font-bold text-neutral-900 sm:text-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
@@ -106,13 +106,13 @@ export default function HomePage() {
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white h-28 rounded-[24px] border border-slate-200 shadow-sm animate-pulse"></div>
+                <div key={i} className="bg-white h-28 rounded-[24px] border border-neutral-200 shadow-sm animate-pulse"></div>
               ))}
             </div>
           )}
 
           {error && (
-            <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-700 text-center">
+            <div className="rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 text-center">
               {error}
             </div>
           )}
@@ -120,30 +120,30 @@ export default function HomePage() {
           {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeLines.length === 0 ? (
-                <div className="col-span-full rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+                <div className="col-span-full rounded-[24px] border border-dashed border-neutral-200 bg-neutral-50 px-4 py-10 text-center text-sm text-neutral-500">
                   ไม่พบสายการผลิตที่เปิดใช้งาน
                 </div>
               ) : (
                 activeLines.map((line) => (
                   <div
                     key={line.id}
-                    className="rounded-[24px] border border-slate-200 bg-white shadow-sm p-5 hover:shadow-md transition-shadow relative overflow-hidden group"
+                    className="rounded-[24px] border border-neutral-200 bg-white shadow-sm p-5 hover:shadow-md transition-shadow relative overflow-hidden group"
                   >
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-900 rounded-r-full"></div>
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-primary-600 rounded-r-full"></div>
 
                     <div className="flex justify-between items-start mb-2 pl-3">
-                      <p className="text-base font-bold text-slate-900 group-hover:text-slate-700 transition-colors">
+                      <p className="text-base font-bold text-neutral-900 group-hover:text-neutral-700 transition-colors">
                         {line.name}
                       </p>
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-emerald-700">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Active
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-success-200 bg-success-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-success-700">
+                        <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></span> Active
                       </span>
                     </div>
                     <div className="pl-3">
                       {line.description ? (
-                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{line.description}</p>
+                        <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed">{line.description}</p>
                       ) : (
-                        <p className="text-sm text-slate-400 italic">ไม่มีรายละเอียด</p>
+                        <p className="text-sm text-neutral-400 italic">ไม่มีรายละเอียด</p>
                       )}
                     </div>
                   </div>

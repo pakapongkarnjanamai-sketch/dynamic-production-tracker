@@ -1,8 +1,8 @@
 const ACTION_STYLES = {
-  start:  'bg-green-100 text-green-800 border-green-300',
-  finish: 'bg-blue-100  text-blue-800  border-blue-300',
-  ng:     'bg-red-100   text-red-800   border-red-300',
-  pending:'bg-gray-100  text-gray-600  border-gray-300',
+  start:  'bg-info-100 text-info-800 border-info-300',
+  finish: 'bg-success-100 text-success-800 border-success-300',
+  ng:     'bg-danger-100 text-danger-800 border-danger-300',
+  pending:'bg-neutral-100 text-neutral-600 border-neutral-300',
 };
 
 const ACTION_LABELS = {

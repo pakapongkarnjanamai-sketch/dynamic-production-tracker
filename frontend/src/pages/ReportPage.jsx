@@ -107,16 +107,16 @@ const TABS = [
 
 const TAB_TONES = {
   amber: {
-    active: "border-amber-200 bg-amber-50 text-amber-700",
-    icon: "bg-amber-100 text-amber-700",
+    active: "border-warning-200 bg-warning-50 text-warning-700",
+    icon: "bg-warning-100 text-warning-700",
   },
   blue: {
-    active: "border-sky-200 bg-sky-50 text-sky-700",
-    icon: "bg-sky-100 text-sky-700",
+    active: "border-info-200 bg-info-50 text-info-700",
+    icon: "bg-info-100 text-info-700",
   },
   green: {
-    active: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    icon: "bg-emerald-100 text-emerald-700",
+    active: "border-success-200 bg-success-50 text-success-700",
+    icon: "bg-success-100 text-success-700",
   },
 };
 
@@ -159,13 +159,13 @@ function ReportTabs({ activeTab, onChange, counts }) {
               "flex shrink-0 items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors",
               isActive
                 ? tone.active
-                : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                : "border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900",
             )}
           >
             <span
               className={joinClasses(
                 "flex h-9 w-9 items-center justify-center rounded-xl",
-                isActive ? tone.icon : "bg-slate-100 text-slate-500",
+                isActive ? tone.icon : "bg-neutral-100 text-neutral-500",
               )}
             >
               {tab.icon}
@@ -208,8 +208,8 @@ function TrayLogsViewPanel({ tray }) {
   }, [tray.tray_id]);
 
   return (
-    <div className="mt-4 border-t border-slate-100 pt-4">
-      <h4 className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">
+    <div className="mt-4 border-t border-neutral-100 pt-4">
+      <h4 className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
         ประวัติการทำงาน
       </h4>
       <div className="mt-3">
@@ -228,16 +228,16 @@ function TrayLogsViewPanel({ tray }) {
             {logs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-start justify-between gap-3 rounded-[20px] border border-slate-200 bg-slate-50 p-3"
+                className="flex items-start justify-between gap-3 rounded-[20px] border border-neutral-200 bg-neutral-50 p-3"
               >
                 <div className="min-w-0 space-y-1">
-                  <div className="text-sm font-semibold text-slate-900">
-                    <span className="mr-1.5 text-slate-400">
+                  <div className="text-sm font-semibold text-neutral-900">
+                    <span className="mr-1.5 text-neutral-400">
                       #{log.sequence}
                     </span>
                     {log.process_name}
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-neutral-500">
                     {log.operator || "—"}
                     {" • "}
                     {formatShortTime(log.logged_at)}
@@ -328,8 +328,8 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
             className={joinClasses(
               "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
               statusFilter === filter.id
-                ? "border-slate-900 bg-slate-900 text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                ? "border-primary-700 bg-primary-600 text-white"
+                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
             )}
           >
             {filter.label}: {filter.count}
@@ -354,10 +354,10 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
                 className={joinClasses(
                   "cursor-pointer border-2 transition-all",
                   isExpanded
-                    ? "border-amber-300 ring-2 ring-amber-50"
+                    ? "border-warning-300 ring-2 ring-warning-50"
                     : row.isDelayed
-                      ? "border-red-200 bg-red-50/40"
-                      : "border-slate-200 hover:border-amber-200",
+                      ? "border-danger-200 bg-danger-50/40"
+                      : "border-neutral-200 hover:border-warning-200",
                 )}
               >
                 <button
@@ -371,10 +371,10 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate font-mono text-lg font-black tracking-tight text-slate-900">
+                      <h3 className="truncate font-mono text-lg font-black tracking-tight text-neutral-900">
                         {row.qr_code}
                       </h3>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-neutral-500">
                         {row.line_name || "—"}
                       </p>
                     </div>
@@ -386,30 +386,30 @@ function TrayReportPanel({ data, logs, search, onSearch }) {
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-sm font-bold text-slate-900">
+                  <div className="mt-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+                    <div className="text-sm font-bold text-neutral-900">
                       {row.product || "ไม่มีชื่อสินค้า"}
                     </div>
                     {row.batch_no ? (
-                      <div className="mt-1 text-xs font-mono text-slate-500">
+                      <div className="mt-1 text-xs font-mono text-neutral-500">
                         Batch: {row.batch_no}
                       </div>
                     ) : null}
                   </div>
 
                   <div className="mt-4 flex items-end justify-between gap-3 text-xs">
-                    <div className="space-y-1 text-slate-500">
-                      <div className="font-medium text-slate-700">
+                    <div className="space-y-1 text-neutral-500">
+                      <div className="font-medium text-neutral-700">
                         {latest ? latest.process_name : "ยังไม่เริ่มงาน"}
                       </div>
                       <div>{latest?.operator || "—"}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-slate-400">กำหนดส่ง</div>
+                      <div className="text-neutral-400">กำหนดส่ง</div>
                       <div
                         className={joinClasses(
                           "font-semibold",
-                          row.isDelayed ? "text-red-600" : "text-slate-700",
+                          row.isDelayed ? "text-danger-600" : "text-neutral-700",
                         )}
                       >
                         {formatShortDate(row.due_date)}
@@ -577,8 +577,8 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
               className={joinClasses(
                 "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
                 activityFilter === filter.id
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  ? "border-primary-700 bg-primary-600 text-white"
+                  : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
               )}
             >
               {filter.label}: {filter.count}
@@ -614,8 +614,8 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
             className={joinClasses(
               "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
               activityFilter === filter.id
-                ? "border-slate-900 bg-slate-900 text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                ? "border-primary-700 bg-primary-600 text-white"
+                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
             )}
           >
             {filter.label}: {filter.count}
@@ -631,8 +631,8 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
               className={joinClasses(
                 "border-2 transition-all",
                 isExpanded
-                  ? "border-sky-300 ring-2 ring-sky-50"
-                  : "border-slate-200",
+                  ? "border-info-300 ring-2 ring-info-50"
+                  : "border-neutral-200",
               )}
             >
               <button
@@ -649,8 +649,8 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
                     className={joinClasses(
                       "flex h-10 w-10 items-center justify-center rounded-xl",
                       isExpanded
-                        ? "bg-sky-100 text-sky-700"
-                        : "bg-slate-100 text-slate-500",
+                        ? "bg-info-100 text-info-700"
+                        : "bg-neutral-100 text-neutral-500",
                     )}
                   >
                     <svg
@@ -671,29 +671,29 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold text-slate-900">
+                    <h3 className="text-lg font-bold text-neutral-900">
                       {line.name}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-neutral-500">
                       {line.processes.length} ขั้นตอนการผลิต
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-center">
-                    <div className="text-xs font-semibold text-emerald-700">
+                  <div className="rounded-2xl border border-success-100 bg-success-50 p-3 text-center">
+                    <div className="text-xs font-semibold text-success-700">
                       วันนี้เสร็จ (OK)
                     </div>
-                    <div className="mt-1 text-2xl font-black text-emerald-700">
+                    <div className="mt-1 text-2xl font-black text-success-700">
                       {line.finishToday}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-red-100 bg-red-50 p-3 text-center">
-                    <div className="text-xs font-semibold text-red-700">
+                  <div className="rounded-2xl border border-danger-100 bg-danger-50 p-3 text-center">
+                    <div className="text-xs font-semibold text-danger-700">
                       วันนี้เสีย (NG)
                     </div>
-                    <div className="mt-1 text-2xl font-black text-red-700">
+                    <div className="mt-1 text-2xl font-black text-danger-700">
                       {line.ngToday}
                     </div>
                   </div>
@@ -701,8 +701,8 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
               </button>
 
               {isExpanded ? (
-                <div className="mt-5 border-t border-slate-100 pt-5">
-                  <h4 className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-slate-400">
+                <div className="mt-5 border-t border-neutral-100 pt-5">
+                  <h4 className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
                     รายละเอียดแยกตามขั้นตอน
                   </h4>
                   {line.processes.length === 0 ? (
@@ -715,36 +715,36 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
                       {line.processes.map((processItem) => (
                         <div
                           key={processItem.id}
-                          className="rounded-[20px] border border-slate-200 bg-slate-50 p-4"
+                          className="rounded-[20px] border border-neutral-200 bg-neutral-50 p-4"
                         >
-                          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-100 text-xs text-sky-700">
+                          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-900">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-info-100 text-xs text-info-700">
                               {processItem.seq}
                             </span>
                             {processItem.process}
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                            <div className="rounded-xl border border-slate-200 bg-white py-2">
-                              <div className="text-slate-400">เริ่มงาน</div>
-                              <div className="font-bold text-sky-700">
+                            <div className="rounded-xl border border-neutral-200 bg-white py-2">
+                              <div className="text-neutral-400">เริ่มงาน</div>
+                              <div className="font-bold text-info-700">
                                 {processItem.start}
                               </div>
                             </div>
-                            <div className="rounded-xl border border-slate-200 bg-white py-2">
-                              <div className="text-slate-400">เสร็จสิ้น</div>
-                              <div className="font-bold text-emerald-700">
+                            <div className="rounded-xl border border-neutral-200 bg-white py-2">
+                              <div className="text-neutral-400">เสร็จสิ้น</div>
+                              <div className="font-bold text-success-700">
                                 {processItem.finish}
                               </div>
                             </div>
-                            <div className="rounded-xl border border-slate-200 bg-white py-2">
-                              <div className="text-slate-400">ของเสีย</div>
-                              <div className="font-bold text-red-700">
+                            <div className="rounded-xl border border-neutral-200 bg-white py-2">
+                              <div className="text-neutral-400">ของเสีย</div>
+                              <div className="font-bold text-danger-700">
                                 {processItem.ng}
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 border-t border-dashed border-slate-200 pt-3">
-                            <div className="mb-2 text-[11px] text-slate-500">
+                          <div className="mt-3 border-t border-dashed border-neutral-200 pt-3">
+                            <div className="mb-2 text-[11px] text-neutral-500">
                               กำลังทำอยู่ ({processItem.activeItems.length})
                             </div>
                             {processItem.activeItems.length > 0 ? (
@@ -767,7 +767,7 @@ function ProcessReportPanel({ logs, processes, lines, search, onSearch }) {
                                 ) : null}
                               </div>
                             ) : (
-                              <div className="text-xs italic text-slate-400">
+                              <div className="text-xs italic text-neutral-400">
                                 —
                               </div>
                             )}
@@ -892,8 +892,8 @@ function OperatorReportPanel({ logs, search, onSearch }) {
               className={joinClasses(
                 "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
                 statusFilter === filter.id
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  ? "border-primary-700 bg-primary-600 text-white"
+                  : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
               )}
             >
               {filter.label}: {filter.count}
@@ -933,8 +933,8 @@ function OperatorReportPanel({ logs, search, onSearch }) {
             className={joinClasses(
               "shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
               statusFilter === filter.id
-                ? "border-slate-900 bg-slate-900 text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                ? "border-primary-700 bg-primary-600 text-white"
+                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
             )}
           >
             {filter.label}: {filter.count}
@@ -950,8 +950,8 @@ function OperatorReportPanel({ logs, search, onSearch }) {
               className={joinClasses(
                 "cursor-pointer border-2 transition-all",
                 isExpanded
-                  ? "border-emerald-300 ring-2 ring-emerald-50"
-                  : "border-slate-200 hover:border-emerald-200",
+                  ? "border-success-300 ring-2 ring-success-50"
+                  : "border-neutral-200 hover:border-success-200",
               )}
             >
               <button
@@ -964,11 +964,11 @@ function OperatorReportPanel({ logs, search, onSearch }) {
                 }
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-emerald-200 bg-emerald-100 text-lg font-bold text-emerald-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-success-200 bg-success-100 text-lg font-bold text-success-700">
                     {row.name.charAt(0)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-lg font-bold text-slate-900">
+                    <div className="truncate text-lg font-bold text-neutral-900">
                       {row.name}
                     </div>
                     <Badge color="green" className="mt-1">
@@ -977,34 +977,34 @@ function OperatorReportPanel({ logs, search, onSearch }) {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div className="mt-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
                   {row.currentTask ? (
                     <>
                       <div className="mb-1 flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-sky-700">
+                        <span className="h-2 w-2 rounded-full bg-info-500 animate-pulse" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-info-700">
                           กำลังทำอยู่
                         </span>
                       </div>
-                      <div className="truncate text-sm font-bold text-slate-900">
+                      <div className="truncate text-sm font-bold text-neutral-900">
                         {row.currentTask.process_name}
                       </div>
-                      <div className="mt-1 font-mono text-xs text-slate-500">
+                      <div className="mt-1 font-mono text-xs text-neutral-500">
                         {row.currentTask.qr_code}
                       </div>
                     </>
                   ) : row.latestLog ? (
                     <>
                       <div className="mb-1 flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-slate-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                        <span className="h-2 w-2 rounded-full bg-neutral-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-neutral-500">
                           ทำล่าสุด
                         </span>
                       </div>
-                      <div className="truncate text-sm font-bold text-slate-900">
+                      <div className="truncate text-sm font-bold text-neutral-900">
                         {row.latestLog.process_name}
                       </div>
-                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-500">
+                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-neutral-500">
                         <span className="font-mono">
                           {row.latestLog.qr_code}
                         </span>
@@ -1012,7 +1012,7 @@ function OperatorReportPanel({ logs, search, onSearch }) {
                       </div>
                     </>
                   ) : (
-                    <div className="text-center text-xs text-slate-400">
+                    <div className="text-center text-xs text-neutral-400">
                       — ไม่มีข้อมูลล่าสุด —
                     </div>
                   )}
@@ -1020,8 +1020,8 @@ function OperatorReportPanel({ logs, search, onSearch }) {
               </button>
 
               {isExpanded ? (
-                <div className="mt-4 border-t border-slate-100 pt-4">
-                  <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                <div className="mt-4 border-t border-neutral-100 pt-4">
+                  <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-neutral-400">
                     ประวัติล่าสุด (สูงสุด {historyLimit} รายการ)
                   </h4>
                   <Stack className="space-y-2">
@@ -1031,10 +1031,10 @@ function OperatorReportPanel({ logs, search, onSearch }) {
                         className="flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="min-w-0 flex-1 pr-2">
-                          <div className="truncate font-semibold text-slate-700">
+                          <div className="truncate font-semibold text-neutral-700">
                             {historyItem.process_name}
                           </div>
-                          <div className="mt-0.5 flex justify-between gap-2 text-slate-400">
+                          <div className="mt-0.5 flex justify-between gap-2 text-neutral-400">
                             <span className="truncate font-mono">
                               {historyItem.qr_code}
                             </span>

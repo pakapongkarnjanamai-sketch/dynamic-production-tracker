@@ -3,7 +3,7 @@ import { getDefaultRouteForRole, useAuth } from '../auth/AuthContext';
 
 function FullPageLoader() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center text-gray-500">
+    <div className="min-h-screen bg-neutral-100 flex items-center justify-center text-neutral-500">
       <div className="flex items-center gap-3">
         <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

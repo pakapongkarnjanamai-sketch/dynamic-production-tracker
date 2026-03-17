@@ -184,8 +184,8 @@ export default function OperatorsSection() {
 							<MobileCard key={operator.id}>
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-1">
-										<h3 className="text-base font-bold text-slate-900">{operator.name}</h3>
-										<p className="text-sm text-slate-500">
+										<h3 className="text-base font-bold text-neutral-900">{operator.name}</h3>
+										<p className="text-sm text-neutral-500">
 											{operator.employee_id || 'ไม่มีรหัสพนักงาน'}
 											{' • '}
 											{operator.department || 'ไม่ระบุแผนก'}
@@ -217,11 +217,11 @@ export default function OperatorsSection() {
 						]}
 					>
 						{filteredOperators.map((operator) => (
-							<tr key={operator.id} className="hover:bg-slate-50/80">
-								<td className="px-5 py-4 font-semibold text-slate-900">{operator.name}</td>
+							<tr key={operator.id} className="hover:bg-neutral-50/80">
+								<td className="px-5 py-4 font-semibold text-neutral-900">{operator.name}</td>
 								<td className="px-5 py-4">
-									<div className="font-mono text-xs text-slate-600">{operator.employee_id || '—'}</div>
-									<div className="mt-1 text-xs text-slate-500">{operator.department || '—'}</div>
+									<div className="font-mono text-xs text-neutral-600">{operator.employee_id || '—'}</div>
+									<div className="mt-1 text-xs text-neutral-500">{operator.department || '—'}</div>
 								</td>
 								<td className="px-5 py-4">
 									<button type="button" onClick={() => handleToggleStatus(operator)}>

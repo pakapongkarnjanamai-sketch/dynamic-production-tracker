@@ -195,9 +195,9 @@ export default function UsersSection({ currentRole }) {
 							<MobileCard key={user.id}>
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-1">
-										<h3 className="text-base font-bold text-slate-900">{user.name}</h3>
-										<p className="font-mono text-sm text-slate-500">{user.employee_id}</p>
-										<p className="text-xs text-slate-400">ผูกกับ: {user.operator_name || 'ไม่ผูกข้อมูล'}</p>
+										<h3 className="text-base font-bold text-neutral-900">{user.name}</h3>
+										<p className="font-mono text-sm text-neutral-500">{user.employee_id}</p>
+										<p className="text-xs text-neutral-400">ผูกกับ: {user.operator_name || 'ไม่ผูกข้อมูล'}</p>
 									</div>
 									<Badge color={user.role === 'admin' || user.role === 'superadmin' ? 'blue' : 'gray'}>
 										{user.role.toUpperCase()}
@@ -229,17 +229,17 @@ export default function UsersSection({ currentRole }) {
 						]}
 					>
 						{filteredUsers.map((user) => (
-							<tr key={user.id} className="hover:bg-slate-50/80">
+							<tr key={user.id} className="hover:bg-neutral-50/80">
 								<td className="px-5 py-4">
-									<div className="font-semibold text-slate-900">{user.name}</div>
-									<div className="mt-1 font-mono text-xs text-slate-500">{user.employee_id}</div>
+									<div className="font-semibold text-neutral-900">{user.name}</div>
+									<div className="mt-1 font-mono text-xs text-neutral-500">{user.employee_id}</div>
 								</td>
 								<td className="px-5 py-4">
 									<Badge color={user.role === 'admin' || user.role === 'superadmin' ? 'blue' : 'gray'}>
 										{user.role.toUpperCase()}
 									</Badge>
 								</td>
-								<td className="px-5 py-4 text-sm text-slate-500">{user.operator_name || '—'}</td>
+								<td className="px-5 py-4 text-sm text-neutral-500">{user.operator_name || '—'}</td>
 								<td className="px-5 py-4">
 									<Badge color={user.is_active ? 'green' : 'red'}>{user.is_active ? 'ใช้งาน' : 'ระงับ'}</Badge>
 								</td>

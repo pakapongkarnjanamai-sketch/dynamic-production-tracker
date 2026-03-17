@@ -9,9 +9,9 @@ const roleLabelMap = {
 };
 
 const roleBadgeColor = {
-  operator:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  viewer:     'bg-sky-500/20 text-sky-400 border-sky-500/30',
-  admin:      'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  operator:   'bg-success-500/20 text-success-400 border-success-500/30',
+  viewer:     'bg-info-500/20 text-info-400 border-info-500/30',
+  admin:      'bg-warning-500/20 text-warning-400 border-warning-500/30',
   superadmin: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
 };
 
@@ -65,7 +65,7 @@ export default function UserProfilePage() {
       ),
       label: 'สิทธิ์การใช้งาน',
       value: (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30'}`}>
           {roleLabelMap[user.role] || user.role}
         </span>
       ),
@@ -122,11 +122,11 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 md:pb-8 pt-4 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 pb-24 md:pb-8 pt-4 px-4">
       <div className="max-w-lg mx-auto">
 
         {/* ── Header Card ── */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 mb-6 shadow-2xl shadow-blue-900/30">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-6 mb-6 shadow-2xl shadow-primary-900/30">
           {/* Decorative circles */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full" />
           <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/5 rounded-full" />
@@ -141,35 +141,35 @@ export default function UserProfilePage() {
 
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">{user.name}</h1>
-              <p className="text-blue-200 text-sm mt-0.5">{user.employee_id}</p>
+              <p className="text-primary-200 text-sm mt-0.5">{user.employee_id}</p>
             </div>
 
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30'}`}>
               {roleLabelMap[user.role] || user.role}
             </span>
           </div>
         </div>
 
         {/* ── Info Card ── */}
-        <div className="rounded-2xl bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 shadow-xl overflow-hidden mb-6">
-          <div className="px-5 py-4 border-b border-gray-700/50">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="rounded-2xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 shadow-xl overflow-hidden mb-6">
+          <div className="px-5 py-4 border-b border-neutral-700/50">
+            <h2 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+              <svg className="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               ข้อมูลบัญชี
             </h2>
           </div>
 
-          <div className="divide-y divide-gray-700/40">
+          <div className="divide-y divide-neutral-700/40">
             {infoItems.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-700/30 transition-colors">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gray-700/60 flex items-center justify-center text-blue-400">
+              <div key={idx} className="flex items-start gap-4 px-5 py-4 hover:bg-neutral-700/30 transition-colors">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-neutral-700/60 flex items-center justify-center text-primary-400">
                   {item.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">{item.label}</p>
-                  <div className="text-sm text-gray-200 font-medium break-all">{item.value}</div>
+                  <p className="text-xs text-neutral-500 font-medium mb-0.5">{item.label}</p>
+                  <div className="text-sm text-neutral-200 font-medium break-all">{item.value}</div>
                 </div>
               </div>
             ))}
@@ -179,7 +179,7 @@ export default function UserProfilePage() {
         {/* ── Logout Button ── */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-red-600/20 border border-red-500/30 text-red-400 font-semibold text-sm hover:bg-red-600/30 hover:border-red-500/50 hover:text-red-300 active:scale-[0.98] transition-all shadow-lg"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-danger-600/20 border border-danger-500/30 text-danger-400 font-semibold text-sm hover:bg-danger-600/30 hover:border-danger-500/50 hover:text-danger-300 active:scale-[0.98] transition-all shadow-lg"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />

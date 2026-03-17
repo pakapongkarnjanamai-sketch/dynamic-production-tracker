@@ -65,15 +65,15 @@ export default function ScanPage() {
   return (
     <main className="min-h-screen bg-white flex flex-col pb-24 md:pb-0">
       {/* Header */}
-      <div className="bg-slate-900 text-white px-4 py-3 shadow-sm z-20 relative">
+      <div className="bg-neutral-900 text-white px-4 py-3 shadow-sm z-20 relative">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-white border border-slate-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-700 text-sm font-bold text-white border border-neutral-600">
               {operator.charAt(0)}
             </div>
             <div className="leading-tight">
               <div className="font-bold text-base">{operator}</div>
-              <div className="text-slate-400 text-xs">พร้อมสแกน</div>
+              <div className="text-neutral-400 text-xs">พร้อมสแกน</div>
             </div>
           </div>
         </div>
@@ -84,8 +84,8 @@ export default function ScanPage() {
         {/* Loading */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-sm font-medium text-slate-500 w-full">
-              <svg className="animate-spin w-10 h-10 mb-3 text-slate-400 mx-auto" fill="none" viewBox="0 0 24 24">
+            <div className="rounded-[24px] border border-dashed border-neutral-200 bg-white px-4 py-10 text-center text-sm font-medium text-neutral-500 w-full">
+              <svg className="animate-spin w-10 h-10 mb-3 text-neutral-400 mx-auto" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
@@ -98,42 +98,42 @@ export default function ScanPage() {
         {!loading && (
           <div className="flex-1 flex flex-col items-center justify-start gap-4">
             <div className="text-center space-y-1">
-              <h2 className="text-lg font-bold text-slate-900 sm:text-xl">สแกน QR Code</h2>
-              <p className="text-sm text-slate-500">เล็งกล้องไปที่ QR Code หรือพิมพ์รหัสด้านล่าง</p>
+              <h2 className="text-lg font-bold text-neutral-900 sm:text-xl">สแกน QR Code</h2>
+              <p className="text-sm text-neutral-500">เล็งกล้องไปที่ QR Code หรือพิมพ์รหัสด้านล่าง</p>
             </div>
 
             {!error && (
-              <div className="w-full rounded-[24px] overflow-hidden border border-slate-200 shadow-sm bg-black">
+              <div className="w-full rounded-[24px] overflow-hidden border border-neutral-200 shadow-sm bg-black">
                 <QRScanner key={scanKey} onScan={handleScan} onError={(e) => setError('ไม่สามารถเปิดกล้องได้: ' + e)} />
               </div>
             )}
 
             {error && (
-              <div className="w-full space-y-4 rounded-[24px] border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-700">
+              <div className="w-full space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-danger-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <div className="flex-1">
-                    <h3 className="text-sm font-bold text-red-700">เกิดข้อผิดพลาด</h3>
-                    <p className="mt-1 text-red-600">{error}</p>
+                    <h3 className="text-sm font-bold text-danger-700">เกิดข้อผิดพลาด</h3>
+                    <p className="mt-1 text-danger-600">{error}</p>
                   </div>
                 </div>
                 <button
                   onClick={reset}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 active:bg-slate-100 sm:w-auto"
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 active:bg-neutral-100 sm:w-auto"
                 >
                   ลองใหม่
                 </button>
               </div>
             )}
 
-            <form onSubmit={submitManualCode} className="w-full rounded-[24px] border border-slate-200 bg-white shadow-sm p-4 space-y-3">
-              <label className="block text-sm font-semibold text-slate-700">สแกนด้วยเครื่องอ่านหรือพิมพ์รหัส</label>
+            <form onSubmit={submitManualCode} className="w-full rounded-[24px] border border-neutral-200 bg-white shadow-sm p-4 space-y-3">
+              <label className="block text-sm font-semibold text-neutral-700">สแกนด้วยเครื่องอ่านหรือพิมพ์รหัส</label>
               <div className="flex gap-2">
                 <input
-                  className="flex-1 min-h-12 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 font-mono"
+                  className="flex-1 min-h-12 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 font-mono"
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
                   placeholder="เช่น TRAY-000123"
@@ -143,13 +143,13 @@ export default function ScanPage() {
                 />
                 <button
                   type="submit"
-                  className="shrink-0 inline-flex items-center justify-center rounded-xl border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 active:bg-slate-950 disabled:opacity-50"
+                  className="shrink-0 inline-flex items-center justify-center rounded-xl border border-primary-700 bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 active:bg-primary-800 disabled:opacity-50"
                   disabled={loading}
                 >
                   ยืนยัน
                 </button>
               </div>
-              <p className="text-xs font-normal text-slate-400">กด Enter ได้ทันที เหมาะกับเครื่องอ่านบาร์โค้ดแบบคีย์บอร์ด</p>
+              <p className="text-xs font-normal text-neutral-400">กด Enter ได้ทันที เหมาะกับเครื่องอ่านบาร์โค้ดแบบคีย์บอร์ด</p>
             </form>
           </div>
         )}

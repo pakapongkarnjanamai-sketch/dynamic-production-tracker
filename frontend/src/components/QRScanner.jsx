@@ -40,10 +40,10 @@ export default function QRScanner({ onScan, onError, fps = 10 }) {
       `}</style>
 
       {err && (
-        <p className="text-red-500 text-sm text-center p-4">⚠️ ไม่สามารถเปิดกล้องได้: {err}</p>
+        <p className="text-danger-500 text-sm text-center p-4">⚠️ ไม่สามารถเปิดกล้องได้: {err}</p>
       )}
       {!started && !err && (
-        <p className="text-gray-400 text-sm text-center p-4 animate-pulse">กำลังเปิดกล้อง…</p>
+        <p className="text-neutral-400 text-sm text-center p-4 animate-pulse">กำลังเปิดกล้อง…</p>
       )}
 
       <div id={containerId} />

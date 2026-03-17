@@ -21,38 +21,38 @@ function Navigation() {
   const canManage = ['admin', 'superadmin'].includes(user.role);
   const canReport = ['viewer', 'admin', 'superadmin'].includes(user.role);
 
-  // ── Desktop nav item class (เหมือนเดิมทุกประการ) ──
+  // ── Desktop nav item class ──
   const desktopNavItemClass = (path) => `
     flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all font-medium text-sm whitespace-nowrap
     ${isActive(path)
-      ? 'bg-blue-600 text-white shadow-md'
-      : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
+      ? 'bg-primary-600 text-white shadow-md'
+      : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}
   `;
 
   // ── Mobile bottom nav item class ──
   const mobileNavItemClass = (path) => `
     flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all font-medium text-[10px] whitespace-nowrap min-w-[56px]
     ${isActive(path)
-      ? 'bg-blue-600 text-white shadow-md'
-      : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
+      ? 'bg-primary-600 text-white shadow-md'
+      : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}
   `;
 
   return (
     <>
-      {/* ══════ Desktop Top Nav Bar (เหมือนเดิม) ══════ */}
-      <nav className="hidden md:block bg-gray-900 text-white p-3 shadow-lg sticky top-0 z-50">
+      {/* ══════ Desktop Top Nav Bar ══════ */}
+      <nav className="hidden md:block bg-neutral-900 text-white p-3 shadow-lg sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 overflow-x-auto hide-scrollbar">
 
           {/* Logo */}
           <div className="flex items-center gap-2 font-black text-xl tracking-tight text-white flex-shrink-0 mr-2 sm:mr-4">
-            <span className="text-blue-500">VS</span> MES
+            <span className="text-primary-400">VS</span> MES
           </div>
 
           {/* Menu Items */}
           <div className="flex items-center gap-1 sm:gap-2">
             {/* ── กลุ่ม Operator ── */}
             {canScan && (
-              <div className="flex gap-1 bg-gray-800/50 p-1 rounded-2xl border border-gray-700/50">
+              <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-2xl border border-neutral-700/50">
                 <Link to="/home" className={desktopNavItemClass('/home')}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -71,7 +71,7 @@ function Navigation() {
             )}
 
             {/* ตัวคั่นกลาง */}
-            {(canManage || canReport) && <div className="w-px h-6 bg-gray-700 mx-1"></div>}
+            {(canManage || canReport) && <div className="w-px h-6 bg-neutral-700 mx-1"></div>}
 
             {/* ── กลุ่ม Management ── */}
             <div className="flex gap-1 items-center">
@@ -99,7 +99,7 @@ function Navigation() {
                 to="/profile"
                 aria-label="โปรไฟล์"
                 title="โปรไฟล์"
-                className="ml-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 border border-gray-700 hover:bg-gray-700 flex items-center gap-1.5"
+                className="ml-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 flex items-center gap-1.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -113,7 +113,7 @@ function Navigation() {
       </nav>
 
       {/* ══════ Mobile Bottom Nav Bar ══════ */}
-      <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-gray-900 text-white p-2 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-neutral-900 text-white p-2 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="max-w-6xl mx-auto flex items-center justify-around gap-1 overflow-x-auto hide-scrollbar">
           {canScan && (
             <>
