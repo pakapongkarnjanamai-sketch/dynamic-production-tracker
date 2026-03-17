@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
 
 export default function QRScanner({ onScan, onError, fps = 10 }) {
-  const containerId = 'qr-reader';
+  const containerId = "qr-reader";
   const scannerRef = useRef(null);
   const [started, setStarted] = useState(false);
   const [err, setErr] = useState(null);
@@ -13,7 +13,7 @@ export default function QRScanner({ onScan, onError, fps = 10 }) {
 
     scanner
       .start(
-        { facingMode: 'environment' },
+        { facingMode: "environment" },
         { fps, qrbox: 200 },
         (decodedText) => onScan(decodedText),
         () => {},
@@ -29,24 +29,37 @@ export default function QRScanner({ onScan, onError, fps = 10 }) {
         scannerRef.current.stop().catch(() => {});
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div>
+    <div className="relative h-full w-full">
       <style>{`
-        #qr-reader { border: none !important; }
+        #qr-reader {
+          border: none !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        #qr-reader video {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+        }
         #qr-reader__dashboard { display: none !important; }
       `}</style>
 
       {err && (
-        <p className="text-danger-500 text-sm text-center p-4">⚠️ ไม่สามารถเปิดกล้องได้: {err}</p>
+        <p className="absolute inset-x-2 top-2 z-10 rounded-lg bg-black/70 px-3 py-2 text-danger-300 text-xs text-center">
+          ⚠️ ไม่สามารถเปิดกล้องได้: {err}
+        </p>
       )}
       {!started && !err && (
-        <p className="text-neutral-400 text-sm text-center p-4 animate-pulse">กำลังเปิดกล้อง…</p>
+        <p className="absolute inset-x-2 top-2 z-10 rounded-lg bg-black/70 px-3 py-2 text-neutral-200 text-xs text-center animate-pulse">
+          กำลังเปิดกล้อง…
+        </p>
       )}
 
-      <div id={containerId} />
+      <div id={containerId} className="h-full w-full" />
     </div>
   );
 }
