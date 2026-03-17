@@ -7,6 +7,7 @@ import TrayDetailPage  from './pages/TrayDetailPage';
 import HomePage        from './pages/HomePage';
 import ManagementPage  from './pages/ManagementPage';
 import ReportPage      from './pages/ReportPage';
+import UserProfilePage from './pages/UserProfilePage';
 
 // Component สำหรับ Navigation Bar โดยเฉพาะ
 function Navigation() {
@@ -94,17 +95,17 @@ function Navigation() {
                   <span>จัดการระบบ</span>
                 </Link>
               )}
-              <button
-                onClick={logout}
-                aria-label="ออกจากระบบ"
-                title="ออกจากระบบ"
+              <Link
+                to="/profile"
+                aria-label="โปรไฟล์"
+                title="โปรไฟล์"
                 className="ml-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 border border-gray-700 hover:bg-gray-700 flex items-center gap-1.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span>ออกจากระบบ</span>
-              </button>
+                <span>โปรไฟล์</span>
+              </Link>
             </div>
           </div>
 
@@ -152,17 +153,12 @@ function Navigation() {
               <span>ระบบ</span>
             </Link>
           )}
-          <button
-            onClick={logout}
-            aria-label="ออกจากระบบ"
-            title="ออกจากระบบ"
-            className="flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl text-[10px] font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all min-w-[56px]"
-          >
+          <Link to="/profile" className={mobileNavItemClass('/profile')}>
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span>ออก</span>
-          </button>
+            <span>โปรไฟล์</span>
+          </Link>
         </div>
       </nav>
     </>
@@ -221,6 +217,15 @@ export default function App() {
           element={
             <ProtectedRoute allowRoles={['viewer', 'admin', 'superadmin']}>
               <ReportPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowRoles={['operator', 'viewer', 'admin', 'superadmin']}>
+              <UserProfilePage />
             </ProtectedRoute>
           }
         />
