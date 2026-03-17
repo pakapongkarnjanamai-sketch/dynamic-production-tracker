@@ -1,29 +1,29 @@
-import { useAuth } from '../auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const roleLabelMap = {
-  operator: 'พนักงาน (Operator)',
-  viewer: 'ผู้ดูรายงาน (Viewer)',
-  admin: 'แอดมิน (Admin)',
-  superadmin: 'ซุปเปอร์แอดมิน (Super Admin)',
+  operator: "พนักงาน (Operator)",
+  viewer: "ผู้ดูรายงาน (Viewer)",
+  admin: "แอดมิน (Admin)",
+  superadmin: "ซุปเปอร์แอดมิน (Super Admin)",
 };
 
 const roleBadgeColor = {
-  operator:   'bg-success-500/20 text-success-400 border-success-500/30',
-  viewer:     'bg-info-500/20 text-info-400 border-info-500/30',
-  admin:      'bg-warning-500/20 text-warning-400 border-warning-500/30',
-  superadmin: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  operator: "bg-success-500/20 text-success-400 border-success-500/30",
+  viewer: "bg-info-500/20 text-info-400 border-info-500/30",
+  admin: "bg-warning-500/20 text-warning-400 border-warning-500/30",
+  superadmin: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return "—";
   const d = new Date(dateStr);
-  return d.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  return d.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -35,37 +35,69 @@ export default function UserProfilePage() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const infoItems = [
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+          />
         </svg>
       ),
-      label: 'รหัสพนักงาน',
+      label: "รหัสพนักงาน",
       value: user.employee_id,
     },
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
         </svg>
       ),
-      label: 'ชื่อผู้ใช้',
+      label: "ชื่อผู้ใช้",
       value: user.name,
     },
     {
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
         </svg>
       ),
-      label: 'สิทธิ์การใช้งาน',
+      label: "สิทธิ์การใช้งาน",
       value: (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30'}`}>
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || "bg-neutral-500/20 text-neutral-400 border-neutral-500/30"}`}
+        >
           {roleLabelMap[user.role] || user.role}
         </span>
       ),
@@ -76,11 +108,21 @@ export default function UserProfilePage() {
   if (user.operator_name) {
     infoItems.push({
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+          />
         </svg>
       ),
-      label: 'ชื่อ Operator',
+      label: "ชื่อ Operator",
       value: user.operator_name,
     });
   }
@@ -88,11 +130,21 @@ export default function UserProfilePage() {
   if (user.operator_department) {
     infoItems.push({
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
         </svg>
       ),
-      label: 'แผนก',
+      label: "แผนก",
       value: user.operator_department,
     });
   }
@@ -100,11 +152,21 @@ export default function UserProfilePage() {
   if (user.last_login_at) {
     infoItems.push({
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
       ),
-      label: 'เข้าสู่ระบบล่าสุด',
+      label: "เข้าสู่ระบบล่าสุด",
       value: formatDate(user.last_login_at),
     });
   }
@@ -112,50 +174,75 @@ export default function UserProfilePage() {
   if (user.created_at) {
     infoItems.push({
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
       ),
-      label: 'วันที่สร้างบัญชี',
+      label: "วันที่สร้างบัญชี",
       value: formatDate(user.created_at),
     });
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 pb-24 md:pb-8 pt-4 px-4">
-      <div className="max-w-lg mx-auto">
-
+    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 px-3 pb-24 pt-2.5 md:pb-8 md:pt-4">
+      <div className="mx-auto max-w-lg">
         {/* ── Header Card ── */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-6 mb-6 shadow-2xl shadow-primary-900/30">
+        <div className="relative mb-4 overflow-hidden rounded-[24px] bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-4 shadow-2xl shadow-primary-900/30 sm:mb-6 sm:rounded-[28px] sm:p-6">
           {/* Decorative circles */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full" />
-          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/5 rounded-full" />
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/5 sm:-top-10 sm:-right-10 sm:h-40 sm:w-40" />
+          <div className="absolute -bottom-8 -left-8 hidden h-32 w-32 rounded-full bg-white/5 sm:block" />
 
-          <div className="relative flex flex-col items-center text-center gap-3">
+          <div className="relative flex flex-col items-center gap-2.5 text-center sm:gap-3">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-lg">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/30 bg-white/20 shadow-lg backdrop-blur-sm sm:h-20 sm:w-20">
               <span className="text-3xl font-black text-white select-none">
-                {(user.name || '?').charAt(0).toUpperCase()}
+                {(user.name || "?").charAt(0).toUpperCase()}
               </span>
             </div>
 
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">{user.name}</h1>
-              <p className="text-primary-200 text-sm mt-0.5">{user.employee_id}</p>
+              <h1 className="text-lg font-bold text-white tracking-tight sm:text-xl">
+                {user.name}
+              </h1>
+              <p className="text-primary-200 text-sm mt-0.5">
+                {user.employee_id}
+              </p>
             </div>
 
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30'}`}>
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || "bg-neutral-500/20 text-neutral-400 border-neutral-500/30"}`}
+            >
               {roleLabelMap[user.role] || user.role}
             </span>
           </div>
         </div>
 
         {/* ── Info Card ── */}
-        <div className="rounded-2xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 shadow-xl overflow-hidden mb-6">
-          <div className="px-5 py-4 border-b border-neutral-700/50">
+        <div className="mb-4 overflow-hidden rounded-[22px] border border-neutral-700/50 bg-neutral-800/80 shadow-xl backdrop-blur-sm sm:mb-6 sm:rounded-2xl">
+          <div className="border-b border-neutral-700/50 px-4 py-3.5 sm:px-5 sm:py-4">
             <h2 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
-              <svg className="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-4 h-4 text-primary-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               ข้อมูลบัญชี
             </h2>
@@ -163,13 +250,20 @@ export default function UserProfilePage() {
 
           <div className="divide-y divide-neutral-700/40">
             {infoItems.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-4 px-5 py-4 hover:bg-neutral-700/30 transition-colors">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-neutral-700/60 flex items-center justify-center text-primary-400">
+              <div
+                key={idx}
+                className="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-neutral-700/30 sm:gap-4 sm:px-5 sm:py-4"
+              >
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-700/60 text-primary-400 sm:h-10 sm:w-10 sm:rounded-xl">
                   {item.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-neutral-500 font-medium mb-0.5">{item.label}</p>
-                  <div className="text-sm text-neutral-200 font-medium break-all">{item.value}</div>
+                  <p className="mb-0.5 text-xs font-medium text-neutral-400 sm:text-xs">
+                    {item.label}
+                  </p>
+                  <div className="text-sm font-medium text-neutral-200 break-words">
+                    {item.value}
+                  </div>
                 </div>
               </div>
             ))}
@@ -179,14 +273,24 @@ export default function UserProfilePage() {
         {/* ── Logout Button ── */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-danger-600/20 border border-danger-500/30 text-danger-400 font-semibold text-sm hover:bg-danger-600/30 hover:border-danger-500/50 hover:text-danger-300 active:scale-[0.98] transition-all shadow-lg"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-danger-500/30 bg-danger-600/20 px-4 py-3 text-sm font-semibold text-danger-400 shadow-lg transition-all hover:border-danger-500/50 hover:bg-danger-600/30 hover:text-danger-300 active:scale-[0.98] sm:rounded-2xl sm:py-3.5"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
+            />
           </svg>
           ออกจากระบบ
         </button>
-
       </div>
     </div>
   );
