@@ -110,7 +110,7 @@ function TrayDetailView({ detail }) {
 
           <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
+              <div className="text-xs font-semibold text-neutral-400">
                 สายการผลิต
               </div>
               <div className="mt-1 font-semibold text-neutral-900">
@@ -118,7 +118,7 @@ function TrayDetailView({ detail }) {
               </div>
             </div>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
+              <div className="text-xs font-semibold text-neutral-400">
                 Batch
               </div>
               <div className="mt-1 font-mono font-semibold text-neutral-900">
@@ -126,7 +126,7 @@ function TrayDetailView({ detail }) {
               </div>
             </div>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
+              <div className="text-xs font-semibold text-neutral-400">
                 กำหนดส่ง
               </div>
               <div className="mt-1 font-semibold text-neutral-900">
@@ -134,7 +134,7 @@ function TrayDetailView({ detail }) {
               </div>
             </div>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
+              <div className="text-xs font-semibold text-neutral-400">
                 ล่าสุด
               </div>
               <div className="mt-1 font-semibold text-neutral-900">
@@ -145,7 +145,7 @@ function TrayDetailView({ detail }) {
         </MobileCard>
 
         <MobileCard>
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+          <div className="text-xs font-semibold text-neutral-400">
             กิจกรรมล่าสุด
           </div>
           {latestLog ? (
@@ -171,7 +171,7 @@ function TrayDetailView({ detail }) {
       </div>
 
       <MobileCard>
-        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+        <div className="text-xs font-semibold text-neutral-400">
           ประวัติการทำงาน
         </div>
         {logs.length === 0 ? (
@@ -340,7 +340,7 @@ function OperatorDetailView({ detail }) {
             <>
               <div className="mb-1 flex items-center gap-2">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-info-500" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-info-700">
+                <span className="text-[10px] font-bold text-info-700">
                   กำลังทำอยู่
                 </span>
               </div>
@@ -354,7 +354,7 @@ function OperatorDetailView({ detail }) {
             </>
           ) : detail.latestLog ? (
             <>
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-neutral-500">
+              <div className="mb-1 text-[10px] font-bold text-neutral-500">
                 ทำล่าสุด
               </div>
               <div className="text-sm font-bold text-neutral-900">
@@ -375,7 +375,7 @@ function OperatorDetailView({ detail }) {
 
       <MobileCard>
         <div className="flex items-center justify-between gap-3">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+          <div className="text-xs font-semibold text-neutral-400">
             ประวัติล่าสุด
           </div>
           {detail.history.length > historyItems.length ? (

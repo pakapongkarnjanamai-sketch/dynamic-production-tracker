@@ -30,7 +30,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
             {[
               {
-                label: "กำลังดำเนินการ",
+                label: "กำลังทำ",
                 value: stats.in_progress,
                 bg: "bg-warning-50",
                 border: "border-warning-200",
@@ -39,7 +39,7 @@ export default function HomePage() {
                 num: "text-warning-800",
               },
               {
-                label: "รอดำเนินการ",
+                label: "รอทำ",
                 value: stats.pending,
                 bg: "bg-neutral-50",
                 border: "border-neutral-200",

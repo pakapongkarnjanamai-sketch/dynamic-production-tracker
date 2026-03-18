@@ -26,7 +26,7 @@ import {
 const TRAY_STATUSES = ["pending", "in_progress", "completed", "on_hold"];
 
 const STATUS_LABELS = {
-  pending: "รอดำเนินการ",
+  pending: "รอทำ",
   in_progress: "กำลังทำ",
   completed: "เสร็จสิ้น",
   on_hold: "รอแก้ไข",

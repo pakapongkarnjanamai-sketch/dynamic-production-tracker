@@ -1,6 +1,6 @@
 export const STATUS_LABELS = {
-  pending: "รอดำเนินการ",
-  in_progress: "กำลังดำเนินการ",
+  pending: "รอทำ",
+  in_progress: "กำลังทำ",
   completed: "เสร็จสิ้น",
   on_hold: "หยุดพัก / รอแก้ไข",
 };

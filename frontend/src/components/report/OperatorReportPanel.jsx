@@ -152,7 +152,7 @@ export default function OperatorReportPanel({ logs, search, onSearch }) {
                     <>
                       <div className="mb-1 flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-info-500 animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-info-700">
+                        <span className="text-[10px] font-bold text-info-700">
                           กำลังทำอยู่
                         </span>
                       </div>

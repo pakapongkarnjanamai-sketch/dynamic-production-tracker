@@ -146,21 +146,6 @@ export default function ProcessReportPanel({
                 }
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-info-100 text-info-700 sm:h-10 sm:w-10">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-base font-bold text-neutral-900 sm:text-lg">
                       {line.name}

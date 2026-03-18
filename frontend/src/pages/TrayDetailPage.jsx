@@ -296,7 +296,7 @@ export default function TrayDetailPage() {
                           )}
                           {isCurrent && isStarted && (
                             <div className="text-xs text-info-500 font-medium mt-0.5">
-                              ← กำลังดำเนินการ
+                              ← กำลังทำ
                             </div>
                           )}
                           {isCurrent && isNG && (

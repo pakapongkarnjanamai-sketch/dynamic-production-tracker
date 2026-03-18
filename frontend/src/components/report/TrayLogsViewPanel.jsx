@@ -37,7 +37,7 @@ export default function TrayLogsViewPanel({ tray }) {
 
   return (
     <div className="mt-4 border-t border-neutral-100 pt-4">
-      <h4 className="text-[11px] font-bold uppercase tracking-[0.22em] text-neutral-400">
+      <h4 className="text-[11px] font-bold text-neutral-400">
         ประวัติการทำงาน
       </h4>
       <div className="mt-3">
