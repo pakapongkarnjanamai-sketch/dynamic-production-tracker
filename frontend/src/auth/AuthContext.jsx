@@ -1,25 +1,26 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   clearStoredAuthToken,
   getCurrentUser,
   getStoredAuthToken,
   loginUser,
   storeAuthToken,
-} from '../api/client';
+  updateCurrentUserProfile,
+} from "../api/client";
 
 const AuthContext = createContext(null);
 
 export function getDefaultRouteForRole(role) {
   switch (role) {
-    case 'viewer':
-      return '/report';
-    case 'operator':
-      return '/scan';
-    case 'admin':
-    case 'superadmin':
-      return '/admin';
+    case "viewer":
+      return "/report";
+    case "operator":
+      return "/scan";
+    case "admin":
+    case "superadmin":
+      return "/admin";
     default:
-      return '/';
+      return "/";
   }
 }
 
@@ -56,10 +57,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateProfile = async (payload) => {
+    const nextUser = await updateCurrentUserProfile(payload);
+    setUser(nextUser);
+    return nextUser;
+  };
+
   const hasRole = (...roles) => Boolean(user && roles.includes(user.role));
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, updateProfile, hasRole }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -68,7 +77,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

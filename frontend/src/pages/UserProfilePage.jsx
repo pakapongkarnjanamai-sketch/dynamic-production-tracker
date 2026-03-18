@@ -251,6 +251,13 @@ export default function UserProfilePage() {
 
           <MobileCard className="p-3.5 sm:p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto"
+                onClick={() => navigate("/profile/edit")}
+              >
+                แก้ไขข้อมูล
+              </Button>
               {canManage ? (
                 <Button
                   variant="secondary"

@@ -15,6 +15,7 @@ import HomePage from "./pages/HomePage";
 import ManagementPage from "./pages/ManagementPage";
 import ReportDetailPage from "./pages/ReportDetailPage";
 import ReportPage from "./pages/ReportPage";
+import EditProfilePage from "./pages/EditProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 
 // Component สำหรับ Navigation Bar โดยเฉพาะ
@@ -302,6 +303,16 @@ export default function App() {
               allowRoles={["operator", "viewer", "admin", "superadmin"]}
             >
               <UserProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/edit"
+          element={
+            <ProtectedRoute
+              allowRoles={["operator", "viewer", "admin", "superadmin"]}
+            >
+              <EditProfilePage />
             </ProtectedRoute>
           }
         />
