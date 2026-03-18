@@ -89,16 +89,11 @@ export default function HomePage() {
             Number(stats.delayed) > 0
               ? "border-danger-200"
               : "border-neutral-200",
-          dot:
-            Number(stats.delayed) > 0 ? "bg-danger-500" : "bg-neutral-300",
+          dot: Number(stats.delayed) > 0 ? "bg-danger-500" : "bg-neutral-300",
           text:
-            Number(stats.delayed) > 0
-              ? "text-danger-700"
-              : "text-neutral-500",
+            Number(stats.delayed) > 0 ? "text-danger-700" : "text-neutral-500",
           num:
-            Number(stats.delayed) > 0
-              ? "text-danger-800"
-              : "text-neutral-600",
+            Number(stats.delayed) > 0 ? "text-danger-800" : "text-neutral-600",
           bar: Number(stats.delayed) > 0 ? "bg-danger-500" : "bg-neutral-300",
         },
       ]
@@ -203,7 +198,9 @@ export default function HomePage() {
                     <span className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />
                     {item.label}
                   </span>
-                  <span className="font-bold text-neutral-900">{item.value ?? 0}</span>
+                  <span className="font-bold text-neutral-900">
+                    {item.value ?? 0}
+                  </span>
                 </button>
               ))}
             </div>
@@ -230,10 +227,12 @@ export default function HomePage() {
                     type="button"
                     onClick={() =>
                       navigate(
-                        `/report/tray/${encodeURIComponent(job.tray_id)}${createReportSearch({
-                          tab: "trays",
-                          status: "in_progress",
-                        })}`,
+                        `/report/tray/${encodeURIComponent(job.tray_id)}${createReportSearch(
+                          {
+                            tab: "trays",
+                            status: "in_progress",
+                          },
+                        )}`,
                       )
                     }
                     className="rounded-[20px] border border-warning-200 bg-warning-50/50 p-3.5 shadow-sm sm:rounded-[24px] sm:p-4"
@@ -311,9 +310,11 @@ export default function HomePage() {
                     type="button"
                     onClick={() =>
                       navigate(
-                        `/report/line/${encodeURIComponent(line.id)}${createReportSearch({
-                          tab: "processes",
-                        })}`,
+                        `/report/line/${encodeURIComponent(line.id)}${createReportSearch(
+                          {
+                            tab: "processes",
+                          },
+                        )}`,
                       )
                     }
                     className="group relative overflow-hidden rounded-[20px] border border-neutral-200 bg-white p-3.5 shadow-sm transition-shadow hover:shadow-md sm:rounded-[24px] sm:p-5"

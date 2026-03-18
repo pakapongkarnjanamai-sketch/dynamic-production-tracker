@@ -83,7 +83,9 @@ export default function ReportPage() {
   }, [searchParams, setSearchParams]);
 
   const handleTabChange = (tabId) => {
-    setSearchParams(createReportSearch({ tab: tabId, search: "", status: "all" }));
+    setSearchParams(
+      createReportSearch({ tab: tabId, search: "", status: "all" }),
+    );
   };
 
   const handleSearchChange = (value) => {
