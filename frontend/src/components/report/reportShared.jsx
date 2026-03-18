@@ -92,17 +92,38 @@ export const DEFAULT_REPORT_TAB = "trays";
 export const FILTER_BUTTON_CLASS =
   "shrink-0 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-semibold transition-colors";
 
+export const TRAY_STATUS_FILTERS = [
+  "all",
+  "in_progress",
+  "pending",
+  "completed",
+  "delayed",
+];
+
 export function getValidReportTab(value) {
   return TABS.some((tab) => tab.id === value) ? value : DEFAULT_REPORT_TAB;
 }
 
-export function createReportSearch({ tab = DEFAULT_REPORT_TAB, search = "" }) {
+export function getValidTrayStatusFilter(value) {
+  return TRAY_STATUS_FILTERS.includes(value) ? value : "all";
+}
+
+export function createReportSearch({
+  tab = DEFAULT_REPORT_TAB,
+  search = "",
+  status = "",
+}) {
   const params = new URLSearchParams();
   params.set("tab", getValidReportTab(tab));
 
   const normalizedSearch = search.trim();
   if (normalizedSearch) {
     params.set("search", normalizedSearch);
+  }
+
+  const normalizedStatus = getValidTrayStatusFilter(status);
+  if (normalizedStatus !== "all") {
+    params.set("status", normalizedStatus);
   }
 
   const query = params.toString();

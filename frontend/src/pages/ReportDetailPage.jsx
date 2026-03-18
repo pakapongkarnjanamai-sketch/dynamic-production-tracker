@@ -73,25 +73,6 @@ function TrayDetailView({ detail }) {
 
   return (
     <Stack>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <DetailStatCard
-          label="สถานะ"
-          value={STATUS_LABELS[tray.status] || tray.status}
-          tone="info"
-        />
-        <DetailStatCard
-          label="เริ่มงาน"
-          value={detail.startCount}
-          tone="info"
-        />
-        <DetailStatCard
-          label="เสร็จสิ้น"
-          value={detail.finishCount}
-          tone="success"
-        />
-        <DetailStatCard label="ของเสีย" value={detail.ngCount} tone="danger" />
-      </div>
-
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <MobileCard>
           <div className="flex items-start justify-between gap-3">
@@ -433,6 +414,7 @@ export default function ReportDetailPage() {
       `/report${createReportSearch({
         tab: searchParams.get("tab") || undefined,
         search: searchParams.get("search") || "",
+        status: searchParams.get("status") || "all",
       })}`,
     [searchParams],
   );

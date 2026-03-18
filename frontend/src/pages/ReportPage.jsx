@@ -11,6 +11,7 @@ import {
   TABS,
   createReportSearch,
   getValidReportTab,
+  getValidTrayStatusFilter,
 } from "../components/report/reportShared";
 
 export default function ReportPage() {
@@ -24,6 +25,7 @@ export default function ReportPage() {
 
   const activeTab = getValidReportTab(searchParams.get("tab"));
   const search = searchParams.get("search") || "";
+  const status = getValidTrayStatusFilter(searchParams.get("status") || "all");
 
   const menus = useMemo(
     () =>
@@ -64,18 +66,24 @@ export default function ReportPage() {
   useEffect(() => {
     const currentTab = searchParams.get("tab");
     const currentSearch = searchParams.get("search") || "";
+    const currentStatus = searchParams.get("status") || "all";
     const normalizedTab = getValidReportTab(currentTab);
+    const normalizedStatus = getValidTrayStatusFilter(currentStatus);
 
-    if (currentTab !== normalizedTab) {
+    if (currentTab !== normalizedTab || currentStatus !== normalizedStatus) {
       setSearchParams(
-        createReportSearch({ tab: normalizedTab, search: currentSearch }),
+        createReportSearch({
+          tab: normalizedTab,
+          search: currentSearch,
+          status: normalizedStatus,
+        }),
         { replace: true },
       );
     }
   }, [searchParams, setSearchParams]);
 
   const handleTabChange = (tabId) => {
-    setSearchParams(createReportSearch({ tab: tabId, search: "" }));
+    setSearchParams(createReportSearch({ tab: tabId, search: "", status: "all" }));
   };
 
   const handleSearchChange = (value) => {
@@ -83,6 +91,18 @@ export default function ReportPage() {
       createReportSearch({
         tab: activeTab || DEFAULT_REPORT_TAB,
         search: value,
+        status,
+      }),
+      { replace: true },
+    );
+  };
+
+  const handleStatusChange = (value) => {
+    setSearchParams(
+      createReportSearch({
+        tab: activeTab || DEFAULT_REPORT_TAB,
+        search,
+        status: value,
       }),
       { replace: true },
     );
@@ -99,7 +119,9 @@ export default function ReportPage() {
         data={summaryData}
         logs={logsData}
         search={search}
+        statusFilter={status}
         onSearch={handleSearchChange}
+        onStatusChange={handleStatusChange}
       />
     );
   } else if (activeTab === "processes") {

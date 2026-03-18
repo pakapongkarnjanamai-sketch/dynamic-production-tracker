@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Badge,
@@ -11,16 +10,42 @@ import {
   FILTER_BUTTON_CLASS,
   STATUS_BADGE_COLORS,
   STATUS_LABELS,
+  getValidTrayStatusFilter,
 } from "./reportShared";
 
-export default function TrayReportPanel({ data, search, onSearch }) {
-  const [statusFilter, setStatusFilter] = useState("all");
+export default function TrayReportPanel({
+  data,
+  search,
+  statusFilter,
+  onSearch,
+  onStatusChange,
+}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const activeStatusFilter = getValidTrayStatusFilter(statusFilter);
+
+  const buildProgress = (row) => {
+    const totalProcesses = Number(row.total_processes) || 0;
+    const passedProcesses = Math.min(
+      Number(row.passed_processes) || 0,
+      totalProcesses,
+    );
+    const percent =
+      totalProcesses > 0
+        ? Math.round((passedProcesses / totalProcesses) * 100)
+        : 0;
+
+    return {
+      totalProcesses,
+      passedProcesses,
+      percent,
+    };
+  };
 
   const now = new Date();
   const withDelay = data.map((row) => ({
     ...row,
+    ...buildProgress(row),
     isDelayed:
       row.due_date &&
       new Date(row.due_date) < now &&
@@ -37,11 +62,11 @@ export default function TrayReportPanel({ data, search, onSearch }) {
 
   const filtered = withDelay.filter((row) => {
     const matchesStatus =
-      statusFilter === "all"
+      activeStatusFilter === "all"
         ? true
-        : statusFilter === "delayed"
+        : activeStatusFilter === "delayed"
           ? row.isDelayed
-          : row.status === statusFilter;
+          : row.status === activeStatusFilter;
     const keyword = search.trim().toLowerCase();
     const matchesSearch =
       !keyword ||
@@ -73,10 +98,10 @@ export default function TrayReportPanel({ data, search, onSearch }) {
           <button
             key={filter.id}
             type="button"
-            onClick={() => setStatusFilter(filter.id)}
+            onClick={() => onStatusChange(filter.id)}
             className={joinClasses(
               FILTER_BUTTON_CLASS,
-              statusFilter === filter.id
+              activeStatusFilter === filter.id
                 ? "border-primary-700 bg-primary-600 text-white"
                 : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
             )}
@@ -134,6 +159,26 @@ export default function TrayReportPanel({ data, search, onSearch }) {
                       {row.product}
                     </div>
                   ) : null}
+
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-neutral-500">
+                      <span>ความคืบหน้า</span>
+                      <span>
+                        {row.passedProcesses}/{row.totalProcesses} ขั้นตอน
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+                        <div
+                          className="h-full rounded-full bg-primary-500 transition-[width]"
+                          style={{ width: `${row.percent}%` }}
+                        />
+                      </div>
+                      <div className="shrink-0 text-xs font-bold text-primary-600">
+                        {row.percent}%
+                      </div>
+                    </div>
+                  </div>
                 </button>
               </MobileCard>
             );
