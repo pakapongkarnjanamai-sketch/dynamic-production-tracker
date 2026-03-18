@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 import { getLines, getLogs, getLogsSummary, getProcesses } from "../api/client";
 import {
-  AdminDetailHeader,
   Badge,
   EmptyState,
   ErrorState,
@@ -16,6 +15,13 @@ import {
   Stack,
   joinClasses,
 } from "../components/admin/AdminUI";
+import { DetailPageShell } from "../components/layout/PageShell";
+import {
+  createReportDetailBackLink,
+  getReportDetailTitle,
+  isValidReportDetailType,
+} from "../features/report/reportDetailShared";
+import useAsyncData from "../hooks/useAsyncData";
 import {
   ACTION_BADGE_COLORS,
   ACTION_LABELS,
@@ -23,16 +29,9 @@ import {
   STATUS_LABELS,
   buildLineRows,
   buildOperatorRows,
-  createReportSearch,
   formatShortDate,
   formatShortTime,
 } from "../components/report/reportShared";
-
-const DETAIL_LABELS = {
-  tray: "งาน",
-  line: "ไลน์",
-  operator: "พนักงาน",
-};
 
 function DetailStatCard({ label, value, tone = "neutral" }) {
   const toneClass = {
@@ -59,12 +58,9 @@ function DetailLayout({ title, backTo, children }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-4 md:px-8 md:py-6">
-        <AdminDetailHeader title={title} onBack={() => navigate(backTo)} />
-        {children}
-      </div>
-    </div>
+    <DetailPageShell title={title} onBack={() => navigate(backTo)}>
+      {children}
+    </DetailPageShell>
   );
 }
 
@@ -405,110 +401,90 @@ function OperatorDetailView({ detail }) {
 export default function ReportDetailPage() {
   const { detailType, detailId } = useParams();
   const [searchParams] = useSearchParams();
-  const [detail, setDetail] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const backTo = useMemo(
-    () =>
-      `/report${createReportSearch({
-        tab: searchParams.get("tab") || undefined,
-        search: searchParams.get("search") || "",
-        status: searchParams.get("status") || "all",
-      })}`,
+    () => createReportDetailBackLink(searchParams),
     [searchParams],
   );
 
-  const isValidType = ["tray", "line", "operator"].includes(detailType);
+  const isValidType = isValidReportDetailType(detailType);
 
   const loadDetail = useCallback(async () => {
-    if (!isValidType || !detailId) {
-      return;
+    if (detailType === "tray") {
+      const [summary, logs] = await Promise.all([
+        getLogsSummary(),
+        getLogs({ tray_id: detailId }),
+      ]);
+      const tray = summary.find(
+        (row) => String(row.tray_id) === String(detailId),
+      );
+      if (!tray) {
+        throw new Error("ไม่พบข้อมูลงานที่เลือก");
+      }
+
+      const sortedLogs = [...logs].sort(
+        (a, b) => new Date(b.logged_at) - new Date(a.logged_at),
+      );
+
+      return {
+        tray,
+        logs: sortedLogs,
+        latestLog: sortedLogs[0] || null,
+        startCount: logs.filter((log) => log.action === "start").length,
+        finishCount: logs.filter((log) => log.action === "finish").length,
+        ngCount: logs.filter((log) => log.action === "ng").length,
+      };
     }
 
-    try {
-      setLoading(true);
-      setError("");
-
-      if (detailType === "tray") {
-        const [summary, logs] = await Promise.all([
-          getLogsSummary(),
-          getLogs({ tray_id: detailId }),
-        ]);
-        const tray = summary.find(
-          (row) => String(row.tray_id) === String(detailId),
-        );
-        if (!tray) {
-          throw new Error("ไม่พบข้อมูลงานที่เลือก");
-        }
-
-        const sortedLogs = [...logs].sort(
-          (a, b) => new Date(b.logged_at) - new Date(a.logged_at),
-        );
-
-        setDetail({
-          tray,
-          logs: sortedLogs,
-          latestLog: sortedLogs[0] || null,
-          startCount: logs.filter((log) => log.action === "start").length,
-          finishCount: logs.filter((log) => log.action === "finish").length,
-          ngCount: logs.filter((log) => log.action === "ng").length,
-        });
-        return;
+    if (detailType === "line") {
+      const [lines, processes, logs] = await Promise.all([
+        getLines(),
+        getProcesses(),
+        getLogs({ limit: 2000 }),
+      ]);
+      const lineRows = buildLineRows({ logs, processes, lines });
+      const lineDetail = lineRows.find(
+        (row) => String(row.id) === String(detailId),
+      );
+      if (!lineDetail) {
+        throw new Error("ไม่พบข้อมูลสายการผลิตที่เลือก");
       }
 
-      if (detailType === "line") {
-        const [lines, processes, logs] = await Promise.all([
-          getLines(),
-          getProcesses(),
-          getLogs({ limit: 2000 }),
-        ]);
-        const lineRows = buildLineRows({ logs, processes, lines });
-        const lineDetail = lineRows.find(
-          (row) => String(row.id) === String(detailId),
-        );
-        if (!lineDetail) {
-          throw new Error("ไม่พบข้อมูลสายการผลิตที่เลือก");
-        }
-
-        setDetail(lineDetail);
-        return;
-      }
-
-      const logs = await getLogs({ limit: 2000 });
-      const operatorRows = buildOperatorRows(logs);
-      const operatorDetail = operatorRows.find((row) => row.name === detailId);
-      if (!operatorDetail) {
-        throw new Error("ไม่พบข้อมูลผู้ปฏิบัติงานที่เลือก");
-      }
-
-      setDetail(operatorDetail);
-    } catch (err) {
-      setError(err.message || "โหลดรายละเอียดรายงานไม่สำเร็จ");
-    } finally {
-      setLoading(false);
+      return lineDetail;
     }
-  }, [detailId, detailType, isValidType]);
 
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
+    const logs = await getLogs({ limit: 2000 });
+    const operatorRows = buildOperatorRows(logs);
+    const operatorDetail = operatorRows.find((row) => row.name === detailId);
+    if (!operatorDetail) {
+      throw new Error("ไม่พบข้อมูลผู้ปฏิบัติงานที่เลือก");
+    }
+
+    return operatorDetail;
+  }, [detailId, detailType]);
+
+  const {
+    data: detail,
+    loading,
+    error,
+    reload: loadDetailRetry,
+  } = useAsyncData(loadDetail, {
+    enabled: isValidType && Boolean(detailId),
+    initialData: null,
+    getErrorMessage: (err) => err?.message || "โหลดรายละเอียดรายงานไม่สำเร็จ",
+  });
 
   if (!isValidType) {
     return <Navigate to={backTo} replace />;
   }
 
-  const title = detail
-    ? detailType === "tray"
-      ? detail.tray.qr_code
-      : detail.name
-    : DETAIL_LABELS[detailType];
+  const title = getReportDetailTitle(detailType, detail);
 
   return (
     <DetailLayout title={title} backTo={backTo}>
       {loading ? <LoadingState message="กำลังโหลดรายละเอียดรายงาน..." /> : null}
       {!loading && error ? (
-        <ErrorState message={error} onRetry={loadDetail} />
+        <ErrorState message={error} onRetry={loadDetailRetry} />
       ) : null}
       {!loading && !error && !detail ? (
         <EmptyState title="ไม่พบข้อมูล" />

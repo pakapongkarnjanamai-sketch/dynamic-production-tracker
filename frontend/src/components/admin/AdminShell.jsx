@@ -1,4 +1,5 @@
 import { AdminPageHeader, joinClasses } from "./AdminUI";
+import { PageShell } from "../layout/PageShell";
 
 export default function AdminShell({
   title,
@@ -12,16 +13,51 @@ export default function AdminShell({
   children,
 }) {
   return (
-    <div className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-3 py-2.5 sm:px-6 sm:py-4 md:flex-row md:gap-6 md:px-8 md:py-6 lg:gap-8">
-        <aside className="sticky top-24 hidden w-80 shrink-0 self-start flex-col rounded-[32px] border border-neutral-200 bg-white p-5 shadow-sm md:flex">
-          <div className="border-b border-neutral-100 px-3 pb-4 pt-2">
-            <h2 className="text-2xl font-black tracking-tight text-neutral-900">
-              การจัดการระบบ
-            </h2>
-          </div>
+    <PageShell containerClassName="max-w-7xl gap-3 md:flex-row md:gap-6 lg:gap-8">
+      <aside className="sticky top-24 hidden w-80 shrink-0 self-start flex-col rounded-[32px] border border-neutral-200 bg-white p-5 shadow-sm md:flex">
+        <div className="border-b border-neutral-100 px-3 pb-4 pt-2">
+          <h2 className="text-2xl font-black tracking-tight text-neutral-900">
+            การจัดการระบบ
+          </h2>
+        </div>
 
-          <nav className="mt-5 space-y-2">
+        <nav className="mt-5 space-y-2">
+          {menus.map((menu) => {
+            const isActive = menu.id === activeMenu;
+            return (
+              <button
+                key={menu.id}
+                type="button"
+                onClick={() => onMenuChange(menu.id)}
+                className={joinClasses(
+                  "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-colors",
+                  isActive
+                    ? "bg-primary-600 text-white shadow-sm"
+                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
+                )}
+              >
+                <span
+                  className={joinClasses(
+                    "shrink-0",
+                    isActive ? "text-white" : "text-neutral-400",
+                  )}
+                >
+                  {menu.icon}
+                </span>
+                <span className="truncate">{menu.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <div className="min-w-0 flex flex-1 flex-col gap-3 sm:gap-4">
+        {showPageHeader ? (
+          <AdminPageHeader title={title} action={action} />
+        ) : null}
+
+        {showMobileMenu ? (
+          <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 hide-scrollbar sm:-mx-6 sm:gap-2 sm:px-6 md:hidden">
             {menus.map((menu) => {
               const isActive = menu.id === activeMenu;
               return (
@@ -30,10 +66,10 @@ export default function AdminShell({
                   type="button"
                   onClick={() => onMenuChange(menu.id)}
                   className={joinClasses(
-                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-colors",
+                    "flex min-w-[84px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors sm:min-w-[92px] sm:gap-2 sm:rounded-2xl",
                     isActive
-                      ? "bg-primary-600 text-white shadow-sm"
-                      : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
+                      ? "border-primary-600 bg-primary-600 text-white shadow-sm"
+                      : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
                   )}
                 >
                   <span
@@ -44,54 +80,17 @@ export default function AdminShell({
                   >
                     {menu.icon}
                   </span>
-                  <span className="truncate">{menu.label}</span>
+                  <span className="truncate">
+                    {menu.shortLabel || menu.label}
+                  </span>
                 </button>
               );
             })}
-          </nav>
-        </aside>
+          </div>
+        ) : null}
 
-        <div className="min-w-0 flex flex-1 flex-col gap-3 sm:gap-4">
-          {showPageHeader ? (
-            <AdminPageHeader title={title} action={action} />
-          ) : null}
-
-          {showMobileMenu ? (
-            <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 hide-scrollbar sm:-mx-6 sm:gap-2 sm:px-6 md:hidden">
-              {menus.map((menu) => {
-                const isActive = menu.id === activeMenu;
-                return (
-                  <button
-                    key={menu.id}
-                    type="button"
-                    onClick={() => onMenuChange(menu.id)}
-                    className={joinClasses(
-                      "flex min-w-[84px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors sm:min-w-[92px] sm:gap-2 sm:rounded-2xl",
-                      isActive
-                        ? "border-primary-600 bg-primary-600 text-white shadow-sm"
-                        : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
-                    )}
-                  >
-                    <span
-                      className={joinClasses(
-                        "shrink-0",
-                        isActive ? "text-white" : "text-neutral-400",
-                      )}
-                    >
-                      {menu.icon}
-                    </span>
-                    <span className="truncate">
-                      {menu.shortLabel || menu.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-
-          <div>{children}</div>
-        </div>
+        <div>{children}</div>
       </div>
-    </div>
+    </PageShell>
   );
 }

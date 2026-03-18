@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import QRScanner from "../components/QRScanner";
 import { scanTray } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import { AdminPageHeader, Button } from "../components/admin/AdminUI";
+import { Button } from "../components/admin/AdminUI";
+import { AppPageShell } from "../components/layout/PageShell";
 
 const LS_OPERATOR = "mes_operator";
 
@@ -66,7 +67,9 @@ export default function ScanPage() {
       setRequestError(null);
       try {
         const data = await scanTray(code);
-        navigate("/scan/detail", { state: { result: data, operator } });
+        navigate(`/trays/${encodeURIComponent(data.tray.qr_code)}`, {
+          state: { result: data, operator },
+        });
       } catch (e) {
         setRequestError(e.message);
         processingRef.current = false;
@@ -104,185 +107,181 @@ export default function ScanPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-2.5 sm:px-6 sm:py-4 md:px-8 md:py-6">
-        <AdminPageHeader title="สแกนงาน" />
-
-        {/* Loading */}
-        {loading && (
-          <div className="flex min-h-[360px] flex-col items-center justify-center">
-            <div className="rounded-[24px] border border-dashed border-neutral-200 bg-white px-4 py-10 text-center text-sm font-medium text-neutral-500 w-full shadow-sm">
-              <svg
-                className="animate-spin w-10 h-10 mb-3 text-neutral-400 mx-auto"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                />
-              </svg>
-              กำลังประมวลผล...
-            </div>
-          </div>
-        )}
-
-        {/* Scanner + Manual Input */}
-        {!loading && (
-          <div className="grid items-start gap-4 lg:grid-cols-[360px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)]">
-            <form
-              onSubmit={submitManualCode}
-              className="w-full rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm lg:sticky lg:top-24"
+    <AppPageShell title="สแกนงาน">
+      {/* Loading */}
+      {loading && (
+        <div className="flex min-h-[360px] flex-col items-center justify-center">
+          <div className="rounded-[24px] border border-dashed border-neutral-200 bg-white px-4 py-10 text-center text-sm font-medium text-neutral-500 w-full shadow-sm">
+            <svg
+              className="animate-spin w-10 h-10 mb-3 text-neutral-400 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-              <div className="mb-3 flex items-start justify-between gap-3">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
+            </svg>
+            กำลังประมวลผล...
+          </div>
+        </div>
+      )}
+
+      {/* Scanner + Manual Input */}
+      {!loading && (
+        <div className="grid items-start gap-4 lg:grid-cols-[360px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)]">
+          <form
+            onSubmit={submitManualCode}
+            className="w-full rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm lg:sticky lg:top-24"
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-neutral-900">
+                  กรอกรหัส
+                </h3>
+              </div>
+              {manualCode ? (
+                <button
+                  type="button"
+                  onClick={() => setManualCode("")}
+                  className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
+                >
+                  ล้าง
+                </button>
+              ) : null}
+            </div>
+            <div className="flex gap-2">
+              <input
+                ref={manualInputRef}
+                autoFocus
+                className="flex-1 min-h-12 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 font-mono"
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                placeholder="เช่น TRAY-000123"
+                autoCapitalize="off"
+                autoCorrect="off"
+                autoComplete="off"
+              />
+              <Button
+                type="submit"
+                className="shrink-0 px-4"
+                disabled={loading}
+              >
+                ยืนยัน
+              </Button>
+            </div>
+          </form>
+
+          <div className="space-y-4">
+            <section className="w-full rounded-[24px] border border-neutral-200 bg-white p-3 shadow-sm">
+              <div className="mb-3 flex items-start justify-between gap-3 px-1">
                 <div>
                   <h3 className="text-base font-bold text-neutral-900">
-                    กรอกรหัส
+                    กล้องสแกน
                   </h3>
                 </div>
-                {manualCode ? (
-                  <button
-                    type="button"
-                    onClick={() => setManualCode("")}
-                    className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
-                  >
-                    ล้าง
-                  </button>
-                ) : null}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  ref={manualInputRef}
-                  autoFocus
-                  className="flex-1 min-h-12 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 font-mono"
-                  value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value)}
-                  placeholder="เช่น TRAY-000123"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  autoComplete="off"
-                />
-                <Button
-                  type="submit"
-                  className="shrink-0 px-4"
-                  disabled={loading}
-                >
-                  ยืนยัน
-                </Button>
-              </div>
-            </form>
-
-            <div className="space-y-4">
-              <section className="w-full rounded-[24px] border border-neutral-200 bg-white p-3 shadow-sm">
-                <div className="mb-3 flex items-start justify-between gap-3 px-1">
-                  <div>
-                    <h3 className="text-base font-bold text-neutral-900">
-                      กล้องสแกน
-                    </h3>
-                  </div>
-                  {(cameraError || requestError) && (
-                    <Button variant="secondary" size="compact" onClick={reset}>
-                      รีเซ็ต
-                    </Button>
-                  )}
-                </div>
-
-                {!cameraError ? (
-                  <div className="relative aspect-square w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-black shadow-sm lg:aspect-[4/3] xl:aspect-[16/10]">
-                    <QRScanner
-                      key={scanKey}
-                      onScan={handleScan}
-                      onError={(e) => {
-                        setCameraError("ไม่สามารถเปิดกล้องได้: " + e);
-                        setRequestError(null);
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-4 rounded-[24px] border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-sm text-neutral-600">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-danger-100 text-danger-600">
-                        <svg
-                          className="h-5 w-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                      </span>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-bold text-neutral-900">
-                          ใช้กล้องไม่ได้
-                        </h4>
-                        <p className="mt-1 text-sm leading-6 text-neutral-600">
-                          {cameraError}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <Button variant="secondary" onClick={reset}>
-                        ลองใหม่
-                      </Button>
-                      <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-500">
-                        กรอกรหัสแทนได้
-                      </div>
-                    </div>
-                  </div>
+                {(cameraError || requestError) && (
+                  <Button variant="secondary" size="compact" onClick={reset}>
+                    รีเซ็ต
+                  </Button>
                 )}
-              </section>
+              </div>
 
-              {requestError && (
-                <div className="w-full space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 shadow-sm">
+              {!cameraError ? (
+                <div className="relative aspect-square w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-black shadow-sm lg:aspect-[4/3] xl:aspect-[16/10]">
+                  <QRScanner
+                    key={scanKey}
+                    onScan={handleScan}
+                    onError={(e) => {
+                      setCameraError("ไม่สามารถเปิดกล้องได้: " + e);
+                      setRequestError(null);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4 rounded-[24px] border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-sm text-neutral-600">
                   <div className="flex items-start gap-3">
-                    <svg
-                      className="mt-0.5 h-5 w-5 shrink-0 text-danger-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-danger-100 text-danger-600">
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                    </span>
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-danger-700">
-                        ไม่พบรหัส
-                      </h3>
-                      <p className="mt-1 text-danger-600">{requestError}</p>
+                      <h4 className="text-sm font-bold text-neutral-900">
+                        ใช้กล้องไม่ได้
+                      </h4>
+                      <p className="mt-1 text-sm leading-6 text-neutral-600">
+                        {cameraError}
+                      </p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button variant="secondary" onClick={clearRequestError}>
-                      ตรวจสอบอีกครั้ง
+                    <Button variant="secondary" onClick={reset}>
+                      ลองใหม่
                     </Button>
-                    <Button variant="primary" onClick={reset}>
-                      สแกนใหม่
-                    </Button>
+                    <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-500">
+                      กรอกรหัสแทนได้
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
+            </section>
+
+            {requestError && (
+              <div className="w-full space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <svg
+                    className="mt-0.5 h-5 w-5 shrink-0 text-danger-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-danger-700">
+                      ไม่พบรหัส
+                    </h3>
+                    <p className="mt-1 text-danger-600">{requestError}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button variant="secondary" onClick={clearRequestError}>
+                    ตรวจสอบอีกครั้ง
+                  </Button>
+                  <Button variant="primary" onClick={reset}>
+                    สแกนใหม่
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </main>
+        </div>
+      )}
+    </AppPageShell>
   );
 }

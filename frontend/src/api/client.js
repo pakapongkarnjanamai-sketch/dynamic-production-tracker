@@ -32,12 +32,17 @@ async function request(path, options = {}) {
 
   const res = await fetch(`${BASE}${path}`, {
     headers: mergedHeaders,
+    cache: import.meta.env.DEV ? "no-store" : options.cache,
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || res.statusText);
+    const requestError = new Error(err.error || res.statusText);
+    requestError.status = res.status;
+    requestError.retryAfterSeconds = err.retry_after_seconds;
+    requestError.requestId = err.request_id;
+    throw requestError;
   }
   if (res.status === 204) return null;
   return res.json();
@@ -74,6 +79,8 @@ export const deleteProcess = (id) =>
 // Trays
 export const getTrays = () => request("/api/trays");
 export const getTrayStats = () => request("/api/trays/stats");
+export const getTrayDetailByQr = (qr) =>
+  request(`/api/trays/scan/${encodeURIComponent(qr)}`);
 export const scanTray = (qr) =>
   request(`/api/trays/scan/${encodeURIComponent(qr)}`);
 export const createTray = (data) =>

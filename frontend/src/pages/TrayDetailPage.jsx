@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { scanTray, createLog } from "../api/client";
-import { AdminDetailHeader } from "../components/admin/AdminUI";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { createLog, getTrayDetailByQr } from "../api/client";
+import { Button } from "../components/admin/AdminUI";
+import { DetailPageShell } from "../components/layout/PageShell";
 
 const LS_OPERATOR = "mes_operator";
 
@@ -19,20 +20,60 @@ function formatTime(ts) {
 export default function TrayDetailPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { qrCode: routeQrCode } = useParams();
+  const qrCode = routeQrCode ? decodeURIComponent(routeQrCode) : "";
 
-  const [result, setResult] = useState(state?.result ?? null);
+  const initialResult =
+    state?.result?.tray?.qr_code === qrCode ? state.result : null;
+
+  const [result, setResult] = useState(initialResult);
   const [operator] = useState(
     () => state?.operator || localStorage.getItem(LS_OPERATOR) || "",
   );
+  const [pageLoading, setPageLoading] = useState(!initialResult);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // ถ้าเข้าตรงโดยไม่มี state → กลับไปหน้าสแกน
+  const loadTrayDetail = useCallback(
+    async ({ showLoading = true } = {}) => {
+      if (!qrCode) {
+        setResult(null);
+        setError("ไม่พบรหัสงาน");
+        setPageLoading(false);
+        return;
+      }
+
+      if (showLoading) {
+        setPageLoading(true);
+      }
+
+      try {
+        const nextResult = await getTrayDetailByQr(qrCode);
+        setResult(nextResult);
+        setError(null);
+      } catch (e) {
+        setResult(null);
+        setError(e.message);
+      } finally {
+        if (showLoading) {
+          setPageLoading(false);
+        }
+      }
+    },
+    [qrCode],
+  );
+
   useEffect(() => {
-    if (!result) navigate("/scan", { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (initialResult) {
+      setResult(initialResult);
+      setError(null);
+      setPageLoading(false);
+      return;
+    }
+
+    loadTrayDetail();
+  }, [initialResult, loadTrayDetail]);
 
   // Auto-dismiss toast after 2.5 s
   useEffect(() => {
@@ -57,8 +98,7 @@ export default function TrayDetailPage() {
           action === "start" ? "เริ่มงาน" : action === "finish" ? "OK" : "NG";
         setToast(`${process.name} — ${actionLabel}`);
         if (action === "start") {
-          const fresh = await scanTray(result.tray.qr_code);
-          setResult(fresh);
+          await loadTrayDetail({ showLoading: false });
         } else {
           goScan(navigate);
         }
@@ -68,7 +108,7 @@ export default function TrayDetailPage() {
         setLoading(false);
       }
     },
-    [result, operator, navigate],
+    [result, operator, navigate, loadTrayDetail],
   );
 
   const currentProcess =
@@ -87,10 +127,53 @@ export default function TrayDetailPage() {
   const startTime = result?.tray.started_at ?? null;
   const finishTime = result?.tray.finished_at ?? null;
 
-  if (!result) return null;
+  if (pageLoading) {
+    return (
+      <DetailPageShell
+        title={qrCode || "รายละเอียดงาน"}
+        onBack={() => goScan(navigate)}
+        maxWidth="max-w-4xl"
+        gapClassName="gap-4"
+      >
+        <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+          <div className="rounded-[24px] border border-dashed border-neutral-200 bg-white px-4 py-10 text-center text-sm font-medium text-neutral-500 shadow-sm">
+            กำลังโหลดข้อมูลงาน...
+          </div>
+        </div>
+      </DetailPageShell>
+    );
+  }
+
+  if (!result) {
+    return (
+      <DetailPageShell
+        title={qrCode || "รายละเอียดงาน"}
+        onBack={() => goScan(navigate)}
+        maxWidth="max-w-4xl"
+        gapClassName="gap-4"
+      >
+        <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+          <div className="space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 shadow-sm">
+            <p>{error || "ไม่พบข้อมูลงาน"}</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button variant="secondary" onClick={() => loadTrayDetail()}>
+                ลองใหม่
+              </Button>
+              <Button onClick={() => goScan(navigate)}>กลับไปสแกน</Button>
+            </div>
+          </div>
+        </div>
+      </DetailPageShell>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col pb-24 md:pb-0">
+    <DetailPageShell
+      title={result.tray.qr_code}
+      onBack={() => goScan(navigate)}
+      maxWidth="max-w-4xl"
+      gapClassName="gap-4"
+    >
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-28 md:bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl bg-neutral-900 text-white px-5 py-3 shadow-2xl flex items-center gap-3 whitespace-nowrap">
@@ -101,13 +184,7 @@ export default function TrayDetailPage() {
         </div>
       )}
 
-      <AdminDetailHeader
-        title={result.tray.qr_code}
-        onBack={() => goScan(navigate)}
-      />
-
-      {/* Content */}
-      <div className="flex-1 flex flex-col w-full px-4 py-4 max-w-md mx-auto gap-4">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         {/* Loading overlay */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center">
@@ -421,6 +498,6 @@ export default function TrayDetailPage() {
           </>
         )}
       </div>
-    </main>
+    </DetailPageShell>
   );
 }

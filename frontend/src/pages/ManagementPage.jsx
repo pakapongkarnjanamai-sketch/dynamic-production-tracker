@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getLines } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -7,184 +7,41 @@ import LinesSection from "../components/admin/LinesSection";
 import OperatorsSection from "../components/admin/OperatorsSection";
 import TraysSection from "../components/admin/TraysSection";
 import UsersSection from "../components/admin/UsersSection";
-
-const ADMIN_TABS = ["lines", "trays", "operators", "users"];
-const DEFAULT_ADMIN_TAB = "lines";
-
-function getValidAdminTab(value) {
-  return ADMIN_TABS.includes(value) ? value : DEFAULT_ADMIN_TAB;
-}
-
-function createAdminSearch({
-  tab = DEFAULT_ADMIN_TAB,
-  mode = "",
-  id = "",
-  subId = "",
-}) {
-  const params = new URLSearchParams();
-  params.set("tab", getValidAdminTab(tab));
-
-  if (mode) {
-    params.set("mode", mode);
-  }
-
-  if (id) {
-    params.set("id", String(id));
-  }
-
-  if (subId) {
-    params.set("subId", String(subId));
-  }
-
-  const query = params.toString();
-  return query ? `?${query}` : "";
-}
-
-function FactoryIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"
-      />
-    </svg>
-  );
-}
-
-function BoxIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-      />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-      />
-    </svg>
-  );
-}
-
-function AccountIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5.121 17.804A9 9 0 1 1 18.88 17.8M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-      />
-    </svg>
-  );
-}
+import { ADMIN_MENUS } from "../features/admin/adminMenus";
+import {
+  createAdminSearch,
+  getAdminViewState,
+  normalizeAdminSearch,
+} from "../features/admin/adminQueryState";
+import useAsyncData from "../hooks/useAsyncData";
 
 export default function ManagementPage() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [lines, setLines] = useState([]);
-  const [linesLoading, setLinesLoading] = useState(true);
-  const [linesError, setLinesError] = useState("");
 
-  const activeMenu = getValidAdminTab(searchParams.get("tab"));
-  const detailMode = searchParams.get("mode") || "";
-  const detailId = searchParams.get("id") || "";
-  const detailSubId = searchParams.get("subId") || "";
+  const { activeMenu, detailMode, detailId, detailSubId } =
+    getAdminViewState(searchParams);
 
-  const menus = useMemo(
-    () => [
-      {
-        id: "lines",
-        label: "สายการผลิต",
-        shortLabel: "ไลน์",
-        icon: <FactoryIcon />,
-      },
-      { id: "trays", label: "งาน", shortLabel: "งาน", icon: <BoxIcon /> },
-      {
-        id: "operators",
-        label: "พนักงาน",
-        shortLabel: "ทีม",
-        icon: <UsersIcon />,
-      },
-      {
-        id: "users",
-        label: "ผู้ใช้ระบบ",
-        shortLabel: "บัญชี",
-        icon: <AccountIcon />,
-      },
-    ],
-    [],
+  const {
+    data: lines,
+    loading: linesLoading,
+    error: linesError,
+    reload: loadLines,
+  } = useAsyncData(
+    useMemo(() => () => getLines(), []),
+    {
+      initialData: [],
+      getErrorMessage: (err) => err?.message || "โหลดข้อมูลสายการผลิตไม่สำเร็จ",
+    },
   );
-
-  const loadLines = async () => {
-    try {
-      setLinesError("");
-      setLinesLoading(true);
-      const data = await getLines();
-      setLines(data);
-    } catch (err) {
-      setLinesError(err.message || "โหลดข้อมูลสายการผลิตไม่สำเร็จ");
-    } finally {
-      setLinesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadLines();
-  }, []);
 
   useEffect(() => {
     const currentTab = searchParams.get("tab");
-    const currentMode = searchParams.get("mode") || "";
-    const currentId = searchParams.get("id") || "";
-    const currentSubId = searchParams.get("subId") || "";
-    const normalizedTab = getValidAdminTab(currentTab);
 
-    if (currentTab !== normalizedTab) {
-      setSearchParams(
-        createAdminSearch({
-          tab: normalizedTab,
-          mode: currentMode,
-          id: currentId,
-          subId: currentSubId,
-        }),
-        { replace: true },
-      );
+    if (currentTab !== activeMenu) {
+      setSearchParams(normalizeAdminSearch(searchParams), { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [activeMenu, searchParams, setSearchParams]);
 
   const updateAdminView = ({
     tab = activeMenu,
@@ -300,7 +157,7 @@ export default function ManagementPage() {
       description="กำหนดค่าข้อมูลหลักของระบบและดูแลรายการใช้งาน"
       showPageHeader={!detailMode}
       showMobileMenu={!detailMode}
-      menus={menus}
+      menus={ADMIN_MENUS}
       activeMenu={activeMenu}
       onMenuChange={(tabId) => updateAdminView({ tab: tabId })}
     >

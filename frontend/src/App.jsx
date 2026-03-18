@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -8,24 +9,45 @@ import {
 } from "react-router-dom";
 import { getDefaultRouteForRole, useAuth } from "./auth/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LoginPage from "./pages/LoginPage";
-import ScanPage from "./pages/ScanPage";
-import TrayDetailPage from "./pages/TrayDetailPage";
-import HomePage from "./pages/HomePage";
-import ManagementPage from "./pages/ManagementPage";
-import ReportDetailPage from "./pages/ReportDetailPage";
-import ReportPage from "./pages/ReportPage";
-import EditProfilePage from "./pages/EditProfilePage";
-import UserProfilePage from "./pages/UserProfilePage";
+
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ScanPage = lazy(() => import("./pages/ScanPage"));
+const TrayDetailPage = lazy(() => import("./pages/TrayDetailPage"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ManagementPage = lazy(() => import("./pages/ManagementPage"));
+const ReportDetailPage = lazy(() => import("./pages/ReportDetailPage"));
+const ReportPage = lazy(() => import("./pages/ReportPage"));
+const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
+const UserProfilePage = lazy(() => import("./pages/UserProfilePage"));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-white px-4 py-12 md:px-8 md:py-16">
+      <div className="mx-auto max-w-3xl rounded-[24px] border border-neutral-200 bg-neutral-50 px-6 py-12 text-center text-sm font-medium text-neutral-500 shadow-sm">
+        กำลังโหลดหน้า...
+      </div>
+    </div>
+  );
+}
 
 // Component สำหรับ Navigation Bar โดยเฉพาะ
 function Navigation() {
   const { user } = useAuth();
   const location = useLocation();
-  const isActive = (path) =>
-    path === "/"
-      ? location.pathname === path
-      : location.pathname.startsWith(path);
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === path;
+    }
+
+    if (path === "/scan") {
+      return (
+        location.pathname.startsWith("/scan") ||
+        location.pathname.startsWith("/trays/")
+      );
+    }
+
+    return location.pathname.startsWith(path);
+  };
 
   if (!user || location.pathname === "/login") return null;
 
@@ -240,85 +262,93 @@ function RoleLanding() {
 
 export default function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter
+      basename={import.meta.env.BASE_URL}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Navigation />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/" element={<RoleLanding />} />
+          <Route path="/" element={<RoleLanding />} />
 
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan"
-          element={
-            <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
-              <ScanPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan/detail"
-          element={
-            <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
-              <TrayDetailPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowRoles={["admin", "superadmin"]}>
-              <ManagementPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/report"
-          element={
-            <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
-              <ReportPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/report/:detailType/:detailId"
-          element={
-            <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
-              <ReportDetailPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scan"
+            element={
+              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+                <ScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trays/:qrCode"
+            element={
+              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+                <TrayDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowRoles={["admin", "superadmin"]}>
+                <ManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/report"
+            element={
+              <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
+                <ReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/report/:detailType/:detailId"
+            element={
+              <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
+                <ReportDetailPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute
-              allowRoles={["operator", "viewer", "admin", "superadmin"]}
-            >
-              <UserProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/edit"
-          element={
-            <ProtectedRoute
-              allowRoles={["operator", "viewer", "admin", "superadmin"]}
-            >
-              <EditProfilePage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute
+                allowRoles={["operator", "viewer", "admin", "superadmin"]}
+              >
+                <UserProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/edit"
+            element={
+              <ProtectedRoute
+                allowRoles={["operator", "viewer", "admin", "superadmin"]}
+              >
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

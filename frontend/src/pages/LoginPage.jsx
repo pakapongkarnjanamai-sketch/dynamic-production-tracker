@@ -2,6 +2,35 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDefaultRouteForRole, useAuth } from "../auth/AuthContext";
 
+function formatRetryAfterSeconds(seconds) {
+  const totalSeconds = Number(seconds);
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+    return "อีกสักครู่";
+  }
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  if (minutes <= 0) {
+    return `${remainingSeconds} วินาที`;
+  }
+
+  if (remainingSeconds === 0) {
+    return `${minutes} นาที`;
+  }
+
+  return `${minutes} นาที ${remainingSeconds} วินาที`;
+}
+
+function getLoginErrorMessage(error) {
+  if (error?.status === 429) {
+    const waitTime = formatRetryAfterSeconds(error.retryAfterSeconds);
+    return `พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอ ${waitTime} แล้วลองใหม่อีกครั้ง`;
+  }
+
+  return error?.message || "เข้าสู่ระบบไม่สำเร็จ";
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,7 +60,7 @@ export default function LoginPage() {
         replace: true,
       });
     } catch (err) {
-      setError(err.message);
+      setError(getLoginErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
