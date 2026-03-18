@@ -25,31 +25,67 @@ function joinClasses(...values) {
   return values.filter(Boolean).join(" ");
 }
 
-export function AdminPageHeader({ eyebrow, title, description, action }) {
+function SectionHeaderBar({ title, onBack, action, leading }) {
   return (
-    <div className="rounded-[24px] border border-neutral-200 bg-white px-4 py-4 shadow-sm sm:rounded-[28px] sm:px-6 sm:py-5">
-      <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-1.5 sm:space-y-2">
-          {eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
-              {eyebrow}
-            </p>
+    <div className="sticky top-0 z-20 -mx-3 -mt-2.5 bg-neutral-900 px-4 py-3 text-white shadow-sm sm:-mx-6 sm:-mt-4 sm:px-6 md:-mx-8 md:-mt-6 md:px-8">
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <div className="flex min-w-0 items-center justify-start gap-3">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-600 bg-neutral-800 text-neutral-300 transition hover:bg-neutral-700 active:bg-neutral-600"
+              aria-label="กลับไปหน้าก่อนหน้า"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          ) : leading ? (
+            <div className="shrink-0">{leading}</div>
           ) : null}
-          <div className="space-y-1">
-            <h1 className="text-xl font-black tracking-tight text-neutral-900 sm:text-3xl">
-              {title}
-            </h1>
-            {description ? (
-              <p className="max-w-3xl text-sm text-neutral-500 sm:text-base">
-                {description}
-              </p>
-            ) : null}
-          </div>
         </div>
-        {action ? <div className="w-full lg:w-auto">{action}</div> : null}
+        <div className="min-w-0 text-center leading-tight">
+          <div className="truncate font-bold text-base text-white">{title}</div>
+        </div>
+        <div className="flex min-w-0 items-center justify-end">
+          {action ? <div className="shrink-0">{action}</div> : null}
+        </div>
       </div>
     </div>
   );
+}
+
+export function AdminPageHeader({ title, onBack, action, eyebrow = "VS MES" }) {
+  const leading = onBack ? null : (
+    <div className="flex items-center gap-1.5 font-black text-lg tracking-tight text-white whitespace-nowrap">
+      <span className="text-primary-400">VS</span>
+      <span>{eyebrow === "VS MES" ? "MES" : eyebrow}</span>
+    </div>
+  );
+
+  return (
+    <SectionHeaderBar
+      title={title}
+      onBack={onBack}
+      action={action}
+      leading={leading}
+    />
+  );
+}
+
+export function AdminDetailHeader({ title, onBack, action }) {
+  return <SectionHeaderBar title={title} onBack={onBack} action={action} />;
 }
 
 export function AdminSection({ title, description, action, children }) {
@@ -62,12 +98,14 @@ export function AdminSection({ title, description, action, children }) {
           {title || description ? (
             <div className="space-y-1">
               {title ? (
-                <h2 className="text-base font-bold text-neutral-900 sm:text-xl">
+                <h2 className="text-lg font-semibold tracking-[-0.02em] text-neutral-900 sm:text-[22px] sm:leading-tight">
                   {title}
                 </h2>
               ) : null}
               {description ? (
-                <p className="text-sm text-neutral-500">{description}</p>
+                <p className="text-sm leading-6 text-neutral-500">
+                  {description}
+                </p>
               ) : null}
             </div>
           ) : null}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createUser,
   deleteUser,
@@ -7,6 +7,7 @@ import {
   updateUser,
 } from "../../api/client";
 import {
+  AdminDetailHeader,
   AdminSection,
   Badge,
   Button,
@@ -17,8 +18,6 @@ import {
   Input,
   LoadingState,
   MobileCard,
-  Modal,
-  SaveMessage,
   Stack,
 } from "./AdminUI";
 
@@ -31,17 +30,28 @@ const EMPTY_FORM = {
   isActive: true,
 };
 
-export default function UsersSection({ currentRole }) {
+export default function UsersSection({
+  currentRole,
+  view = "",
+  selectedId = "",
+  onCreate,
+  onEdit,
+  onCloseDetail,
+}) {
   const [users, setUsers] = useState([]);
   const [operators, setOperators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editUser, setEditUser] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const isAutoSaveReadyRef = useRef(false);
+
+  const selectedUser =
+    view === "edit"
+      ? users.find((user) => String(user.id) === String(selectedId)) || null
+      : null;
 
   const roleOptions =
     currentRole === "superadmin"
@@ -80,35 +90,28 @@ export default function UsersSection({ currentRole }) {
     loadData();
   }, []);
 
-  const resetForm = () => {
-    setEditUser(null);
-    setForm(EMPTY_FORM);
-    setMessage("");
-  };
+  useEffect(() => {
+    if (view === "edit" && selectedUser) {
+      isAutoSaveReadyRef.current = false;
+      setForm({
+        employeeId: selectedUser.employee_id || "",
+        name: selectedUser.name || "",
+        password: "",
+        role: selectedUser.role || "operator",
+        operatorId: selectedUser.operator_id
+          ? String(selectedUser.operator_id)
+          : "",
+        isActive: Boolean(selectedUser.is_active),
+      });
+    } else if (view === "create") {
+      isAutoSaveReadyRef.current = false;
+      setForm(EMPTY_FORM);
+    }
 
-  const openCreateModal = () => {
-    resetForm();
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (user) => {
-    setEditUser(user);
-    setForm({
-      employeeId: user.employee_id || "",
-      name: user.name || "",
-      password: "",
-      role: user.role || "operator",
-      operatorId: user.operator_id ? String(user.operator_id) : "",
-      isActive: Boolean(user.is_active),
-    });
-    setMessage("");
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    resetForm();
-  };
+    setError("");
+    setSubmitting(false);
+    setPasswordSubmitting(false);
+  }, [selectedUser, view]);
 
   const handleChange = (field) => (event) => {
     const { value } = event.target;
@@ -118,7 +121,7 @@ export default function UsersSection({ currentRole }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
-    setMessage("");
+    setError("");
 
     const payload = {
       employee_id: form.employeeId,
@@ -128,43 +131,255 @@ export default function UsersSection({ currentRole }) {
       is_active: form.isActive,
     };
 
-    if (!editUser || form.password) {
+    if (view !== "edit" || form.password) {
       payload.password = form.password;
     }
 
     try {
-      if (editUser) {
-        await updateUser(editUser.id, payload);
-        setMessage("อัปเดตสำเร็จ");
-      } else {
-        await createUser(payload);
-        setMessage("เพิ่มสำเร็จ");
-      }
+      await createUser(payload);
 
       await loadData();
       window.setTimeout(() => {
-        closeModal();
+        onCloseDetail();
       }, 700);
     } catch (err) {
-      setMessage(err.message || "บันทึกบัญชีไม่สำเร็จ");
+      setError(err.message || "บันทึกบัญชีไม่สำเร็จ");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm("ยืนยันการลบผู้ใช้งานระบบ?")) {
+  useEffect(() => {
+    if (view !== "edit" || !selectedUser) {
+      return undefined;
+    }
+
+    if (!isAutoSaveReadyRef.current) {
+      isAutoSaveReadyRef.current = true;
+      return undefined;
+    }
+
+    const initialEmployeeId = selectedUser.employee_id || "";
+    const initialName = selectedUser.name || "";
+    const initialRole = selectedUser.role || "operator";
+    const initialOperatorId = selectedUser.operator_id
+      ? String(selectedUser.operator_id)
+      : "";
+    const initialIsActive = Boolean(selectedUser.is_active);
+    const isUnchanged =
+      form.employeeId === initialEmployeeId &&
+      form.name === initialName &&
+      form.role === initialRole &&
+      form.operatorId === initialOperatorId &&
+      form.isActive === initialIsActive;
+
+    if (isUnchanged) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        setSubmitting(true);
+        await updateUser(selectedUser.id, {
+          employee_id: form.employeeId,
+          name: form.name,
+          role: form.role,
+          operator_id: form.operatorId ? Number(form.operatorId) : null,
+          is_active: form.isActive,
+        });
+        await loadData();
+      } catch (err) {
+        setError(err.message || "บันทึกบัญชีไม่สำเร็จ");
+      } finally {
+        setSubmitting(false);
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    form.employeeId,
+    form.isActive,
+    form.name,
+    form.operatorId,
+    form.role,
+    selectedUser,
+    view,
+  ]);
+
+  const handlePasswordSubmit = async () => {
+    if (!selectedUser || !form.password) {
       return;
     }
 
     try {
-      await deleteUser(userId);
-      closeModal();
+      setPasswordSubmitting(true);
+      setError("");
+      await updateUser(selectedUser.id, {
+        password: form.password,
+      });
+      setForm((current) => ({ ...current, password: "" }));
+    } catch (err) {
+      setError(err.message || "อัปเดตรหัสผ่านไม่สำเร็จ");
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedUser || !window.confirm("ยืนยันการลบผู้ใช้งานระบบ?")) {
+      return;
+    }
+
+    try {
+      await deleteUser(selectedUser.id);
       await loadData();
+      onCloseDetail();
     } catch (err) {
       setError(err.message || "ลบบัญชีไม่สำเร็จ");
     }
   };
+
+  if (view === "create" || view === "edit") {
+    return (
+      <Stack>
+        <AdminDetailHeader
+          title={view === "edit" ? "แก้ไขบัญชีผู้ใช้" : "สร้างบัญชีผู้ใช้"}
+          onBack={onCloseDetail}
+        />
+
+        {view === "edit" && !loading && !selectedUser ? (
+          <ErrorState
+            message="ไม่พบบัญชีผู้ใช้ที่ต้องการแก้ไข"
+            onRetry={onCloseDetail}
+          />
+        ) : (
+          <MobileCard className="p-4 sm:p-5">
+            {error ? <ErrorState message={error} onRetry={loadData} /> : null}
+            <form
+              className="space-y-4"
+              onSubmit={
+                view === "create"
+                  ? handleSubmit
+                  : (event) => event.preventDefault()
+              }
+            >
+              <Input
+                label="รหัสประจำตัว (Login ID) *"
+                value={form.employeeId}
+                onChange={handleChange("employeeId")}
+                required
+              />
+              <Input
+                label="ชื่อผู้ใช้งาน *"
+                value={form.name}
+                onChange={handleChange("name")}
+                required
+              />
+              <Input
+                label={
+                  view === "edit" ? "รหัสผ่านใหม่ (เว้นว่างได้)" : "รหัสผ่าน *"
+                }
+                type="password"
+                value={form.password}
+                onChange={handleChange("password")}
+                required={view !== "edit"}
+              />
+              <Input
+                as="select"
+                label="สิทธิ์ (Role) *"
+                value={form.role}
+                onChange={handleChange("role")}
+              >
+                {roleOptions.map((roleItem) => (
+                  <option key={roleItem} value={roleItem}>
+                    {roleItem.toUpperCase()}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                as="select"
+                label="ผูกกับ Profile พนักงาน (ถ้ามี)"
+                value={form.operatorId}
+                onChange={handleChange("operatorId")}
+              >
+                <option value="">— ไม่ผูก —</option>
+                {operators.map((operator) => (
+                  <option key={operator.id} value={operator.id}>
+                    {operator.name}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                as="select"
+                label="สถานะการใช้งาน"
+                value={String(form.isActive)}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    isActive: event.target.value === "true",
+                  }))
+                }
+              >
+                <option value="true">ใช้งาน</option>
+                <option value="false">ระงับบัญชี</option>
+              </Input>
+              {view === "create" ? (
+                <FormActions>
+                  <Button
+                    type="submit"
+                    className="w-full sm:flex-1"
+                    disabled={submitting}
+                  >
+                    {submitting ? "กำลังบันทึก..." : "สร้างบัญชี"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full sm:flex-1"
+                    onClick={onCloseDetail}
+                  >
+                    ยกเลิก
+                  </Button>
+                </FormActions>
+              ) : null}
+              {view === "edit" ? (
+                <>
+                  {form.password ? (
+                    <FormActions>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full sm:w-auto"
+                        onClick={handlePasswordSubmit}
+                        disabled={passwordSubmitting}
+                      >
+                        {passwordSubmitting
+                          ? "กำลังอัปเดต..."
+                          : "อัปเดตรหัสผ่าน"}
+                      </Button>
+                    </FormActions>
+                  ) : null}
+                  <FormActions>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      className="w-full sm:w-auto"
+                      onClick={handleDelete}
+                      disabled={submitting || passwordSubmitting}
+                    >
+                      ลบข้อมูล
+                    </Button>
+                  </FormActions>
+                </>
+              ) : null}
+            </form>
+          </MobileCard>
+        )}
+      </Stack>
+    );
+  }
 
   return (
     <AdminSection
@@ -179,7 +394,7 @@ export default function UsersSection({ currentRole }) {
           </div>
           <Button
             className="w-full shrink-0 whitespace-nowrap sm:w-auto"
-            onClick={openCreateModal}
+            onClick={onCreate}
           >
             + เพิ่ม
           </Button>
@@ -204,7 +419,7 @@ export default function UsersSection({ currentRole }) {
           }
           action={
             users.length === 0 ? (
-              <Button onClick={openCreateModal}>สร้างบัญชีแรก</Button>
+              <Button onClick={onCreate}>สร้างบัญชีแรก</Button>
             ) : null
           }
         />
@@ -214,46 +429,45 @@ export default function UsersSection({ currentRole }) {
         <>
           <Stack className="md:hidden">
             {filteredUsers.map((user) => (
-              <MobileCard key={user.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold text-neutral-900">
-                      {user.name}
-                    </h3>
-                    <p className="font-mono text-sm text-neutral-500">
-                      {user.employee_id}
-                    </p>
-                    <p className="text-xs text-neutral-400">
-                      ผูกกับ: {user.operator_name || "ไม่ผูกข้อมูล"}
-                    </p>
+              <MobileCard
+                key={user.id}
+                className="border-2 border-neutral-200 transition-all hover:border-info-200"
+              >
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => onEdit(user.id)}
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-bold text-neutral-900 sm:text-lg">
+                          {user.name}
+                        </h3>
+                        <p className="mt-1 font-mono text-sm text-neutral-500">
+                          {user.employee_id}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-400">
+                          ผูกกับ: {user.operator_name || "ไม่ผูกข้อมูล"}
+                        </p>
+                      </div>
+                      <Badge
+                        color={
+                          user.role === "admin" || user.role === "superadmin"
+                            ? "blue"
+                            : "gray"
+                        }
+                      >
+                        {user.role.toUpperCase()}
+                      </Badge>
+                    </div>
+                    {!user.is_active ? (
+                      <Badge color="red" className="mt-2">
+                        ระงับการใช้งาน
+                      </Badge>
+                    ) : null}
                   </div>
-                  <Badge
-                    color={
-                      user.role === "admin" || user.role === "superadmin"
-                        ? "blue"
-                        : "gray"
-                    }
-                  >
-                    {user.role.toUpperCase()}
-                  </Badge>
-                </div>
-                {!user.is_active ? (
-                  <Badge color="red" className="mt-1">
-                    ระงับการใช้งาน
-                  </Badge>
-                ) : null}
-                <div className="mt-3 sm:mt-4">
-                  <FormActions>
-                    <Button
-                      size="compact"
-                      variant="secondary"
-                      className="w-full sm:w-auto"
-                      onClick={() => openEditModal(user)}
-                    >
-                      แก้ไข
-                    </Button>
-                  </FormActions>
-                </div>
+                </button>
               </MobileCard>
             ))}
           </Stack>
@@ -264,11 +478,14 @@ export default function UsersSection({ currentRole }) {
               { key: "role", label: "สิทธิ์" },
               { key: "operator", label: "ผูกกับ Operator" },
               { key: "status", label: "สถานะ" },
-              { key: "actions", label: "จัดการ", className: "text-right" },
             ]}
           >
             {filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-neutral-50/80">
+              <tr
+                key={user.id}
+                className="cursor-pointer hover:bg-neutral-50/80"
+                onClick={() => onEdit(user.id)}
+              >
                 <td className="px-5 py-4">
                   <div className="font-semibold text-neutral-900">
                     {user.name}
@@ -296,118 +513,11 @@ export default function UsersSection({ currentRole }) {
                     {user.is_active ? "ใช้งาน" : "ระงับ"}
                   </Badge>
                 </td>
-                <td className="px-5 py-4">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="text" onClick={() => openEditModal(user)}>
-                      แก้ไข
-                    </Button>
-                  </div>
-                </td>
               </tr>
             ))}
           </DataTable>
         </>
       ) : null}
-
-      <Modal
-        title={editUser ? "แก้ไขบัญชีผู้ใช้" : "สร้างบัญชีผู้ใช้"}
-        description="ระบุ login, role และการผูกกับข้อมูลพนักงานหน้างาน"
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      >
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input
-            label="รหัสประจำตัว (Login ID) *"
-            value={form.employeeId}
-            onChange={handleChange("employeeId")}
-            required
-          />
-          <Input
-            label="ชื่อผู้ใช้งาน *"
-            value={form.name}
-            onChange={handleChange("name")}
-            required
-          />
-          <Input
-            label={editUser ? "รหัสผ่านใหม่ (เว้นว่างได้)" : "รหัสผ่าน *"}
-            type="password"
-            value={form.password}
-            onChange={handleChange("password")}
-            required={!editUser}
-          />
-          <Input
-            as="select"
-            label="สิทธิ์ (Role) *"
-            value={form.role}
-            onChange={handleChange("role")}
-          >
-            {roleOptions.map((roleItem) => (
-              <option key={roleItem} value={roleItem}>
-                {roleItem.toUpperCase()}
-              </option>
-            ))}
-          </Input>
-          <Input
-            as="select"
-            label="ผูกกับ Profile พนักงาน (ถ้ามี)"
-            value={form.operatorId}
-            onChange={handleChange("operatorId")}
-          >
-            <option value="">— ไม่ผูก —</option>
-            {operators.map((operator) => (
-              <option key={operator.id} value={operator.id}>
-                {operator.name}
-              </option>
-            ))}
-          </Input>
-          <Input
-            as="select"
-            label="สถานะการใช้งาน"
-            value={String(form.isActive)}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                isActive: event.target.value === "true",
-              }))
-            }
-          >
-            <option value="true">ใช้งาน</option>
-            <option value="false">ระงับบัญชี</option>
-          </Input>
-          <FormActions>
-            <Button
-              type="submit"
-              className="w-full sm:flex-1"
-              disabled={submitting}
-            >
-              {submitting
-                ? "กำลังบันทึก..."
-                : editUser
-                  ? "บันทึกข้อมูล"
-                  : "สร้างบัญชี"}
-            </Button>
-            {editUser ? (
-              <Button
-                type="button"
-                variant="danger"
-                className="w-full sm:flex-1"
-                onClick={() => handleDelete(editUser.id)}
-              >
-                ลบข้อมูล
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full sm:flex-1"
-              onClick={closeModal}
-            >
-              ยกเลิก
-            </Button>
-          </FormActions>
-          <SaveMessage message={message} />
-        </form>
-      </Modal>
     </AdminSection>
   );
 }

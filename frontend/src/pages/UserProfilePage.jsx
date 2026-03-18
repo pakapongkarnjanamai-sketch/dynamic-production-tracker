@@ -1,5 +1,6 @@
 import { useAuth } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AdminPageHeader } from "../components/admin/AdminUI";
 
 const roleLabelMap = {
   operator: "พนักงาน (Operator)",
@@ -196,6 +197,8 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 px-3 pb-24 pt-2.5 md:pb-8 md:pt-4">
       <div className="mx-auto max-w-lg">
+        <AdminPageHeader title="โปรไฟล์ผู้ใช้" />
+
         {/* ── Header Card ── */}
         <div className="relative mb-4 overflow-hidden rounded-[24px] bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-4 shadow-2xl shadow-primary-900/30 sm:mb-6 sm:rounded-[28px] sm:p-6">
           {/* Decorative circles */}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   createTray,
   deleteTray,
@@ -7,6 +7,7 @@ import {
   updateTray,
 } from "../../api/client";
 import {
+  AdminDetailHeader,
   AdminSection,
   Badge,
   Button,
@@ -17,8 +18,6 @@ import {
   Input,
   LoadingState,
   MobileCard,
-  Modal,
-  SaveMessage,
   Stack,
 } from "./AdminUI";
 
@@ -48,18 +47,28 @@ const EMPTY_FORM = {
   due_date: "",
 };
 
-export default function TraysSection({ lines }) {
+export default function TraysSection({
+  lines,
+  view = "",
+  selectedId = "",
+  onCreate,
+  onEdit,
+  onViewLogs,
+  onBackFromLogs,
+  onCloseDetail,
+}) {
   const [trays, setTrays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [editTray, setEditTray] = useState(null);
-  const [selectedTray, setSelectedTray] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const isAutoSaveReadyRef = useRef(false);
+
+  const selectedTray =
+    view === "edit" || view === "logs"
+      ? trays.find((tray) => String(tray.id) === String(selectedId)) || null
+      : null;
 
   const loadTrays = async () => {
     try {
@@ -78,6 +87,29 @@ export default function TraysSection({ lines }) {
     loadTrays();
   }, []);
 
+  useEffect(() => {
+    if (view === "edit" && selectedTray) {
+      isAutoSaveReadyRef.current = false;
+      setForm({
+        qr_code: selectedTray.qr_code,
+        line_id: selectedTray.line_id ? String(selectedTray.line_id) : "",
+        product: selectedTray.product || "",
+        batch_no: selectedTray.batch_no || "",
+        qty: String(selectedTray.qty || 1),
+        status: selectedTray.status || "pending",
+        due_date: selectedTray.due_date
+          ? new Date(selectedTray.due_date).toISOString().slice(0, 16)
+          : "",
+      });
+    } else if (view === "create") {
+      isAutoSaveReadyRef.current = false;
+      setForm(EMPTY_FORM);
+    }
+
+    setError("");
+    setSubmitting(false);
+  }, [selectedTray, view]);
+
   const filteredTrays = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     if (!keyword) {
@@ -91,39 +123,6 @@ export default function TraysSection({ lines }) {
     });
   }, [search, trays]);
 
-  const resetForm = () => {
-    setEditTray(null);
-    setForm(EMPTY_FORM);
-    setMessage("");
-  };
-
-  const openCreateModal = () => {
-    resetForm();
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (tray) => {
-    setEditTray(tray);
-    setForm({
-      qr_code: tray.qr_code,
-      line_id: tray.line_id ? String(tray.line_id) : "",
-      product: tray.product || "",
-      batch_no: tray.batch_no || "",
-      qty: String(tray.qty || 1),
-      status: tray.status || "pending",
-      due_date: tray.due_date
-        ? new Date(tray.due_date).toISOString().slice(0, 16)
-        : "",
-    });
-    setMessage("");
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    resetForm();
-  };
-
   const handleChange = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
   };
@@ -131,7 +130,7 @@ export default function TraysSection({ lines }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
-    setMessage("");
+    setError("");
 
     const payload = {
       ...form,
@@ -141,43 +140,244 @@ export default function TraysSection({ lines }) {
     };
 
     try {
-      if (editTray) {
-        await updateTray(editTray.id, payload);
-        setMessage("อัปเดตสำเร็จ");
-      } else {
-        await createTray(payload);
-        setMessage("เพิ่มสำเร็จ");
-      }
+      await createTray(payload);
 
       await loadTrays();
       window.setTimeout(() => {
-        closeModal();
+        onCloseDetail();
       }, 700);
     } catch (err) {
-      setMessage(err.message || "บันทึกงานไม่สำเร็จ");
+      setError(err.message || "บันทึกงานไม่สำเร็จ");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (trayId) => {
-    if (!window.confirm("ยืนยันการลบงาน?")) {
+  useEffect(() => {
+    if (view !== "edit" || !selectedTray) {
+      return undefined;
+    }
+
+    if (!isAutoSaveReadyRef.current) {
+      isAutoSaveReadyRef.current = true;
+      return undefined;
+    }
+
+    const initialLineId = selectedTray.line_id
+      ? String(selectedTray.line_id)
+      : "";
+    const initialProduct = selectedTray.product || "";
+    const initialBatchNo = selectedTray.batch_no || "";
+    const initialQty = String(selectedTray.qty || 1);
+    const initialStatus = selectedTray.status || "pending";
+    const initialDueDate = selectedTray.due_date
+      ? new Date(selectedTray.due_date).toISOString().slice(0, 16)
+      : "";
+    const isUnchanged =
+      form.line_id === initialLineId &&
+      form.product === initialProduct &&
+      form.batch_no === initialBatchNo &&
+      form.qty === initialQty &&
+      form.status === initialStatus &&
+      form.due_date === initialDueDate;
+
+    if (isUnchanged) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        setSubmitting(true);
+        await updateTray(selectedTray.id, {
+          qr_code: selectedTray.qr_code,
+          line_id: form.line_id ? Number(form.line_id) : null,
+          product: form.product,
+          batch_no: form.batch_no,
+          qty: Number(form.qty) || 1,
+          status: form.status,
+          due_date: form.due_date || null,
+        });
+        await loadTrays();
+      } catch (err) {
+        setError(err.message || "บันทึกงานไม่สำเร็จ");
+      } finally {
+        setSubmitting(false);
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [form, selectedTray, view]);
+
+  const handleDelete = async () => {
+    if (!selectedTray || !window.confirm("ยืนยันการลบงาน?")) {
       return;
     }
 
     try {
-      await deleteTray(trayId);
-      closeModal();
+      await deleteTray(selectedTray.id);
       await loadTrays();
+      onCloseDetail();
     } catch (err) {
       setError(err.message || "ลบงานไม่สำเร็จ");
     }
   };
 
-  const openLogs = (tray) => {
-    setSelectedTray(tray);
-    setIsLogModalOpen(true);
-  };
+  if (view === "create" || view === "edit") {
+    return (
+      <Stack>
+        <AdminDetailHeader
+          title={view === "edit" ? "แก้ไขงาน" : "เพิ่มงาน"}
+          onBack={onCloseDetail}
+          action={
+            view === "edit" && selectedTray ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onViewLogs(selectedTray.id)}
+              >
+                ดูประวัติ
+              </Button>
+            ) : null
+          }
+        />
+
+        {view === "edit" && !loading && !selectedTray ? (
+          <ErrorState
+            message="ไม่พบงานที่ต้องการแก้ไข"
+            onRetry={onCloseDetail}
+          />
+        ) : (
+          <MobileCard className="p-4 sm:p-5">
+            {error ? <ErrorState message={error} onRetry={loadTrays} /> : null}
+            <form
+              className="space-y-4"
+              onSubmit={
+                view === "create"
+                  ? handleSubmit
+                  : (event) => event.preventDefault()
+              }
+            >
+              <Input
+                label="QR Code *"
+                value={form.qr_code}
+                onChange={handleChange("qr_code")}
+                required
+                disabled={view === "edit"}
+                className="font-mono"
+              />
+              <Input
+                as="select"
+                label="สายการผลิต"
+                value={form.line_id}
+                onChange={handleChange("line_id")}
+              >
+                <option value="">— ไม่ระบุ —</option>
+                {lines.map((line) => (
+                  <option key={line.id} value={line.id}>
+                    {line.name}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                label="สินค้า (Product)"
+                value={form.product}
+                onChange={handleChange("product")}
+              />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  label="Batch No."
+                  value={form.batch_no}
+                  onChange={handleChange("batch_no")}
+                />
+                <Input
+                  label="จำนวน (Qty)"
+                  type="number"
+                  min="1"
+                  value={form.qty}
+                  onChange={handleChange("qty")}
+                />
+              </div>
+              <Input
+                as="select"
+                label="สถานะ"
+                value={form.status}
+                onChange={handleChange("status")}
+              >
+                {TRAY_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {STATUS_LABELS[status]}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                label="กำหนดส่ง (Due Date)"
+                type="datetime-local"
+                value={form.due_date}
+                onChange={handleChange("due_date")}
+              />
+              {view === "create" ? (
+                <FormActions>
+                  <Button
+                    type="submit"
+                    className="w-full sm:flex-1"
+                    disabled={submitting}
+                  >
+                    {submitting ? "กำลังบันทึก..." : "สร้างงาน"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full sm:flex-1"
+                    onClick={onCloseDetail}
+                  >
+                    ยกเลิก
+                  </Button>
+                </FormActions>
+              ) : null}
+              {view === "edit" ? (
+                <FormActions>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    className="w-full sm:w-auto"
+                    onClick={handleDelete}
+                    disabled={submitting}
+                  >
+                    ลบข้อมูล
+                  </Button>
+                </FormActions>
+              ) : null}
+            </form>
+          </MobileCard>
+        )}
+      </Stack>
+    );
+  }
+
+  if (view === "logs") {
+    if (!loading && !selectedTray) {
+      return (
+        <ErrorState
+          message="ไม่พบงานที่ต้องการดูประวัติ"
+          onRetry={onCloseDetail}
+        />
+      );
+    }
+
+    return selectedTray ? (
+      <Stack>
+        <AdminDetailHeader
+          title={`ประวัติ: ${selectedTray.qr_code}`}
+          onBack={() => onBackFromLogs(selectedTray.id)}
+        />
+        <TrayLogs trayId={selectedTray.id} />
+      </Stack>
+    ) : (
+      <LoadingState message="กำลังเตรียมข้อมูลประวัติงาน..." />
+    );
+  }
 
   return (
     <AdminSection
@@ -192,7 +392,7 @@ export default function TraysSection({ lines }) {
           </div>
           <Button
             className="w-full shrink-0 whitespace-nowrap sm:w-auto"
-            onClick={openCreateModal}
+            onClick={onCreate}
           >
             + เพิ่ม
           </Button>
@@ -213,7 +413,7 @@ export default function TraysSection({ lines }) {
           }
           action={
             trays.length === 0 ? (
-              <Button onClick={openCreateModal}>สร้างงานแรก</Button>
+              <Button onClick={onCreate}>สร้างงานแรก</Button>
             ) : null
           }
         />
@@ -223,44 +423,33 @@ export default function TraysSection({ lines }) {
         <>
           <Stack className="md:hidden">
             {filteredTrays.map((tray) => (
-              <MobileCard key={tray.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <h3 className="font-mono text-base font-black text-neutral-900">
-                      {tray.qr_code}
-                    </h3>
-                    <p className="text-sm font-semibold text-neutral-700">
-                      {tray.product || "ไม่มีชื่อสินค้า"}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {tray.line_name || "ไม่ระบุสายการผลิต"}
-                      {tray.batch_no ? ` • Batch: ${tray.batch_no}` : ""}
-                    </p>
+              <MobileCard
+                key={tray.id}
+                className="border-2 border-neutral-200 transition-all hover:border-info-200"
+              >
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => onEdit(tray.id)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-mono text-base font-black text-neutral-900 sm:text-lg">
+                        {tray.qr_code}
+                      </h3>
+                      <p className="mt-1 text-sm font-semibold text-neutral-700">
+                        {tray.product || "ไม่มีชื่อสินค้า"}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-500">
+                        {tray.line_name || "ไม่ระบุสายการผลิต"}
+                        {tray.batch_no ? ` • Batch: ${tray.batch_no}` : ""}
+                      </p>
+                    </div>
+                    <Badge color={STATUS_COLORS[tray.status]}>
+                      {STATUS_LABELS[tray.status]}
+                    </Badge>
                   </div>
-                  <Badge color={STATUS_COLORS[tray.status]}>
-                    {STATUS_LABELS[tray.status]}
-                  </Badge>
-                </div>
-                <div className="mt-3 sm:mt-4">
-                  <FormActions>
-                    <Button
-                      size="compact"
-                      variant="secondary"
-                      className="w-full sm:w-auto"
-                      onClick={() => openLogs(tray)}
-                    >
-                      ดูประวัติ
-                    </Button>
-                    <Button
-                      size="compact"
-                      variant="text"
-                      className="w-full sm:w-auto"
-                      onClick={() => openEditModal(tray)}
-                    >
-                      แก้ไข
-                    </Button>
-                  </FormActions>
-                </div>
+                </button>
               </MobileCard>
             ))}
           </Stack>
@@ -271,11 +460,14 @@ export default function TraysSection({ lines }) {
               { key: "product", label: "สินค้า / Batch" },
               { key: "line", label: "สายการผลิต" },
               { key: "status", label: "สถานะ" },
-              { key: "actions", label: "จัดการ", className: "text-right" },
             ]}
           >
             {filteredTrays.map((tray) => (
-              <tr key={tray.id} className="hover:bg-neutral-50/80">
+              <tr
+                key={tray.id}
+                className="cursor-pointer hover:bg-neutral-50/80"
+                onClick={() => onEdit(tray.id)}
+              >
                 <td className="px-5 py-4 font-mono font-bold text-neutral-900">
                   {tray.qr_code}
                 </td>
@@ -295,132 +487,11 @@ export default function TraysSection({ lines }) {
                     {STATUS_LABELS[tray.status]}
                   </Badge>
                 </td>
-                <td className="px-5 py-4">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="secondary" onClick={() => openLogs(tray)}>
-                      ดูประวัติ
-                    </Button>
-                    <Button variant="text" onClick={() => openEditModal(tray)}>
-                      แก้ไข
-                    </Button>
-                  </div>
-                </td>
               </tr>
             ))}
           </DataTable>
         </>
       ) : null}
-
-      <Modal
-        title={editTray ? "แก้ไขงาน" : "เพิ่มงาน"}
-        description="กำหนด QR Code และข้อมูลงานเพื่อใช้ติดตามสถานะในสายการผลิต"
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      >
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input
-            label="QR Code *"
-            value={form.qr_code}
-            onChange={handleChange("qr_code")}
-            required
-            disabled={Boolean(editTray)}
-            className="font-mono"
-          />
-          <Input
-            as="select"
-            label="สายการผลิต"
-            value={form.line_id}
-            onChange={handleChange("line_id")}
-          >
-            <option value="">— ไม่ระบุ —</option>
-            {lines.map((line) => (
-              <option key={line.id} value={line.id}>
-                {line.name}
-              </option>
-            ))}
-          </Input>
-          <Input
-            label="สินค้า (Product)"
-            value={form.product}
-            onChange={handleChange("product")}
-          />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Batch No."
-              value={form.batch_no}
-              onChange={handleChange("batch_no")}
-            />
-            <Input
-              label="จำนวน (Qty)"
-              type="number"
-              min="1"
-              value={form.qty}
-              onChange={handleChange("qty")}
-            />
-          </div>
-          <Input
-            as="select"
-            label="สถานะ"
-            value={form.status}
-            onChange={handleChange("status")}
-          >
-            {TRAY_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {STATUS_LABELS[status]}
-              </option>
-            ))}
-          </Input>
-          <Input
-            label="กำหนดส่ง (Due Date)"
-            type="datetime-local"
-            value={form.due_date}
-            onChange={handleChange("due_date")}
-          />
-          <FormActions>
-            <Button
-              type="submit"
-              className="w-full sm:flex-1"
-              disabled={submitting}
-            >
-              {submitting
-                ? "กำลังบันทึก..."
-                : editTray
-                  ? "บันทึกข้อมูล"
-                  : "สร้างงาน"}
-            </Button>
-            {editTray ? (
-              <Button
-                type="button"
-                variant="danger"
-                className="w-full sm:flex-1"
-                onClick={() => handleDelete(editTray.id)}
-              >
-                ลบข้อมูล
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full sm:flex-1"
-              onClick={closeModal}
-            >
-              ยกเลิก
-            </Button>
-          </FormActions>
-          <SaveMessage message={message} />
-        </form>
-      </Modal>
-
-      <Modal
-        title={
-          selectedTray ? `ประวัติ: ${selectedTray.qr_code}` : "ประวัติการทำงาน"
-        }
-        description="ตรวจสอบเหตุการณ์ล่าสุดของงานนี้จาก log ในระบบ"
-        isOpen={isLogModalOpen}
-        onClose={() => setIsLogModalOpen(false)}
-      >
-        {selectedTray ? <TrayLogs trayId={selectedTray.id} /> : null}
-      </Modal>
     </AdminSection>
   );
 }

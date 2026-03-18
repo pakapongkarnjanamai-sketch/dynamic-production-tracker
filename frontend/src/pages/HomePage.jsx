@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getLines, getTrayStats } from "../api/client";
 import { useNavigate } from "react-router-dom";
+import { AdminPageHeader } from "../components/admin/AdminUI";
 
 export default function HomePage() {
   const [lines, setLines] = useState([]);
@@ -24,6 +25,8 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-0">
       <div className="mx-auto w-full max-w-4xl space-y-4 px-3 py-2.5 sm:space-y-6 sm:px-6 sm:py-4 md:px-8 md:py-6">
+        <AdminPageHeader title="หน้าหลัก" />
+
         {/* ── Hero Section ── */}
         <div className="relative overflow-hidden rounded-[22px] border border-neutral-200 bg-white p-4 text-center shadow-sm sm:rounded-[28px] sm:p-10 md:p-12">
           <div className="pointer-events-none absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-neutral-50 opacity-50 sm:-mr-8 sm:-mt-8 sm:h-32 sm:w-32"></div>

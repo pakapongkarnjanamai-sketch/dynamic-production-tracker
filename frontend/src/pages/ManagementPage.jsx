@@ -1,15 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getLines } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
-import AdminShell from '../components/admin/AdminShell';
-import LinesSection from '../components/admin/LinesSection';
-import OperatorsSection from '../components/admin/OperatorsSection';
-import TraysSection from '../components/admin/TraysSection';
-import UsersSection from '../components/admin/UsersSection';
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { getLines } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import AdminShell from "../components/admin/AdminShell";
+import LinesSection from "../components/admin/LinesSection";
+import OperatorsSection from "../components/admin/OperatorsSection";
+import TraysSection from "../components/admin/TraysSection";
+import UsersSection from "../components/admin/UsersSection";
+
+const ADMIN_TABS = ["lines", "trays", "operators", "users"];
+const DEFAULT_ADMIN_TAB = "lines";
+
+function getValidAdminTab(value) {
+  return ADMIN_TABS.includes(value) ? value : DEFAULT_ADMIN_TAB;
+}
+
+function createAdminSearch({
+  tab = DEFAULT_ADMIN_TAB,
+  mode = "",
+  id = "",
+  subId = "",
+}) {
+  const params = new URLSearchParams();
+  params.set("tab", getValidAdminTab(tab));
+
+  if (mode) {
+    params.set("mode", mode);
+  }
+
+  if (id) {
+    params.set("id", String(id));
+  }
+
+  if (subId) {
+    params.set("subId", String(subId));
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
 
 function FactoryIcon() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -22,7 +60,12 @@ function FactoryIcon() {
 
 function BoxIcon() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -35,7 +78,12 @@ function BoxIcon() {
 
 function UsersIcon() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -48,7 +96,12 @@ function UsersIcon() {
 
 function AccountIcon() {
   return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -61,29 +114,49 @@ function AccountIcon() {
 
 export default function ManagementPage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [lines, setLines] = useState([]);
   const [linesLoading, setLinesLoading] = useState(true);
-  const [linesError, setLinesError] = useState('');
-  const [activeMenu, setActiveMenu] = useState('lines');
+  const [linesError, setLinesError] = useState("");
+
+  const activeMenu = getValidAdminTab(searchParams.get("tab"));
+  const detailMode = searchParams.get("mode") || "";
+  const detailId = searchParams.get("id") || "";
+  const detailSubId = searchParams.get("subId") || "";
 
   const menus = useMemo(
     () => [
-      { id: 'lines', label: 'สายการผลิต', shortLabel: 'ไลน์', icon: <FactoryIcon /> },
-      { id: 'trays', label: 'งาน', shortLabel: 'งาน', icon: <BoxIcon /> },
-      { id: 'operators', label: 'พนักงาน', shortLabel: 'ทีม', icon: <UsersIcon /> },
-      { id: 'users', label: 'ผู้ใช้ระบบ', shortLabel: 'บัญชี', icon: <AccountIcon /> },
+      {
+        id: "lines",
+        label: "สายการผลิต",
+        shortLabel: "ไลน์",
+        icon: <FactoryIcon />,
+      },
+      { id: "trays", label: "งาน", shortLabel: "งาน", icon: <BoxIcon /> },
+      {
+        id: "operators",
+        label: "พนักงาน",
+        shortLabel: "ทีม",
+        icon: <UsersIcon />,
+      },
+      {
+        id: "users",
+        label: "ผู้ใช้ระบบ",
+        shortLabel: "บัญชี",
+        icon: <AccountIcon />,
+      },
     ],
     [],
   );
 
   const loadLines = async () => {
     try {
-      setLinesError('');
+      setLinesError("");
       setLinesLoading(true);
       const data = await getLines();
       setLines(data);
     } catch (err) {
-      setLinesError(err.message || 'โหลดข้อมูลสายการผลิตไม่สำเร็จ');
+      setLinesError(err.message || "โหลดข้อมูลสายการผลิตไม่สำเร็จ");
     } finally {
       setLinesLoading(false);
     }
@@ -93,19 +166,90 @@ export default function ManagementPage() {
     loadLines();
   }, []);
 
+  useEffect(() => {
+    const currentTab = searchParams.get("tab");
+    const currentMode = searchParams.get("mode") || "";
+    const currentId = searchParams.get("id") || "";
+    const currentSubId = searchParams.get("subId") || "";
+    const normalizedTab = getValidAdminTab(currentTab);
+
+    if (currentTab !== normalizedTab) {
+      setSearchParams(
+        createAdminSearch({
+          tab: normalizedTab,
+          mode: currentMode,
+          id: currentId,
+          subId: currentSubId,
+        }),
+        { replace: true },
+      );
+    }
+  }, [searchParams, setSearchParams]);
+
+  const updateAdminView = ({
+    tab = activeMenu,
+    mode = "",
+    id = "",
+    subId = "",
+  }) => {
+    setSearchParams(createAdminSearch({ tab, mode, id, subId }));
+  };
+
+  const closeDetail = () => {
+    setSearchParams(createAdminSearch({ tab: activeMenu }), { replace: true });
+  };
+
   let currentSection;
 
   switch (activeMenu) {
-    case 'trays':
-      currentSection = <TraysSection lines={lines} />;
+    case "trays":
+      currentSection = (
+        <TraysSection
+          lines={lines}
+          view={detailMode}
+          selectedId={detailId}
+          onCreate={() => updateAdminView({ tab: "trays", mode: "create" })}
+          onEdit={(trayId) =>
+            updateAdminView({ tab: "trays", mode: "edit", id: trayId })
+          }
+          onViewLogs={(trayId) =>
+            updateAdminView({ tab: "trays", mode: "logs", id: trayId })
+          }
+          onBackFromLogs={(trayId) =>
+            updateAdminView({ tab: "trays", mode: "edit", id: trayId })
+          }
+          onCloseDetail={closeDetail}
+        />
+      );
       break;
-    case 'operators':
-      currentSection = <OperatorsSection />;
+    case "operators":
+      currentSection = (
+        <OperatorsSection
+          view={detailMode}
+          selectedId={detailId}
+          onCreate={() => updateAdminView({ tab: "operators", mode: "create" })}
+          onEdit={(operatorId) =>
+            updateAdminView({ tab: "operators", mode: "edit", id: operatorId })
+          }
+          onCloseDetail={closeDetail}
+        />
+      );
       break;
-    case 'users':
-      currentSection = <UsersSection currentRole={user?.role || 'admin'} />;
+    case "users":
+      currentSection = (
+        <UsersSection
+          currentRole={user?.role || "admin"}
+          view={detailMode}
+          selectedId={detailId}
+          onCreate={() => updateAdminView({ tab: "users", mode: "create" })}
+          onEdit={(userId) =>
+            updateAdminView({ tab: "users", mode: "edit", id: userId })
+          }
+          onCloseDetail={closeDetail}
+        />
+      );
       break;
-    case 'lines':
+    case "lines":
     default:
       currentSection = (
         <LinesSection
@@ -113,6 +257,38 @@ export default function ManagementPage() {
           loading={linesLoading}
           error={linesError}
           onRefresh={loadLines}
+          view={detailMode}
+          selectedId={detailId}
+          selectedProcessId={detailSubId}
+          onCreate={() => updateAdminView({ tab: "lines", mode: "create" })}
+          onEdit={(lineId) =>
+            updateAdminView({ tab: "lines", mode: "edit", id: lineId })
+          }
+          onManageProcesses={(lineId) =>
+            updateAdminView({ tab: "lines", mode: "processes", id: lineId })
+          }
+          onBackFromProcesses={(lineId) =>
+            updateAdminView({ tab: "lines", mode: "edit", id: lineId })
+          }
+          onCreateProcess={(lineId) =>
+            updateAdminView({
+              tab: "lines",
+              mode: "process-create",
+              id: lineId,
+            })
+          }
+          onEditProcess={(lineId, processId) =>
+            updateAdminView({
+              tab: "lines",
+              mode: "process-edit",
+              id: lineId,
+              subId: processId,
+            })
+          }
+          onBackToProcesses={(lineId) =>
+            updateAdminView({ tab: "lines", mode: "processes", id: lineId })
+          }
+          onCloseDetail={closeDetail}
         />
       );
       break;
@@ -121,10 +297,12 @@ export default function ManagementPage() {
   return (
     <AdminShell
       title="จัดการข้อมูลระบบ"
-      description="ดูแลสายการผลิต งาน พนักงาน และสิทธิ์ผู้ใช้งานในมุมมองเดียวที่ออกแบบให้ใช้งานบนมือถือได้ดีขึ้น"
+      description="กำหนดค่าข้อมูลหลักของระบบและดูแลรายการใช้งาน"
+      showPageHeader={!detailMode}
+      showMobileMenu={!detailMode}
       menus={menus}
       activeMenu={activeMenu}
-      onMenuChange={setActiveMenu}
+      onMenuChange={(tabId) => updateAdminView({ tab: tabId })}
     >
       {currentSection}
     </AdminShell>

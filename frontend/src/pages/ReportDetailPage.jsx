@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { getLines, getLogs, getLogsSummary, getProcesses } from "../api/client";
 import {
+  AdminDetailHeader,
   Badge,
   EmptyState,
   ErrorState,
@@ -60,35 +61,7 @@ function DetailLayout({ title, backTo, children }) {
   return (
     <div className="min-h-screen bg-white pb-24 md:pb-0">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 md:px-8 md:py-6">
-        <div className="sticky top-0 z-10 -mx-3 border-b border-neutral-200 bg-white/95 px-3 py-2.5 backdrop-blur sm:-mx-6 sm:px-6 md:static md:mx-0 md:rounded-[22px] md:border md:px-4 md:py-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(backTo)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-              aria-label="กลับไปรายงาน"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <div className="min-w-0">
-              <h1 className="truncate text-base font-black tracking-tight text-neutral-900 sm:text-xl">
-                {title}
-              </h1>
-            </div>
-          </div>
-        </div>
+        <AdminDetailHeader title={title} onBack={() => navigate(backTo)} />
         {children}
       </div>
     </div>

@@ -1,8 +1,10 @@
-import { joinClasses } from "./AdminUI";
+import { AdminPageHeader, joinClasses } from "./AdminUI";
 
 export default function AdminShell({
   title,
   description,
+  showPageHeader = true,
+  showMobileMenu = true,
   menus,
   activeMenu,
   onMenuChange,
@@ -53,36 +55,42 @@ export default function AdminShell({
         </aside>
 
         <div className="min-w-0 flex flex-1 flex-col gap-3 sm:gap-4">
-          <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 hide-scrollbar sm:-mx-6 sm:gap-2 sm:px-6 md:hidden">
-            {menus.map((menu) => {
-              const isActive = menu.id === activeMenu;
-              return (
-                <button
-                  key={menu.id}
-                  type="button"
-                  onClick={() => onMenuChange(menu.id)}
-                  className={joinClasses(
-                    "flex min-w-[84px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors sm:min-w-[92px] sm:gap-2 sm:rounded-2xl",
-                    isActive
-                      ? "border-primary-600 bg-primary-600 text-white shadow-sm"
-                      : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
-                  )}
-                >
-                  <span
+          {showPageHeader ? (
+            <AdminPageHeader title={title} action={action} />
+          ) : null}
+
+          {showMobileMenu ? (
+            <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 hide-scrollbar sm:-mx-6 sm:gap-2 sm:px-6 md:hidden">
+              {menus.map((menu) => {
+                const isActive = menu.id === activeMenu;
+                return (
+                  <button
+                    key={menu.id}
+                    type="button"
+                    onClick={() => onMenuChange(menu.id)}
                     className={joinClasses(
-                      "shrink-0",
-                      isActive ? "text-white" : "text-neutral-400",
+                      "flex min-w-[84px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors sm:min-w-[92px] sm:gap-2 sm:rounded-2xl",
+                      isActive
+                        ? "border-primary-600 bg-primary-600 text-white shadow-sm"
+                        : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
                     )}
                   >
-                    {menu.icon}
-                  </span>
-                  <span className="truncate">
-                    {menu.shortLabel || menu.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                    <span
+                      className={joinClasses(
+                        "shrink-0",
+                        isActive ? "text-white" : "text-neutral-400",
+                      )}
+                    >
+                      {menu.icon}
+                    </span>
+                    <span className="truncate">
+                      {menu.shortLabel || menu.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           <div>{children}</div>
         </div>
