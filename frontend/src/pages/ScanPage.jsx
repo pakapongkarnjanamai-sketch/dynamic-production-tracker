@@ -105,7 +105,7 @@ export default function ScanPage() {
 
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-3 py-2.5 sm:px-6 sm:py-4 md:px-8 md:py-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-2.5 sm:px-6 sm:py-4 md:px-8 md:py-6">
         <AdminPageHeader title="สแกนงาน" />
 
         {/* Loading */}
@@ -138,10 +138,10 @@ export default function ScanPage() {
 
         {/* Scanner + Manual Input */}
         {!loading && (
-          <div className="flex flex-col items-center justify-start gap-4">
+          <div className="grid items-start gap-4 lg:grid-cols-[360px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)]">
             <form
               onSubmit={submitManualCode}
-              className="w-full rounded-[24px] border border-neutral-200 bg-white shadow-sm p-4"
+              className="w-full rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm lg:sticky lg:top-24"
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
@@ -181,103 +181,105 @@ export default function ScanPage() {
               </div>
             </form>
 
-            <section className="w-full rounded-[24px] border border-neutral-200 bg-white p-3 shadow-sm">
-              <div className="mb-3 flex items-start justify-between gap-3 px-1">
-                <div>
-                  <h3 className="text-base font-bold text-neutral-900">
-                    กล้องสแกน
-                  </h3>
+            <div className="space-y-4">
+              <section className="w-full rounded-[24px] border border-neutral-200 bg-white p-3 shadow-sm">
+                <div className="mb-3 flex items-start justify-between gap-3 px-1">
+                  <div>
+                    <h3 className="text-base font-bold text-neutral-900">
+                      กล้องสแกน
+                    </h3>
+                  </div>
+                  {(cameraError || requestError) && (
+                    <Button variant="secondary" size="compact" onClick={reset}>
+                      รีเซ็ต
+                    </Button>
+                  )}
                 </div>
-                {(cameraError || requestError) && (
-                  <Button variant="secondary" size="compact" onClick={reset}>
-                    รีเซ็ต
-                  </Button>
-                )}
-              </div>
 
-              {!cameraError ? (
-                <div className="relative w-full aspect-square rounded-[24px] overflow-hidden border border-neutral-200 shadow-sm bg-black">
-                  <QRScanner
-                    key={scanKey}
-                    onScan={handleScan}
-                    onError={(e) => {
-                      setCameraError("ไม่สามารถเปิดกล้องได้: " + e);
-                      setRequestError(null);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-4 rounded-[24px] border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-sm text-neutral-600">
+                {!cameraError ? (
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-black shadow-sm lg:aspect-[4/3] xl:aspect-[16/10]">
+                    <QRScanner
+                      key={scanKey}
+                      onScan={handleScan}
+                      onError={(e) => {
+                        setCameraError("ไม่สามารถเปิดกล้องได้: " + e);
+                        setRequestError(null);
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-4 rounded-[24px] border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-sm text-neutral-600">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-danger-100 text-danger-600">
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                      </span>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-neutral-900">
+                          ใช้กล้องไม่ได้
+                        </h4>
+                        <p className="mt-1 text-sm leading-6 text-neutral-600">
+                          {cameraError}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button variant="secondary" onClick={reset}>
+                        ลองใหม่
+                      </Button>
+                      <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-500">
+                        กรอกรหัสแทนได้
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              {requestError && (
+                <div className="w-full space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 shadow-sm">
                   <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-danger-100 text-danger-600">
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                        />
-                      </svg>
-                    </span>
+                    <svg
+                      className="mt-0.5 h-5 w-5 shrink-0 text-danger-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
                     <div className="flex-1">
-                      <h4 className="text-sm font-bold text-neutral-900">
-                        ใช้กล้องไม่ได้
-                      </h4>
-                      <p className="mt-1 text-sm leading-6 text-neutral-600">
-                        {cameraError}
-                      </p>
+                      <h3 className="text-sm font-bold text-danger-700">
+                        ไม่พบรหัส
+                      </h3>
+                      <p className="mt-1 text-danger-600">{requestError}</p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button variant="secondary" onClick={reset}>
-                      ลองใหม่
+                    <Button variant="secondary" onClick={clearRequestError}>
+                      ตรวจสอบอีกครั้ง
                     </Button>
-                    <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-500">
-                      กรอกรหัสแทนได้
-                    </div>
+                    <Button variant="primary" onClick={reset}>
+                      สแกนใหม่
+                    </Button>
                   </div>
                 </div>
               )}
-            </section>
-
-            {requestError && (
-              <div className="w-full space-y-4 rounded-[24px] border border-danger-200 bg-danger-50 px-4 py-5 text-sm text-danger-700 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-danger-500 shrink-0 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-danger-700">
-                      ไม่พบรหัส
-                    </h3>
-                    <p className="mt-1 text-danger-600">{requestError}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Button variant="secondary" onClick={clearRequestError}>
-                    ตรวจสอบอีกครั้ง
-                  </Button>
-                  <Button variant="primary" onClick={reset}>
-                    สแกนใหม่
-                  </Button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>

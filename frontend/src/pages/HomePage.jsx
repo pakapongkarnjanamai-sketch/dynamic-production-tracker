@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getLines, getTrayStats } from "../api/client";
-import { useNavigate } from "react-router-dom";
 import { AdminPageHeader } from "../components/admin/AdminUI";
 
 export default function HomePage() {
@@ -8,7 +7,6 @@ export default function HomePage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([getLines(), getTrayStats()])
@@ -24,41 +22,8 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto w-full max-w-4xl space-y-4 px-3 py-2.5 sm:space-y-6 sm:px-6 sm:py-4 md:px-8 md:py-6">
+      <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-2.5 sm:space-y-6 sm:px-6 sm:py-4 md:px-8 md:py-6">
         <AdminPageHeader title="หน้าหลัก" />
-
-        {/* ── Hero Section ── */}
-        <div className="relative overflow-hidden rounded-[22px] border border-neutral-200 bg-white p-4 text-center shadow-sm sm:rounded-[28px] sm:p-10 md:p-12">
-          <div className="pointer-events-none absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-neutral-50 opacity-50 sm:-mr-8 sm:-mt-8 sm:h-32 sm:w-32"></div>
-          <div className="pointer-events-none absolute bottom-0 left-0 hidden h-24 w-24 -ml-8 -mb-8 rounded-full bg-neutral-50 opacity-50 sm:block"></div>
-
-          <p className="relative z-10 text-sm font-semibold text-neutral-400">
-            VS MES
-          </p>
-          <h1 className="relative z-10 mt-1.5 text-lg font-black tracking-tight text-neutral-900 sm:mt-2 sm:text-3xl">
-            พร้อมเริ่มงาน
-          </h1>
-
-          <button
-            onClick={() => navigate("/scan")}
-            className="group relative z-10 mt-5 inline-flex items-center justify-center gap-3 rounded-2xl border border-primary-700 bg-primary-600 px-7 py-4.5 text-lg font-bold text-white shadow-sm transition-colors hover:bg-primary-700 active:scale-95 sm:mt-8 sm:px-12 sm:py-6 sm:text-2xl"
-          >
-            <svg
-              className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-              />
-            </svg>
-            สแกนงาน
-          </button>
-        </div>
 
         {/* ── Work Status Stats ── */}
         {stats && (

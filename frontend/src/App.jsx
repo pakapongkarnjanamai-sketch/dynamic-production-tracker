@@ -19,7 +19,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 
 // Component สำหรับ Navigation Bar โดยเฉพาะ
 function Navigation() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const isActive = (path) =>
     path === "/"
@@ -54,15 +54,15 @@ function Navigation() {
   return (
     <>
       {/* ══════ Desktop Top Nav Bar ══════ */}
-      <nav className="hidden md:block bg-neutral-900 text-white p-3 shadow-lg sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 overflow-x-auto hide-scrollbar">
-          {/* Logo */}
-          <div className="flex items-center gap-2 font-black text-xl tracking-tight text-white flex-shrink-0 mr-2 sm:mr-4">
-            <span className="text-primary-400">VS</span> MES
+      <nav className="sticky top-0 z-50 hidden border-b border-neutral-800 bg-neutral-900/95 p-3 text-white shadow-lg backdrop-blur md:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-shrink-0 items-center gap-2 font-black text-xl tracking-tight text-white">
+              <span className="text-primary-400">VS</span> MES
+            </div>
           </div>
 
-          {/* Menu Items */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* ── กลุ่ม Operator ── */}
             {canScan && (
               <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-2xl border border-neutral-700/50">
@@ -105,7 +105,7 @@ function Navigation() {
             {canReport && <div className="w-px h-6 bg-neutral-700 mx-1"></div>}
 
             {/* ── กลุ่ม Management ── */}
-            <div className="flex gap-1 items-center">
+            <div className="flex items-center gap-1">
               {canReport && (
                 <Link to="/report" className={desktopNavItemClass("/report")}>
                   <svg
@@ -128,7 +128,7 @@ function Navigation() {
                 to="/profile"
                 aria-label="โปรไฟล์"
                 title="โปรไฟล์"
-                className="ml-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 flex items-center gap-1.5"
+                className="ml-1 flex items-center gap-1.5 rounded-xl border border-neutral-700 bg-neutral-800 px-2.5 py-2 text-xs font-semibold hover:bg-neutral-700 sm:px-3"
               >
                 <svg
                   className="w-4 h-4"

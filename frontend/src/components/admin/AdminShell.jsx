@@ -13,18 +13,15 @@ export default function AdminShell({
 }) {
   return (
     <div className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-3 py-2.5 sm:px-6 sm:py-4 md:flex-row md:gap-6 md:px-8 md:py-6">
-        <aside className="sticky top-20 hidden w-72 shrink-0 self-start flex-col rounded-[32px] border border-neutral-200 bg-white p-4 shadow-sm md:flex">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-3 py-2.5 sm:px-6 sm:py-4 md:flex-row md:gap-6 md:px-8 md:py-6 lg:gap-8">
+        <aside className="sticky top-24 hidden w-80 shrink-0 self-start flex-col rounded-[32px] border border-neutral-200 bg-white p-5 shadow-sm md:flex">
           <div className="border-b border-neutral-100 px-3 pb-4 pt-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
-              Admin Console
-            </p>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-neutral-900">
+            <h2 className="text-2xl font-black tracking-tight text-neutral-900">
               การจัดการระบบ
             </h2>
           </div>
 
-          <nav className="mt-4 space-y-2">
+          <nav className="mt-5 space-y-2">
             {menus.map((menu) => {
               const isActive = menu.id === activeMenu;
               return (
@@ -33,7 +30,7 @@ export default function AdminShell({
                   type="button"
                   onClick={() => onMenuChange(menu.id)}
                   className={joinClasses(
-                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors",
+                    "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-colors",
                     isActive
                       ? "bg-primary-600 text-white shadow-sm"
                       : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",

@@ -145,7 +145,7 @@ export default function TrayDetailPage() {
             {/* Tray Info */}
             <div className="rounded-[28px] border border-neutral-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-3 flex justify-between items-center">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
+                <span className="text-xs font-semibold text-neutral-400">
                   งาน
                 </span>
                 <span className="inline-flex items-center rounded-full border border-info-200 bg-info-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-info-700">
@@ -206,7 +206,7 @@ export default function TrayDetailPage() {
             {/* Process Progress List */}
             <div className="rounded-[28px] border border-neutral-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
+                <span className="text-xs font-semibold text-neutral-400">
                   ขั้นตอนการผลิต
                 </span>
               </div>

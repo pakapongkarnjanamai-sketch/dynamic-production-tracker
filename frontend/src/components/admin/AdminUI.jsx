@@ -75,17 +75,23 @@ export function AdminPageHeader({ title, onBack, action, eyebrow = "VS MES" }) {
   );
 
   return (
-    <SectionHeaderBar
-      title={title}
-      onBack={onBack}
-      action={action}
-      leading={leading}
-    />
+    <div className="md:hidden">
+      <SectionHeaderBar
+        title={title}
+        onBack={onBack}
+        action={action}
+        leading={leading}
+      />
+    </div>
   );
 }
 
 export function AdminDetailHeader({ title, onBack, action }) {
-  return <SectionHeaderBar title={title} onBack={onBack} action={action} />;
+  return (
+    <div className="md:hidden">
+      <SectionHeaderBar title={title} onBack={onBack} action={action} />
+    </div>
+  );
 }
 
 export function AdminSection({ title, description, action, children }) {
