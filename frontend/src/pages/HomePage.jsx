@@ -32,15 +32,12 @@ export default function HomePage() {
           <div className="pointer-events-none absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-neutral-50 opacity-50 sm:-mr-8 sm:-mt-8 sm:h-32 sm:w-32"></div>
           <div className="pointer-events-none absolute bottom-0 left-0 hidden h-24 w-24 -ml-8 -mb-8 rounded-full bg-neutral-50 opacity-50 sm:block"></div>
 
-          <p className="relative z-10 text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
+          <p className="relative z-10 text-sm font-semibold text-neutral-400">
             VS MES
           </p>
           <h1 className="relative z-10 mt-1.5 text-lg font-black tracking-tight text-neutral-900 sm:mt-2 sm:text-3xl">
-            ยินดีต้อนรับสู่พื้นที่ปฏิบัติงาน
+            พร้อมเริ่มงาน
           </h1>
-          <p className="relative z-10 mx-auto mt-2 max-w-lg text-sm text-neutral-500 sm:text-base">
-            เลือกระบบสแกน QR Code เพื่อเริ่มต้นบันทึกการทำงานของคุณ
-          </p>
 
           <button
             onClick={() => navigate("/scan")}
@@ -69,7 +66,6 @@ export default function HomePage() {
             {[
               {
                 label: "กำลังดำเนินการ",
-                sub: "In Progress",
                 value: stats.in_progress,
                 bg: "bg-warning-50",
                 border: "border-warning-200",
@@ -79,7 +75,6 @@ export default function HomePage() {
               },
               {
                 label: "รอดำเนินการ",
-                sub: "Pending",
                 value: stats.pending,
                 bg: "bg-neutral-50",
                 border: "border-neutral-200",
@@ -89,7 +84,6 @@ export default function HomePage() {
               },
               {
                 label: "เสร็จสิ้น",
-                sub: "Completed",
                 value: stats.completed,
                 bg: "bg-success-50",
                 border: "border-success-200",
@@ -99,7 +93,6 @@ export default function HomePage() {
               },
               {
                 label: "เกินกำหนด",
-                sub: "Delayed",
                 value: stats.delayed,
                 bg:
                   Number(stats.delayed) > 0 ? "bg-danger-50" : "bg-neutral-50",
@@ -136,7 +129,6 @@ export default function HomePage() {
                 >
                   {s.value ?? 0}
                 </p>
-                <p className={`text-xs ${s.text} opacity-70`}>{s.sub}</p>
               </div>
             ))}
           </div>
@@ -184,7 +176,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {activeLines.length === 0 ? (
                 <div className="col-span-full rounded-[20px] border border-dashed border-neutral-200 bg-neutral-50 px-4 py-7 text-center text-sm text-neutral-500 sm:rounded-[24px] sm:py-10">
-                  ไม่พบสายการผลิตที่เปิดใช้งาน
+                  ไม่มีไลน์ที่ใช้งาน
                 </div>
               ) : (
                 activeLines.map((line) => (
@@ -210,7 +202,7 @@ export default function HomePage() {
                         </p>
                       ) : (
                         <p className="text-sm text-neutral-400 italic">
-                          ไม่มีรายละเอียด
+                          ไม่มีข้อมูล
                         </p>
                       )}
                     </div>

@@ -124,8 +124,7 @@ export default function ReportPage() {
 
   return (
     <AdminShell
-      title="รายงานการผลิต"
-      description="ภาพรวมงาน สายการผลิต และผู้ปฏิบัติงาน"
+      title="รายงาน"
       menus={menus}
       activeMenu={activeTab}
       onMenuChange={handleTabChange}

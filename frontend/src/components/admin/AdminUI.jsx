@@ -28,8 +28,8 @@ function joinClasses(...values) {
 function SectionHeaderBar({ title, onBack, action, leading }) {
   return (
     <div className="sticky top-0 z-20 -mx-3 -mt-2.5 bg-neutral-900 px-4 py-3 text-white shadow-sm sm:-mx-6 sm:-mt-4 sm:px-6 md:-mx-8 md:-mt-6 md:px-8">
-      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
-        <div className="flex min-w-0 items-center justify-start gap-3">
+      <div className="grid min-h-9 w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <div className="flex min-h-9 min-w-0 items-center justify-start gap-3">
           {onBack ? (
             <button
               type="button"
@@ -55,10 +55,10 @@ function SectionHeaderBar({ title, onBack, action, leading }) {
             <div className="shrink-0">{leading}</div>
           ) : null}
         </div>
-        <div className="min-w-0 text-center leading-tight">
+        <div className="flex min-h-9 min-w-0 items-center justify-center text-center leading-tight">
           <div className="truncate font-bold text-base text-white">{title}</div>
         </div>
-        <div className="flex min-w-0 items-center justify-end">
+        <div className="flex min-h-9 min-w-0 items-center justify-end">
           {action ? <div className="shrink-0">{action}</div> : null}
         </div>
       </div>
@@ -68,7 +68,7 @@ function SectionHeaderBar({ title, onBack, action, leading }) {
 
 export function AdminPageHeader({ title, onBack, action, eyebrow = "VS MES" }) {
   const leading = onBack ? null : (
-    <div className="flex items-center gap-1.5 font-black text-lg tracking-tight text-white whitespace-nowrap">
+    <div className="flex h-9 items-center gap-1.5 font-black text-lg tracking-tight text-white whitespace-nowrap">
       <span className="text-primary-400">VS</span>
       <span>{eyebrow === "VS MES" ? "MES" : eyebrow}</span>
     </div>

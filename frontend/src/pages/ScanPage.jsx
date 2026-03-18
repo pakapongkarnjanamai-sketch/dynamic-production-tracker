@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import QRScanner from "../components/QRScanner";
 import { scanTray } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import { AdminPageHeader, Badge, Button } from "../components/admin/AdminUI";
+import { AdminPageHeader, Button } from "../components/admin/AdminUI";
 
 const LS_OPERATOR = "mes_operator";
 
@@ -103,65 +103,10 @@ export default function ScanPage() {
     await handleScan(manualCode);
   };
 
-  const statusTone = loading
-    ? "amber"
-    : cameraError || requestError
-      ? "red"
-      : cooldownActive
-        ? "blue"
-        : "green";
-
-  const statusLabel = loading
-    ? "กำลังประมวลผล"
-    : cameraError
-      ? "ใช้การกรอกรหัสแทน"
-      : requestError
-        ? "ตรวจสอบรหัสอีกครั้ง"
-        : cooldownActive
-          ? "พักการสแกนชั่วคราว"
-          : "พร้อมสแกน";
-
   return (
     <main className="min-h-screen bg-white pb-24 md:pb-0">
       <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-3 py-2.5 sm:px-6 sm:py-4 md:px-8 md:py-6">
         <AdminPageHeader title="สแกนงาน" />
-
-        <section className="rounded-[28px] border border-neutral-200 bg-white px-4 py-4 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
-                Scan Station
-              </p>
-              <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-neutral-900">
-                สแกนถาดงานหรือกรอกรหัสด้วยตนเอง
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-neutral-500">
-                ระบบจะพาไปหน้ารายละเอียดทันทีเมื่อพบรหัสที่ถูกต้อง
-              </p>
-            </div>
-            <Badge color={statusTone} className="shrink-0">
-              {statusLabel}
-            </Badge>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-3 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                ผู้ปฏิบัติงาน
-              </div>
-              <div className="mt-1 truncate text-sm font-semibold text-neutral-800">
-                {operator || "ยังไม่ระบุชื่อผู้ใช้งาน"}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-3 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                วิธีใช้งาน
-              </div>
-              <div className="mt-1 text-sm font-semibold text-neutral-800">
-                สแกนกล้องหรือกรอกโค้ด
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Loading */}
         {loading && (
@@ -200,12 +145,9 @@ export default function ScanPage() {
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-bold text-neutral-900">
-                    กรอกรหัสงาน
+                  <h3 className="text-base font-bold text-neutral-900">
+                    กรอกรหัส
                   </h3>
-                  <p className="mt-1 text-xs leading-5 text-neutral-500">
-                    ใช้เมื่อสแกนไม่ได้ หรือมีรหัสจากเอกสารหน้างาน
-                  </p>
                 </div>
                 {manualCode ? (
                   <button
@@ -242,12 +184,9 @@ export default function ScanPage() {
             <section className="w-full rounded-[24px] border border-neutral-200 bg-white p-3 shadow-sm">
               <div className="mb-3 flex items-start justify-between gap-3 px-1">
                 <div>
-                  <h3 className="text-sm font-bold text-neutral-900">
-                    กล้องสแกน QR
+                  <h3 className="text-base font-bold text-neutral-900">
+                    กล้องสแกน
                   </h3>
-                  <p className="mt-1 text-xs leading-5 text-neutral-500">
-                    จัดให้ QR อยู่ในกรอบ ระบบจะอ่านให้อัตโนมัติ
-                  </p>
                 </div>
                 {(cameraError || requestError) && (
                   <Button variant="secondary" size="compact" onClick={reset}>
@@ -287,7 +226,7 @@ export default function ScanPage() {
                     </span>
                     <div className="flex-1">
                       <h4 className="text-sm font-bold text-neutral-900">
-                        กล้องไม่พร้อมใช้งาน
+                        ใช้กล้องไม่ได้
                       </h4>
                       <p className="mt-1 text-sm leading-6 text-neutral-600">
                         {cameraError}
@@ -296,10 +235,10 @@ export default function ScanPage() {
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button variant="secondary" onClick={reset}>
-                      ลองเปิดกล้องอีกครั้ง
+                      ลองใหม่
                     </Button>
                     <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-500">
-                      ยังสามารถใช้งานต่อได้ด้วยการกรอกรหัสด้านบน
+                      กรอกรหัสแทนได้
                     </div>
                   </div>
                 </div>
@@ -324,7 +263,7 @@ export default function ScanPage() {
                   </svg>
                   <div className="flex-1">
                     <h3 className="text-sm font-bold text-danger-700">
-                      ไม่พบข้อมูลจากรหัสนี้
+                      ไม่พบรหัส
                     </h3>
                     <p className="mt-1 text-danger-600">{requestError}</p>
                   </div>
@@ -339,20 +278,6 @@ export default function ScanPage() {
                 </div>
               </div>
             )}
-
-            <div className="w-full rounded-[24px] border border-neutral-200 bg-white px-4 py-4 shadow-sm">
-              <h3 className="text-sm font-bold text-neutral-900">
-                ข้อแนะนำหน้างาน
-              </h3>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
-                <li>ถืออุปกรณ์ให้นิ่ง 1-2 วินาที เมื่อ QR อยู่ในกรอบ</li>
-                <li>หากกล้องไม่พร้อมใช้งาน ให้กรอกรหัสถาดงานแทนได้ทันที</li>
-                <li>
-                  เมื่อกลับจากหน้ารายละเอียด ระบบจะหน่วงสแกนสั้น ๆ
-                  เพื่อกันอ่านซ้ำ
-                </li>
-              </ul>
-            </div>
           </div>
         )}
       </div>

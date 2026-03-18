@@ -1,12 +1,17 @@
 import { useAuth } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { AdminPageHeader } from "../components/admin/AdminUI";
+import {
+  AdminPageHeader,
+  Button,
+  MobileCard,
+  Stack,
+} from "../components/admin/AdminUI";
 
 const roleLabelMap = {
-  operator: "พนักงาน (Operator)",
-  viewer: "ผู้ดูรายงาน (Viewer)",
-  admin: "แอดมิน (Admin)",
-  superadmin: "ซุปเปอร์แอดมิน (Super Admin)",
+  operator: "พนักงาน",
+  viewer: "ดูรายงาน",
+  admin: "แอดมิน",
+  superadmin: "ซูเปอร์แอดมิน",
 };
 
 const roleBadgeColor = {
@@ -33,6 +38,8 @@ export default function UserProfilePage() {
   const navigate = useNavigate();
 
   if (!user) return null;
+
+  const canManage = ["admin", "superadmin"].includes(user.role);
 
   const handleLogout = () => {
     logout();
@@ -94,7 +101,7 @@ export default function UserProfilePage() {
           />
         </svg>
       ),
-      label: "สิทธิ์การใช้งาน",
+      label: "สิทธิ์",
       value: (
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || "bg-neutral-500/20 text-neutral-400 border-neutral-500/30"}`}
@@ -123,7 +130,7 @@ export default function UserProfilePage() {
           />
         </svg>
       ),
-      label: "ชื่อ Operator",
+      label: "ชื่อพนักงาน",
       value: user.operator_name,
     });
   }
@@ -167,7 +174,7 @@ export default function UserProfilePage() {
           />
         </svg>
       ),
-      label: "เข้าสู่ระบบล่าสุด",
+      label: "เข้าใช้ล่าสุด",
       value: formatDate(user.last_login_at),
     });
   }
@@ -189,51 +196,51 @@ export default function UserProfilePage() {
           />
         </svg>
       ),
-      label: "วันที่สร้างบัญชี",
+      label: "สร้างบัญชี",
       value: formatDate(user.created_at),
     });
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 px-3 pb-24 pt-2.5 md:pb-8 md:pt-4">
-      <div className="mx-auto max-w-lg">
+    <main className="min-h-screen bg-white pb-24 md:pb-8">
+      <div className="mx-auto flex w-full max-w-lg flex-col gap-4 px-3 py-2.5 sm:px-6 sm:py-4 md:px-8 md:py-6">
         <AdminPageHeader title="โปรไฟล์ผู้ใช้" />
 
-        {/* ── Header Card ── */}
-        <div className="relative mb-4 overflow-hidden rounded-[24px] bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-4 shadow-2xl shadow-primary-900/30 sm:mb-6 sm:rounded-[28px] sm:p-6">
-          {/* Decorative circles */}
-          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/5 sm:-top-10 sm:-right-10 sm:h-40 sm:w-40" />
-          <div className="absolute -bottom-8 -left-8 hidden h-32 w-32 rounded-full bg-white/5 sm:block" />
-
-          <div className="relative flex flex-col items-center gap-2.5 text-center sm:gap-3">
-            {/* Avatar */}
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/30 bg-white/20 shadow-lg backdrop-blur-sm sm:h-20 sm:w-20">
-              <span className="text-3xl font-black text-white select-none">
-                {(user.name || "?").charAt(0).toUpperCase()}
-              </span>
-            </div>
-
-            <div>
-              <h1 className="text-lg font-bold text-white tracking-tight sm:text-xl">
-                {user.name}
-              </h1>
-              <p className="text-primary-200 text-sm mt-0.5">
-                {user.employee_id}
-              </p>
-            </div>
-
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${roleBadgeColor[user.role] || "bg-neutral-500/20 text-neutral-400 border-neutral-500/30"}`}
-            >
-              {roleLabelMap[user.role] || user.role}
-            </span>
+        <MobileCard className="overflow-hidden p-0">
+          <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-4">
+            <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-neutral-900">
+              ข้อมูลผู้ใช้
+            </h2>
           </div>
-        </div>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary-600 text-3xl font-black text-white shadow-sm">
+                <span className="select-none">
+                  {(user.name || "?").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-xl font-black tracking-tight text-neutral-900">
+                  {user.name}
+                </h1>
+                <p className="mt-1 font-mono text-sm text-neutral-500">
+                  {user.employee_id || "ไม่มีรหัส"}
+                </p>
+                <div className="mt-3">
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold ${roleBadgeColor[user.role] || "bg-neutral-100 text-neutral-500 border-neutral-200"}`}
+                  >
+                    {roleLabelMap[user.role] || user.role}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </MobileCard>
 
-        {/* ── Info Card ── */}
-        <div className="mb-4 overflow-hidden rounded-[22px] border border-neutral-700/50 bg-neutral-800/80 shadow-xl backdrop-blur-sm sm:mb-6 sm:rounded-2xl">
-          <div className="border-b border-neutral-700/50 px-4 py-3.5 sm:px-5 sm:py-4">
-            <h2 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+        <MobileCard className="overflow-hidden p-0">
+          <div className="border-b border-neutral-100 px-4 py-3.5 sm:px-5 sm:py-4">
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-neutral-500">
               <svg
                 className="w-4 h-4 text-primary-400"
                 fill="none"
@@ -251,50 +258,91 @@ export default function UserProfilePage() {
             </h2>
           </div>
 
-          <div className="divide-y divide-neutral-700/40">
+          <div className="divide-y divide-neutral-100">
             {infoItems.map((item, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-neutral-700/30 sm:gap-4 sm:px-5 sm:py-4"
+                className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-50 sm:gap-4 sm:px-5 sm:py-4"
               >
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-700/60 text-primary-400 sm:h-10 sm:w-10 sm:rounded-xl">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-primary-500 sm:h-10 sm:w-10 sm:rounded-xl">
                   {item.icon}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="mb-0.5 text-xs font-medium text-neutral-400 sm:text-xs">
                     {item.label}
                   </p>
-                  <div className="text-sm font-medium text-neutral-200 break-words">
+                  <div className="break-words text-sm font-medium text-neutral-800">
                     {item.value}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </MobileCard>
 
-        {/* ── Logout Button ── */}
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-danger-500/30 bg-danger-600/20 px-4 py-3 text-sm font-semibold text-danger-400 shadow-lg transition-all hover:border-danger-500/50 hover:bg-danger-600/30 hover:text-danger-300 active:scale-[0.98] sm:rounded-2xl sm:py-3.5"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
-            />
-          </svg>
-          ออกจากระบบ
-        </button>
+        <Stack>
+          {canManage ? (
+            <MobileCard className="p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-neutral-900">
+                    จัดการระบบ
+                  </h2>
+                </div>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-600">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() => navigate("/admin")}
+                >
+                  เปิดหน้า
+                </Button>
+              </div>
+            </MobileCard>
+          ) : null}
+
+          <Button variant="danger" className="w-full" onClick={handleLogout}>
+            <span className="inline-flex items-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
+                />
+              </svg>
+              ออกจากระบบ
+            </span>
+          </Button>
+        </Stack>
       </div>
-    </div>
+    </main>
   );
 }

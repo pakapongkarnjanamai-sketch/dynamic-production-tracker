@@ -29,9 +29,9 @@ import {
 } from "../components/report/reportShared";
 
 const DETAIL_LABELS = {
-  tray: "รายละเอียดงาน",
-  line: "รายละเอียดสายการผลิต",
-  operator: "รายละเอียดผู้ปฏิบัติงาน",
+  tray: "งาน",
+  line: "ไลน์",
+  operator: "พนักงาน",
 };
 
 function DetailStatCard({ label, value, tone = "neutral" }) {
@@ -60,7 +60,7 @@ function DetailLayout({ title, backTo, children }) {
 
   return (
     <div className="min-h-screen bg-white pb-24 md:pb-0">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 md:px-8 md:py-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-4 md:px-8 md:py-6">
         <AdminDetailHeader title={title} onBack={() => navigate(backTo)} />
         {children}
       </div>
@@ -165,10 +165,7 @@ function TrayDetailView({ detail }) {
               </Badge>
             </div>
           ) : (
-            <EmptyState
-              title="ยังไม่มีกิจกรรม"
-              description="งานนี้ยังไม่พบประวัติการดำเนินงาน"
-            />
+            <EmptyState title="ยังไม่มีกิจกรรม" />
           )}
         </MobileCard>
       </div>
@@ -179,10 +176,7 @@ function TrayDetailView({ detail }) {
         </div>
         {logs.length === 0 ? (
           <div className="mt-3">
-            <EmptyState
-              title="ยังไม่มีประวัติการผลิต"
-              description="ระบบยังไม่พบ log ของงานรายการนี้"
-            />
+            <EmptyState title="ยังไม่มีประวัติ" />
           </div>
         ) : (
           <Stack className="mt-3 space-y-3">
@@ -248,10 +242,7 @@ function LineDetailView({ detail }) {
       </div>
 
       {detail.processes.length === 0 ? (
-        <EmptyState
-          title="ยังไม่มีขั้นตอนในสายการผลิตนี้"
-          description="เพิ่ม process เพื่อให้ระบบแสดงรายละเอียดในรายงานได้"
-        />
+        <EmptyState title="ยังไม่มีขั้นตอน" />
       ) : (
         <Stack>
           {detail.processes.map((processItem) => (
@@ -341,9 +332,6 @@ function OperatorDetailView({ detail }) {
             <div className="text-lg font-bold text-neutral-900">
               {detail.name}
             </div>
-            <div className="text-sm text-neutral-500">
-              สรุปการทำงานล่าสุดของผู้ปฏิบัติงาน
-            </div>
           </div>
         </div>
 
@@ -399,10 +387,7 @@ function OperatorDetailView({ detail }) {
 
         {historyItems.length === 0 ? (
           <div className="mt-3">
-            <EmptyState
-              title="ยังไม่มีประวัติการทำงาน"
-              description="ระบบยังไม่พบกิจกรรมของผู้ปฏิบัติงานรายนี้"
-            />
+            <EmptyState title="ยังไม่มีประวัติ" />
           </div>
         ) : (
           <Stack className="mt-3 space-y-2">
@@ -544,10 +529,7 @@ export default function ReportDetailPage() {
         <ErrorState message={error} onRetry={loadDetail} />
       ) : null}
       {!loading && !error && !detail ? (
-        <EmptyState
-          title="ไม่พบข้อมูลรายละเอียด"
-          description="ข้อมูลที่เลือกอาจถูกลบหรือไม่มีสิทธิ์เข้าถึง"
-        />
+        <EmptyState title="ไม่พบข้อมูล" />
       ) : null}
       {!loading && !error && detail && detailType === "tray" ? (
         <TrayDetailView detail={detail} />

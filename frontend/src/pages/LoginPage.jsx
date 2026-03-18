@@ -41,15 +41,10 @@ export default function LoginPage() {
     <main className="min-h-screen bg-white px-3 pt-3 pb-24 sm:px-6 sm:pt-10 md:pb-10 lg:px-8 lg:pt-14">
       <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm sm:rounded-[28px] lg:grid lg:grid-cols-[1.05fr_1fr]">
         <section className="bg-neutral-900 px-4 py-4 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">
-            VS MES
-          </p>
+          <p className="text-sm font-semibold text-neutral-400">VS MES</p>
           <h1 className="mt-1.5 text-xl font-black tracking-tight sm:mt-2 sm:text-4xl">
-            Sign In
+            เข้าสู่ระบบ
           </h1>
-          <p className="mt-1.5 text-sm text-neutral-400 sm:mt-3">
-            เข้าสู่ระบบเพื่อจัดการสายการผลิต
-          </p>
         </section>
 
         <section className="px-4 py-4 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
