@@ -49,7 +49,8 @@ export default function TrayReportPanel({
     isDelayed:
       row.due_date &&
       new Date(row.due_date) < now &&
-      row.status !== "completed",
+      row.status !== "completed" &&
+      row.status !== "ng",
   }));
 
   const counts = {
@@ -57,6 +58,7 @@ export default function TrayReportPanel({
     in_progress: withDelay.filter((row) => row.status === "in_progress").length,
     pending: withDelay.filter((row) => row.status === "pending").length,
     completed: withDelay.filter((row) => row.status === "completed").length,
+    ng: withDelay.filter((row) => row.status === "ng").length,
     delayed: withDelay.filter((row) => row.isDelayed).length,
   };
 
@@ -82,6 +84,7 @@ export default function TrayReportPanel({
     { id: "in_progress", label: "กำลังทำ", count: counts.in_progress },
     { id: "pending", label: "รอเริ่ม", count: counts.pending },
     { id: "completed", label: "เสร็จ", count: counts.completed },
+    { id: "ng", label: "NG", count: counts.ng },
     { id: "delayed", label: "ล่าช้า", count: counts.delayed },
   ];
 

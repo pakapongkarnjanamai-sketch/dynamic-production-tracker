@@ -85,7 +85,7 @@ const createLog = async (req, res) => {
     );
 
     // Update tray status to reflect current state
-    let trayStatus = action === "ng" ? "on_hold" : "in_progress";
+    let trayStatus = action === "ng" ? "ng" : "in_progress";
 
     if (action === "finish") {
       // Check if all processes for this tray's line are now finished
@@ -117,7 +117,7 @@ const createLog = async (req, res) => {
     );
 
     // Set finished_at when all processes are done; clear it otherwise
-    if (trayStatus === "completed") {
+    if (trayStatus === "completed" || trayStatus === "ng") {
       await db.query(
         `UPDATE trays SET status = $1, finished_at = $2 WHERE id = $3`,
         [trayStatus, rows[0].logged_at, tray_id],
@@ -213,7 +213,7 @@ const recalcTrayStatus = async (trayId) => {
     [trayId],
   );
 
-  // If any process's latest action is 'ng' → on_hold
+  // If any process's latest action is 'ng' → terminal NG
   const { rows: ngRows } = await db.query(
     `SELECT 1
        FROM (
@@ -228,9 +228,19 @@ const recalcTrayStatus = async (trayId) => {
   );
 
   if (ngRows.length > 0) {
+    const {
+      rows: [{ last_ng }],
+    } = await db.query(
+      `SELECT MAX(logged_at) AS last_ng
+         FROM production_logs
+        WHERE tray_id = $1
+          AND action = 'ng'`,
+      [trayId],
+    );
+
     await db.query(
-      `UPDATE trays SET status = 'on_hold', started_at = $2, finished_at = NULL WHERE id = $1`,
-      [trayId, first_at],
+      `UPDATE trays SET status = 'ng', started_at = $2, finished_at = $3 WHERE id = $1`,
+      [trayId, first_at, last_ng],
     );
     return;
   }

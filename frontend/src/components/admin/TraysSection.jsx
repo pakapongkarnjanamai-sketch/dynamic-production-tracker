@@ -23,12 +23,13 @@ import {
   Stack,
 } from "./AdminUI";
 
-const TRAY_STATUSES = ["pending", "in_progress", "completed", "on_hold"];
+const TRAY_STATUSES = ["pending", "in_progress", "completed", "ng", "on_hold"];
 
 const STATUS_LABELS = {
   pending: "รอทำ",
   in_progress: "กำลังทำ",
   completed: "เสร็จสิ้น",
+  ng: "NG",
   on_hold: "รอแก้ไข",
 };
 
@@ -36,6 +37,7 @@ const STATUS_COLORS = {
   pending: "gray",
   in_progress: "amber",
   completed: "green",
+  ng: "red",
   on_hold: "red",
 };
 

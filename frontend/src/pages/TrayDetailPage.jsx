@@ -72,11 +72,14 @@ export default function TrayDetailPage() {
   );
 
   const currentProcess =
-    result?.processes.find((p) => p.last_action !== "finish") ?? null;
+    result?.tray.status === "ng"
+      ? null
+      : (result?.processes.find((p) => p.last_action !== "finish") ?? null);
   const trayComplete =
     !!result &&
     result.processes.length > 0 &&
     result.processes.every((p) => p.last_action === "finish");
+  const trayNg = result?.tray.status === "ng";
   const doneCount =
     result?.processes.filter((p) => p.last_action === "finish").length ?? 0;
   const totalCount = result?.processes.length ?? 0;
@@ -218,7 +221,7 @@ export default function TrayDetailPage() {
                 ) : (
                   result.processes.map((p) => {
                     const isCurrent =
-                      !trayComplete && currentProcess?.id === p.id;
+                      !trayComplete && !trayNg && currentProcess?.id === p.id;
                     const isDone = p.last_action === "finish";
                     const isNG = p.last_action === "ng";
                     const isStarted = p.last_action === "start";
@@ -346,6 +349,17 @@ export default function TrayDetailPage() {
                 </h2>
                 <p className="text-success-600 text-sm">
                   งานนี้ผ่านครบทุก {totalCount} ขั้นตอนแล้ว
+                </p>
+              </div>
+            ) : trayNg ? (
+              <div className="rounded-[28px] border-2 border-danger-300 bg-danger-50 p-6 text-center">
+                <div className="text-5xl mb-3">✖</div>
+                <h2 className="text-2xl font-black text-danger-700 mb-1">
+                  งานจบด้วย NG
+                </h2>
+                <p className="text-danger-600 text-sm">
+                  งานนี้สิ้นสุดที่ขั้นตอน {currentProcess?.sequence || "ล่าสุด"}{" "}
+                  ด้วยสถานะ NG
                 </p>
               </div>
             ) : (

@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS trays (
     batch_no    VARCHAR(64),
     qty         INTEGER      NOT NULL DEFAULT 1,
     status      VARCHAR(20)  NOT NULL DEFAULT 'pending'
-                             CHECK (status IN ('pending','in_progress','completed','on_hold')),
+                             CHECK (status IN ('pending','in_progress','completed','on_hold','ng')),
     due_date    TIMESTAMPTZ,
     started_at  TIMESTAMPTZ,
     finished_at TIMESTAMPTZ,

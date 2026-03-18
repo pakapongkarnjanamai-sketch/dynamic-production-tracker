@@ -2,6 +2,7 @@ export const STATUS_LABELS = {
   pending: "รอทำ",
   in_progress: "กำลังทำ",
   completed: "เสร็จสิ้น",
+  ng: "NG",
   on_hold: "หยุดพัก / รอแก้ไข",
 };
 
@@ -15,6 +16,7 @@ export const STATUS_BADGE_COLORS = {
   pending: "gray",
   in_progress: "amber",
   completed: "green",
+  ng: "red",
   on_hold: "red",
 };
 
@@ -97,6 +99,7 @@ export const TRAY_STATUS_FILTERS = [
   "in_progress",
   "pending",
   "completed",
+  "ng",
   "delayed",
 ];
 

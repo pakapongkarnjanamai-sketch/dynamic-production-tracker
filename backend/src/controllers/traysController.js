@@ -1,5 +1,5 @@
-const db = require('../config/database');
-const { internalServerError } = require('../utils/httpErrors');
+const db = require("../config/database");
+const { internalServerError } = require("../utils/httpErrors");
 
 // GET /api/trays
 const getTrays = async (req, res) => {
@@ -8,11 +8,11 @@ const getTrays = async (req, res) => {
       `SELECT t.*, l.name AS line_name
          FROM trays t
     LEFT JOIN lines l ON l.id = t.line_id
-        ORDER BY t.id DESC`
+        ORDER BY t.id DESC`,
     );
     res.json(rows);
   } catch (err) {
-    internalServerError(res, err, 'trays.getTrays');
+    internalServerError(res, err, "trays.getTrays");
   }
 };
 
@@ -24,12 +24,12 @@ const getTrayById = async (req, res) => {
          FROM trays t
     LEFT JOIN lines l ON l.id = t.line_id
         WHERE t.id = $1`,
-      [req.params.id]
+      [req.params.id],
     );
-    if (!rows.length) return res.status(404).json({ error: 'Tray not found' });
+    if (!rows.length) return res.status(404).json({ error: "Tray not found" });
     res.json(rows[0]);
   } catch (err) {
-    internalServerError(res, err, 'trays.getTrayById');
+    internalServerError(res, err, "trays.getTrayById");
   }
 };
 
@@ -53,10 +53,10 @@ const scanTray = async (req, res) => {
          FROM trays t
     LEFT JOIN lines l ON l.id = t.line_id
         WHERE t.qr_code = $1`,
-      [req.params.qrCode]
+      [req.params.qrCode],
     );
     if (!trayResult.rows.length) {
-      return res.status(404).json({ error: 'Tray not found' });
+      return res.status(404).json({ error: "Tray not found" });
     }
     const tray = trayResult.rows[0];
 
@@ -100,12 +100,12 @@ const scanTray = async (req, res) => {
         WHERE p.line_id   = $2
           AND p.is_active = TRUE
         ORDER BY p.sequence ASC`,
-      [tray.id, tray.line_id]
+      [tray.id, tray.line_id],
     );
 
     res.json({ tray, processes: procResult.rows });
   } catch (err) {
-    internalServerError(res, err, 'trays.scanTray');
+    internalServerError(res, err, "trays.scanTray");
   }
 };
 
@@ -118,36 +118,37 @@ const getTrayStats = async (req, res) => {
          COUNT(*) FILTER (WHERE status = 'pending')                     AS pending,
          COUNT(*) FILTER (WHERE status = 'in_progress')                 AS in_progress,
          COUNT(*) FILTER (WHERE status = 'completed')                   AS completed,
+         COUNT(*) FILTER (WHERE status = 'ng')                          AS ng,
          COUNT(*) FILTER (WHERE status = 'on_hold')                     AS on_hold,
          COUNT(*) FILTER (
            WHERE due_date IS NOT NULL
              AND due_date < NOW()
-             AND status <> 'completed'
+             AND status NOT IN ('completed', 'ng')
          )                                                              AS delayed
-         FROM trays`
+         FROM trays`,
     );
     res.json(rows[0]);
   } catch (err) {
-    internalServerError(res, err, 'trays.getTrayStats');
+    internalServerError(res, err, "trays.getTrayStats");
   }
 };
 
 // POST /api/trays
 const createTray = async (req, res) => {
   const { qr_code, line_id, product, batch_no, qty = 1, due_date } = req.body;
-  if (!qr_code) return res.status(400).json({ error: 'qr_code is required' });
+  if (!qr_code) return res.status(400).json({ error: "qr_code is required" });
   try {
     const { rows } = await db.query(
       `INSERT INTO trays (qr_code, line_id, product, batch_no, qty, due_date)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [qr_code, line_id, product, batch_no, qty, due_date || null]
+      [qr_code, line_id, product, batch_no, qty, due_date || null],
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'QR code already exists' });
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "QR code already exists" });
     }
-    internalServerError(res, err, 'trays.createTray');
+    internalServerError(res, err, "trays.createTray");
   }
 };
 
@@ -165,30 +166,43 @@ const updateTray = async (req, res) => {
               due_date = CASE WHEN $6::boolean THEN $7::timestamptz ELSE due_date END
         WHERE id = $8
         RETURNING *`,
-      [line_id, product, batch_no, qty, status,
-       due_date !== undefined,
-       due_date || null,
-       req.params.id]
+      [
+        line_id,
+        product,
+        batch_no,
+        qty,
+        status,
+        due_date !== undefined,
+        due_date || null,
+        req.params.id,
+      ],
     );
-    if (!rows.length) return res.status(404).json({ error: 'Tray not found' });
+    if (!rows.length) return res.status(404).json({ error: "Tray not found" });
     res.json(rows[0]);
   } catch (err) {
-    internalServerError(res, err, 'trays.updateTray');
+    internalServerError(res, err, "trays.updateTray");
   }
 };
 
 // DELETE /api/trays/:id
 const deleteTray = async (req, res) => {
   try {
-    const { rowCount } = await db.query(
-      'DELETE FROM trays WHERE id = $1',
-      [req.params.id]
-    );
-    if (!rowCount) return res.status(404).json({ error: 'Tray not found' });
+    const { rowCount } = await db.query("DELETE FROM trays WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (!rowCount) return res.status(404).json({ error: "Tray not found" });
     res.status(204).send();
   } catch (err) {
-    internalServerError(res, err, 'trays.deleteTray');
+    internalServerError(res, err, "trays.deleteTray");
   }
 };
 
-module.exports = { getTrays, getTrayById, scanTray, getTrayStats, createTray, updateTray, deleteTray };
+module.exports = {
+  getTrays,
+  getTrayById,
+  scanTray,
+  getTrayStats,
+  createTray,
+  updateTray,
+  deleteTray,
+};
