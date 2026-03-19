@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp"
+    },
+
+    "stitch": {
+      "url": "https://stitch.googleapis.com/mcp",
+      "type": "http",
+      "headers": {
+        "Accept": "application/json",
+        "X-Goog-Api-Key": "AQ.Ab8RN6IFjSbJnzStwdOP3Ovrru2rNhWVNTgiDWJ-9zGdT9n-vw"
+      }
+    },
+    "dxdocs": {
+      "url": "https://api.devexpress.com/mcp/docs",
+      "type": "http"
+    },
+    "dxdocs24_2": {
+      "url": "https://api.devexpress.com/mcp/docs?v=24.2",
+      "type": "http"
+    }
+  }
+}
