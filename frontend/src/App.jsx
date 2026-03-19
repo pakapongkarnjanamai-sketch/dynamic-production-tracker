@@ -51,7 +51,7 @@ function Navigation() {
 
   if (!user || location.pathname === "/login") return null;
 
-  const canScan = ["operator", "admin", "superadmin"].includes(user.role);
+  const canScan = ["admin", "superadmin"].includes(user.role);
   const canReport = ["viewer", "admin", "superadmin"].includes(user.role);
 
   // ── Desktop nav item class ──
@@ -279,7 +279,7 @@ export default function App() {
           <Route
             path="/home"
             element={
-              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+              <ProtectedRoute allowRoles={["admin", "superadmin"]}>
                 <HomePage />
               </ProtectedRoute>
             }
@@ -287,7 +287,7 @@ export default function App() {
           <Route
             path="/scan"
             element={
-              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+              <ProtectedRoute allowRoles={["admin", "superadmin"]}>
                 <ScanPage />
               </ProtectedRoute>
             }
@@ -295,7 +295,7 @@ export default function App() {
           <Route
             path="/trays/:qrCode"
             element={
-              <ProtectedRoute allowRoles={["operator", "admin", "superadmin"]}>
+              <ProtectedRoute allowRoles={["admin", "superadmin"]}>
                 <TrayDetailPage />
               </ProtectedRoute>
             }
@@ -328,9 +328,7 @@ export default function App() {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute
-                allowRoles={["operator", "viewer", "admin", "superadmin"]}
-              >
+              <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
                 <UserProfilePage />
               </ProtectedRoute>
             }
@@ -338,9 +336,7 @@ export default function App() {
           <Route
             path="/profile/edit"
             element={
-              <ProtectedRoute
-                allowRoles={["operator", "viewer", "admin", "superadmin"]}
-              >
+              <ProtectedRoute allowRoles={["viewer", "admin", "superadmin"]}>
                 <EditProfilePage />
               </ProtectedRoute>
             }

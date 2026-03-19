@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   createProcess,
   deleteProcess,
@@ -32,13 +32,17 @@ export default function ProcessEditorView({ line, processId, mode, onBack }) {
         (processItem) => String(processItem.id) === String(processId),
       ) || null
     : null;
-  const initialForm = selectedProcess
-    ? {
-        name: selectedProcess.name || "",
-        sequence: String(selectedProcess.sequence || ""),
-        description: selectedProcess.description || "",
-      }
-    : { name: "", sequence: "", description: "" };
+  const initialForm = useMemo(
+    () =>
+      selectedProcess
+        ? {
+            name: selectedProcess.name || "",
+            sequence: String(selectedProcess.sequence || ""),
+            description: selectedProcess.description || "",
+          }
+        : { name: "", sequence: "", description: "" },
+    [selectedProcess],
+  );
 
   useEffect(() => {
     if (isEditMode && selectedProcess) {

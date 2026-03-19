@@ -19,7 +19,6 @@ const linesRouter = require("./routes/lines");
 const processesRouter = require("./routes/processes");
 const traysRouter = require("./routes/trays");
 const logsRouter = require("./routes/logs");
-const operatorsRouter = require("./routes/operators");
 const usersRouter = require("./routes/users");
 
 validateEnv();
@@ -171,7 +170,6 @@ app.use("/api/lines", linesRouter);
 app.use("/api/processes", processesRouter);
 app.use("/api/trays", traysRouter);
 app.use("/api/logs", logsRouter);
-app.use("/api/operators", operatorsRouter);
 app.use("/api/users", usersRouter);
 
 // ---------------------------------------------------------------------------

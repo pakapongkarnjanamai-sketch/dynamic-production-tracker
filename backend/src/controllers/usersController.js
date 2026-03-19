@@ -1,7 +1,12 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
-const db = require('../config/database');
-const { ROLES, canAssignRole, canManageRole, isValidRole } = require('../auth/roles');
+const db = require("../config/database");
+const {
+  ROLES,
+  canAssignRole,
+  canManageRole,
+  isValidRole,
+} = require("../auth/roles");
 
 const SALT_ROUNDS = 10;
 
@@ -11,8 +16,6 @@ function normalizeUserRow(row) {
     employee_id: row.employee_id,
     name: row.name,
     role: row.role,
-    operator_id: row.operator_id,
-    operator_name: row.operator_name,
     is_active: row.is_active,
     last_login_at: row.last_login_at,
     created_at: row.created_at,
@@ -22,31 +25,32 @@ function normalizeUserRow(row) {
 
 async function getUserById(id) {
   const { rows } = await db.query(
-    `SELECT u.id,
-            u.employee_id,
-            u.name,
-            u.role,
-            u.operator_id,
-            u.is_active,
-            u.last_login_at,
-            u.created_at,
-            u.updated_at,
-            o.name AS operator_name
-       FROM users u
-  LEFT JOIN operators o ON o.id = u.operator_id
-      WHERE u.id = $1`,
-    [id]
+    `SELECT id,
+            employee_id,
+            name,
+            role,
+            is_active,
+            last_login_at,
+            created_at,
+            updated_at
+       FROM users
+      WHERE id = $1`,
+    [id],
   );
   return rows[0] || null;
 }
 
 function ensureManageable(req, targetUser) {
   if (!targetUser) {
-    return { ok: false, status: 404, error: 'User not found' };
+    return { ok: false, status: 404, error: "User not found" };
   }
 
   if (!canManageRole(req.user.role, targetUser.role)) {
-    return { ok: false, status: 403, error: 'You are not allowed to manage this user' };
+    return {
+      ok: false,
+      status: 403,
+      error: "You are not allowed to manage this user",
+    };
   }
 
   return { ok: true };
@@ -55,79 +59,92 @@ function ensureManageable(req, targetUser) {
 const listUsers = async (req, res) => {
   try {
     const values = [];
-    let where = '';
+    let where = "";
 
     if (req.user.role === ROLES.ADMIN) {
-      where = 'WHERE u.role IN ($1, $2)';
-      values.push(ROLES.OPERATOR, ROLES.VIEWER);
+      where = "WHERE role = $1";
+      values.push(ROLES.VIEWER);
     }
 
     const { rows } = await db.query(
-      `SELECT u.id,
-              u.employee_id,
-              u.name,
-              u.role,
-              u.operator_id,
-              u.is_active,
-              u.last_login_at,
-              u.created_at,
-              u.updated_at,
-              o.name AS operator_name
-         FROM users u
-    LEFT JOIN operators o ON o.id = u.operator_id
+      `SELECT id,
+              employee_id,
+              name,
+              role,
+              is_active,
+              last_login_at,
+              created_at,
+              updated_at
+         FROM users
         ${where}
-        ORDER BY u.role, u.name ASC`,
-      values
+        ORDER BY role, name ASC`,
+      values,
     );
     res.json(rows.map(normalizeUserRow));
   } catch (_err) {
-    res.status(500).json({ error: 'Unable to fetch users' });
+    res.status(500).json({ error: "Unable to fetch users" });
   }
 };
 
 const createUser = async (req, res) => {
-  const employeeId = String(req.body.employee_id || '').trim();
-  const name = String(req.body.name || '').trim();
-  const password = String(req.body.password || '');
-  const role = String(req.body.role || '').trim().toLowerCase();
-  const operatorId = req.body.operator_id ? Number(req.body.operator_id) : null;
+  const employeeId = String(req.body.employee_id || "").trim();
+  const name = String(req.body.name || "").trim();
+  const password = String(req.body.password || "");
+  const role = String(req.body.role || "")
+    .trim()
+    .toLowerCase();
 
   if (!employeeId || !name || !password || !role) {
-    return res.status(400).json({ error: 'employee_id, name, password, and role are required' });
+    return res
+      .status(400)
+      .json({ error: "employee_id, name, password, and role are required" });
   }
   if (!isValidRole(role)) {
-    return res.status(400).json({ error: 'Invalid role' });
+    return res.status(400).json({ error: "Invalid role" });
   }
   if (!canAssignRole(req.user.role, role)) {
-    return res.status(403).json({ error: 'You are not allowed to assign this role' });
+    return res
+      .status(403)
+      .json({ error: "You are not allowed to assign this role" });
   }
 
   try {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const { rows } = await db.query(
-      `INSERT INTO users (employee_id, name, password_hash, role, operator_id)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, employee_id, name, role, operator_id, is_active, last_login_at, created_at, updated_at`,
-      [employeeId, name, passwordHash, role, operatorId]
+      `INSERT INTO users (employee_id, name, password_hash, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, employee_id, name, role, is_active, last_login_at, created_at, updated_at`,
+      [employeeId, name, passwordHash, role],
     );
     res.status(201).json(normalizeUserRow(rows[0]));
   } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'Employee ID or operator link already exists' });
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Employee ID already exists" });
     }
-    return res.status(500).json({ error: 'Unable to create user' });
+    return res.status(500).json({ error: "Unable to create user" });
   }
 };
 
 const updateUser = async (req, res) => {
   const targetId = Number(req.params.id);
-  const employeeId = req.body.employee_id !== undefined ? String(req.body.employee_id || '').trim() : undefined;
-  const name = req.body.name !== undefined ? String(req.body.name || '').trim() : undefined;
-  const password = req.body.password !== undefined ? String(req.body.password || '') : undefined;
-  const role = req.body.role !== undefined ? String(req.body.role || '').trim().toLowerCase() : undefined;
-  const operatorId = req.body.operator_id !== undefined
-    ? (req.body.operator_id ? Number(req.body.operator_id) : null)
-    : undefined;
+  const employeeId =
+    req.body.employee_id !== undefined
+      ? String(req.body.employee_id || "").trim()
+      : undefined;
+  const name =
+    req.body.name !== undefined
+      ? String(req.body.name || "").trim()
+      : undefined;
+  const password =
+    req.body.password !== undefined
+      ? String(req.body.password || "")
+      : undefined;
+  const role =
+    req.body.role !== undefined
+      ? String(req.body.role || "")
+          .trim()
+          .toLowerCase()
+      : undefined;
   const isActive = req.body.is_active;
 
   try {
@@ -139,21 +156,34 @@ const updateUser = async (req, res) => {
 
     if (role !== undefined) {
       if (!isValidRole(role)) {
-        return res.status(400).json({ error: 'Invalid role' });
+        return res.status(400).json({ error: "Invalid role" });
       }
       if (!canAssignRole(req.user.role, role)) {
-        return res.status(403).json({ error: 'You are not allowed to assign this role' });
+        return res
+          .status(403)
+          .json({ error: "You are not allowed to assign this role" });
       }
     }
 
     const fields = [];
     const values = [];
 
-    if (employeeId !== undefined) { fields.push(`employee_id = $${values.length + 1}`); values.push(employeeId); }
-    if (name !== undefined) { fields.push(`name = $${values.length + 1}`); values.push(name); }
-    if (role !== undefined) { fields.push(`role = $${values.length + 1}`); values.push(role); }
-    if (operatorId !== undefined) { fields.push(`operator_id = $${values.length + 1}`); values.push(operatorId); }
-    if (typeof isActive === 'boolean') { fields.push(`is_active = $${values.length + 1}`); values.push(isActive); }
+    if (employeeId !== undefined) {
+      fields.push(`employee_id = $${values.length + 1}`);
+      values.push(employeeId);
+    }
+    if (name !== undefined) {
+      fields.push(`name = $${values.length + 1}`);
+      values.push(name);
+    }
+    if (role !== undefined) {
+      fields.push(`role = $${values.length + 1}`);
+      values.push(role);
+    }
+    if (typeof isActive === "boolean") {
+      fields.push(`is_active = $${values.length + 1}`);
+      values.push(isActive);
+    }
     if (password !== undefined) {
       const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
       fields.push(`password_hash = $${values.length + 1}`);
@@ -161,23 +191,23 @@ const updateUser = async (req, res) => {
     }
 
     if (fields.length === 0) {
-      return res.status(400).json({ error: 'No fields to update' });
+      return res.status(400).json({ error: "No fields to update" });
     }
 
     values.push(targetId);
     const { rows } = await db.query(
       `UPDATE users
-          SET ${fields.join(', ')}
+          SET ${fields.join(", ")}
         WHERE id = $${values.length}
-        RETURNING id, employee_id, name, role, operator_id, is_active, last_login_at, created_at, updated_at`,
-      values
+        RETURNING id, employee_id, name, role, is_active, last_login_at, created_at, updated_at`,
+      values,
     );
     return res.json(normalizeUserRow(rows[0]));
   } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'Employee ID or operator link already exists' });
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Employee ID already exists" });
     }
-    return res.status(500).json({ error: 'Unable to update user' });
+    return res.status(500).json({ error: "Unable to update user" });
   }
 };
 
@@ -186,7 +216,9 @@ const deleteUser = async (req, res) => {
 
   try {
     if (req.user.id === targetId) {
-      return res.status(400).json({ error: 'You cannot delete your own account' });
+      return res
+        .status(400)
+        .json({ error: "You cannot delete your own account" });
     }
 
     const targetUser = await getUserById(targetId);
@@ -195,10 +227,10 @@ const deleteUser = async (req, res) => {
       return res.status(permission.status).json({ error: permission.error });
     }
 
-    await db.query('DELETE FROM users WHERE id = $1', [targetId]);
+    await db.query("DELETE FROM users WHERE id = $1", [targetId]);
     return res.status(204).send();
   } catch (_err) {
-    return res.status(500).json({ error: 'Unable to delete user' });
+    return res.status(500).json({ error: "Unable to delete user" });
   }
 };
 

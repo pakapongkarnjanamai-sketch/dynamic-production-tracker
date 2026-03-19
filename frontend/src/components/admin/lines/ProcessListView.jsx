@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { updateProcess } from "../../../api/client";
+import { reorderProcesses } from "../../../api/client";
 import useLineProcesses from "../../../hooks/useLineProcesses";
 import {
   AdminDetailHeader,
@@ -24,6 +24,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  MobileCard,
   Stack,
   joinClasses,
 } from "../AdminUI";
@@ -76,24 +77,11 @@ export default function ProcessListView({ line, onBack, onCreate, onEdit }) {
     setError("");
 
     try {
-      const changedProcesses = reorderedProcesses.filter(
-        (processItem, index) => {
-          const previousProcess = previousProcesses.find(
-            (item) => String(item.id) === String(processItem.id),
-          );
-          return Number(previousProcess?.sequence) !== index + 1;
-        },
-      );
-
-      await Promise.all(
-        changedProcesses.map((processItem) =>
-          updateProcess(processItem.id, {
-            name: processItem.name,
-            sequence: processItem.sequence,
-            description: processItem.description,
-          }),
-        ),
-      );
+      const savedProcesses = await reorderProcesses({
+        line_id: line.id,
+        process_ids: reorderedProcesses.map((processItem) => processItem.id),
+      });
+      setProcesses(savedProcesses);
     } catch (err) {
       setProcesses(previousProcesses);
       setError(err.message || "บันทึกลำดับขั้นตอนไม่สำเร็จ");
@@ -104,19 +92,26 @@ export default function ProcessListView({ line, onBack, onCreate, onEdit }) {
 
   return (
     <Stack>
-      <AdminDetailHeader
-        title={`${line.name}`}
-        onBack={onBack}
-        action={
+      <AdminDetailHeader title="ขั้นตอนการผลิต" onBack={onBack} />
+
+      <MobileCard className="p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm text-neutral-500">สายการผลิต</p>
+            <h3 className="truncate text-lg font-bold text-neutral-900 sm:text-xl">
+              {line.name}
+            </h3>
+          </div>
           <Button
             type="button"
             variant="secondary"
+            className="w-full sm:w-auto"
             onClick={() => onCreate(line.id)}
           >
             + เพิ่ม
           </Button>
-        }
-      />
+        </div>
+      </MobileCard>
 
       {!loading && !error ? (
         <p className="text-sm text-neutral-500">
@@ -211,6 +206,7 @@ function SortableProcessRow({ processItem, disabled, onEdit }) {
         type="button"
         aria-label={`ลากเพื่อสลับลำดับ ${processItem.name}`}
         className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition hover:bg-neutral-50 hover:text-neutral-700"
+        style={{ touchAction: "none" }}
         {...attributes}
         {...listeners}
       >

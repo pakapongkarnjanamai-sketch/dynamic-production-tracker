@@ -3,11 +3,10 @@ import { createReportSearch } from "../../components/report/reportShared";
 export const REPORT_DETAIL_LABELS = {
   tray: "งาน",
   line: "ไลน์",
-  operator: "พนักงาน",
 };
 
 export function isValidReportDetailType(value) {
-  return ["tray", "line", "operator"].includes(value);
+  return ["tray", "line"].includes(value);
 }
 
 export function createReportDetailBackLink(searchParams) {

@@ -12,8 +12,7 @@ export default function UsersSection({
   onCloseDetail,
 }) {
   const [search, setSearch] = useState("");
-  const { users, operators, loading, error, setError, reload } =
-    useUsersAdminData();
+  const { users, loading, error, setError, reload } = useUsersAdminData();
 
   const selectedUser =
     view === "edit"
@@ -28,7 +27,6 @@ export default function UsersSection({
         loading={loading}
         error={error}
         setError={setError}
-        operators={operators}
         selectedUser={selectedUser}
         onRefresh={reload}
         onClose={onCloseDetail}

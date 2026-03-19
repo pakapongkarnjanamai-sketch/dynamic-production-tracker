@@ -71,6 +71,8 @@ export const getProcesses = (lineId) =>
   request(`/api/processes${lineId ? `?line_id=${lineId}` : ""}`);
 export const createProcess = (data) =>
   request("/api/processes", { method: "POST", body: data });
+export const reorderProcesses = (data) =>
+  request("/api/processes/reorder", { method: "PUT", body: data });
 export const updateProcess = (id, data) =>
   request(`/api/processes/${id}`, { method: "PUT", body: data });
 export const deleteProcess = (id) =>
@@ -102,18 +104,6 @@ export const updateLog = (id, data) =>
 export const deleteLog = (id) =>
   request(`/api/logs/${id}`, { method: "DELETE" });
 export const getLogsSummary = () => request("/api/logs/summary");
-
-// Operators
-export const getOperators = (params = {}) => {
-  const qs = new URLSearchParams(params).toString();
-  return request(`/api/operators${qs ? `?${qs}` : ""}`);
-};
-export const createOperator = (data) =>
-  request("/api/operators", { method: "POST", body: data });
-export const updateOperator = (id, data) =>
-  request(`/api/operators/${id}`, { method: "PUT", body: data });
-export const deleteOperator = (id) =>
-  request(`/api/operators/${id}`, { method: "DELETE" });
 
 // Users
 export const getUsers = () => request("/api/users");

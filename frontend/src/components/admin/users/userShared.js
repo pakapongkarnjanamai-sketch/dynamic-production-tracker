@@ -2,15 +2,14 @@ export const EMPTY_USER_FORM = {
   employeeId: "",
   name: "",
   password: "",
-  role: "operator",
-  operatorId: "",
+  role: "viewer",
   isActive: true,
 };
 
 export function getUserRoleOptions(currentRole) {
   return currentRole === "superadmin"
-    ? ["superadmin", "admin", "operator", "viewer"]
-    : ["operator", "viewer"];
+    ? ["superadmin", "admin", "viewer"]
+    : ["viewer"];
 }
 
 export function buildUserFormValues(user) {
@@ -22,8 +21,7 @@ export function buildUserFormValues(user) {
     employeeId: user.employee_id || "",
     name: user.name || "",
     password: "",
-    role: user.role || "operator",
-    operatorId: user.operator_id ? String(user.operator_id) : "",
+    role: user.role || "viewer",
     isActive: Boolean(user.is_active),
   };
 }
@@ -33,7 +31,6 @@ export function buildUserPayload(form, { includePassword = false } = {}) {
     employee_id: form.employeeId,
     name: form.name,
     role: form.role,
-    operator_id: form.operatorId ? Number(form.operatorId) : null,
     is_active: form.isActive,
   };
 

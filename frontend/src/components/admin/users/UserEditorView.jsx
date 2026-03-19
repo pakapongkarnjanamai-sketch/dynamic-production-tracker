@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createUser, deleteUser, updateUser } from "../../../api/client";
 import useAutoSaveForm from "../../../hooks/useAutoSaveForm";
 import {
@@ -23,7 +23,6 @@ export default function UserEditorView({
   loading,
   error,
   setError,
-  operators,
   selectedUser,
   onRefresh,
   onClose,
@@ -34,7 +33,10 @@ export default function UserEditorView({
   const roleOptions = getUserRoleOptions(currentRole);
   const isEditView = mode === "edit";
   const isCreateView = mode === "create";
-  const initialForm = buildUserFormValues(selectedUser);
+  const initialForm = useMemo(
+    () => buildUserFormValues(selectedUser),
+    [selectedUser],
+  );
 
   useEffect(() => {
     if (isEditView && selectedUser) {
@@ -54,14 +56,12 @@ export default function UserEditorView({
       employeeId: form.employeeId,
       name: form.name,
       role: form.role,
-      operatorId: form.operatorId,
       isActive: form.isActive,
     },
     initialValues: {
       employeeId: initialForm.employeeId,
       name: initialForm.name,
       role: initialForm.role,
-      operatorId: initialForm.operatorId,
       isActive: initialForm.isActive,
     },
     resetKey: `${mode}:${selectedUser?.id || "new"}`,
@@ -185,19 +185,6 @@ export default function UserEditorView({
               {roleOptions.map((roleItem) => (
                 <option key={roleItem} value={roleItem}>
                   {roleItem.toUpperCase()}
-                </option>
-              ))}
-            </Input>
-            <Input
-              as="select"
-              label="ผูกกับ Profile พนักงาน (ถ้ามี)"
-              value={form.operatorId}
-              onChange={handleChange("operatorId")}
-            >
-              <option value="">— ไม่ผูก —</option>
-              {operators.map((operator) => (
-                <option key={operator.id} value={operator.id}>
-                  {operator.name}
                 </option>
               ))}
             </Input>

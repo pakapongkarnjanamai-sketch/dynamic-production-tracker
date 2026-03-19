@@ -1,10 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { createLog, getTrayDetailByQr } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
 import { Button } from "../components/admin/AdminUI";
 import { DetailPageShell } from "../components/layout/PageShell";
-
-const LS_OPERATOR = "mes_operator";
 
 // ส่ง cooldown: true เสมอเมื่อกลับไปหน้าสแกน
 const goScan = (navigate) => navigate("/scan", { state: { cooldown: true } });
@@ -20,16 +19,15 @@ function formatTime(ts) {
 export default function TrayDetailPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { user } = useAuth();
   const { qrCode: routeQrCode } = useParams();
   const qrCode = routeQrCode ? decodeURIComponent(routeQrCode) : "";
 
   const initialResult =
     state?.result?.tray?.qr_code === qrCode ? state.result : null;
+  const actorName = (state?.actorName || user?.name || "").trim();
 
   const [result, setResult] = useState(initialResult);
-  const [operator] = useState(
-    () => state?.operator || localStorage.getItem(LS_OPERATOR) || "",
-  );
   const [pageLoading, setPageLoading] = useState(!initialResult);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -90,7 +88,7 @@ export default function TrayDetailPage() {
         await createLog({
           tray_id: result.tray.id,
           process_id: process.id,
-          operator: operator || null,
+          operator: actorName || null,
           action,
         });
         if (navigator.vibrate) navigator.vibrate(100);
@@ -108,7 +106,7 @@ export default function TrayDetailPage() {
         setLoading(false);
       }
     },
-    [result, operator, navigate, loadTrayDetail],
+    [result, actorName, navigate, loadTrayDetail],
   );
 
   const currentProcess =

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createTray, deleteTray, updateTray } from "../../../api/client";
 import useAutoSaveForm from "../../../hooks/useAutoSaveForm";
 import {
@@ -34,7 +34,10 @@ export default function TrayEditorView({
   const [submitting, setSubmitting] = useState(false);
   const isEditView = mode === "edit";
   const isCreateView = mode === "create";
-  const initialForm = buildTrayFormValues(selectedTray);
+  const initialForm = useMemo(
+    () => buildTrayFormValues(selectedTray),
+    [selectedTray],
+  );
 
   useEffect(() => {
     if (isEditView && selectedTray) {

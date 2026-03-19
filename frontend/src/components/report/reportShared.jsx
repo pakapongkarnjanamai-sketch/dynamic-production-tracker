@@ -62,26 +62,6 @@ export const TABS = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: "operators",
-    label: "ผู้ปฏิบัติงาน",
-    shortLabel: "ทีม",
-    icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
         />
       </svg>
@@ -133,10 +113,6 @@ export function createReportSearch({
   return query ? `?${query}` : "";
 }
 
-export function getOperatorName(log) {
-  return log.operator || "ไม่ระบุชื่อ (Unknown)";
-}
-
 export function sortLogsByNewest(logs) {
   return [...logs].sort(
     (a, b) => new Date(b.logged_at) - new Date(a.logged_at),
@@ -161,44 +137,6 @@ export function buildLatestLogByTray(logs) {
     }
     return acc;
   }, {});
-}
-
-export function buildOperatorRows(logs) {
-  const sortedLogs = sortLogsByNewest(logs);
-  const latestByTask = buildLatestByTask(sortedLogs);
-  const stats = sortedLogs.reduce((acc, log) => {
-    const operatorName = getOperatorName(log);
-    if (!acc[operatorName]) {
-      acc[operatorName] = {
-        name: operatorName,
-        start: 0,
-        finish: 0,
-        ng: 0,
-        latestLog: log,
-        history: [],
-      };
-    }
-
-    if (log.action === "start") acc[operatorName].start += 1;
-    if (log.action === "finish") acc[operatorName].finish += 1;
-    if (log.action === "ng") acc[operatorName].ng += 1;
-    acc[operatorName].history.push(log);
-    return acc;
-  }, {});
-
-  Object.values(stats).forEach((row) => {
-    const activeLogs = Object.values(latestByTask).filter(
-      (taskLog) =>
-        taskLog.action === "start" && getOperatorName(taskLog) === row.name,
-    );
-
-    row.currentTask =
-      activeLogs.sort(
-        (a, b) => new Date(b.logged_at) - new Date(a.logged_at),
-      )[0] || null;
-  });
-
-  return Object.values(stats).sort((a, b) => b.finish - a.finish);
 }
 
 export function buildLineRows({ logs, processes, lines }) {

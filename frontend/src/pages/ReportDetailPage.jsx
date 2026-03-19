@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Navigate,
   useNavigate,
@@ -28,7 +28,6 @@ import {
   STATUS_BADGE_COLORS,
   STATUS_LABELS,
   buildLineRows,
-  buildOperatorRows,
   formatShortDate,
   formatShortTime,
 } from "../components/report/reportShared";
@@ -280,124 +279,6 @@ function LineDetailView({ detail }) {
   );
 }
 
-function OperatorDetailView({ detail }) {
-  const historyItems = detail.history.slice(0, 30);
-
-  return (
-    <Stack>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <DetailStatCard label="เริ่มงาน" value={detail.start} tone="info" />
-        <DetailStatCard
-          label="เสร็จสิ้น"
-          value={detail.finish}
-          tone="success"
-        />
-        <DetailStatCard label="ของเสีย" value={detail.ng} tone="danger" />
-        <DetailStatCard
-          label="ประวัติทั้งหมด"
-          value={detail.history.length}
-          tone="neutral"
-        />
-      </div>
-
-      <MobileCard>
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-success-200 bg-success-100 text-lg font-bold text-success-700">
-            {detail.name.charAt(0)}
-          </div>
-          <div>
-            <div className="text-lg font-bold text-neutral-900">
-              {detail.name}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 border-t border-dashed border-neutral-200 pt-3.5">
-          {detail.currentTask ? (
-            <>
-              <div className="mb-1 flex items-center gap-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-info-500" />
-                <span className="text-[10px] font-bold text-info-700">
-                  กำลังทำอยู่
-                </span>
-              </div>
-              <div className="text-sm font-bold text-neutral-900">
-                {detail.currentTask.process_name}
-              </div>
-              <div className="mt-1 flex items-center justify-between gap-2 text-xs text-neutral-500">
-                <span className="font-mono">{detail.currentTask.qr_code}</span>
-                <span>{formatShortTime(detail.currentTask.logged_at)}</span>
-              </div>
-            </>
-          ) : detail.latestLog ? (
-            <>
-              <div className="mb-1 text-[10px] font-bold text-neutral-500">
-                ทำล่าสุด
-              </div>
-              <div className="text-sm font-bold text-neutral-900">
-                {detail.latestLog.process_name}
-              </div>
-              <div className="mt-1 flex items-center justify-between gap-2 text-xs text-neutral-500">
-                <span className="font-mono">{detail.latestLog.qr_code}</span>
-                <span>{formatShortTime(detail.latestLog.logged_at)}</span>
-              </div>
-            </>
-          ) : (
-            <div className="text-center text-xs text-neutral-400">
-              — ไม่มีข้อมูลล่าสุด —
-            </div>
-          )}
-        </div>
-      </MobileCard>
-
-      <MobileCard>
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs font-semibold text-neutral-400">
-            ประวัติล่าสุด
-          </div>
-          {detail.history.length > historyItems.length ? (
-            <div className="text-xs text-neutral-400">
-              แสดง {historyItems.length} จาก {detail.history.length}
-            </div>
-          ) : null}
-        </div>
-
-        {historyItems.length === 0 ? (
-          <div className="mt-3">
-            <EmptyState title="ยังไม่มีประวัติ" />
-          </div>
-        ) : (
-          <Stack className="mt-3 space-y-2">
-            {historyItems.map((historyItem) => (
-              <div
-                key={historyItem.id}
-                className="flex items-center justify-between gap-3 border-b border-dashed border-neutral-200 pb-3 text-xs last:border-b-0 last:pb-0"
-              >
-                <div className="min-w-0 flex-1 pr-2">
-                  <div className="truncate font-semibold text-neutral-700">
-                    {historyItem.process_name}
-                  </div>
-                  <div className="mt-0.5 flex justify-between gap-2 text-neutral-400">
-                    <span className="truncate font-mono">
-                      {historyItem.qr_code}
-                    </span>
-                    <span>{formatShortTime(historyItem.logged_at)}</span>
-                  </div>
-                </div>
-                <Badge
-                  color={ACTION_BADGE_COLORS[historyItem.action] || "gray"}
-                >
-                  {ACTION_LABELS[historyItem.action] || historyItem.action}
-                </Badge>
-              </div>
-            ))}
-          </Stack>
-        )}
-      </MobileCard>
-    </Stack>
-  );
-}
-
 export default function ReportDetailPage() {
   const { detailType, detailId } = useParams();
   const [searchParams] = useSearchParams();
@@ -453,14 +334,7 @@ export default function ReportDetailPage() {
       return lineDetail;
     }
 
-    const logs = await getLogs({ limit: 2000 });
-    const operatorRows = buildOperatorRows(logs);
-    const operatorDetail = operatorRows.find((row) => row.name === detailId);
-    if (!operatorDetail) {
-      throw new Error("ไม่พบข้อมูลผู้ปฏิบัติงานที่เลือก");
-    }
-
-    return operatorDetail;
+    throw new Error("ไม่พบประเภทรายงานที่เลือก");
   }, [detailId, detailType]);
 
   const {
@@ -494,9 +368,6 @@ export default function ReportDetailPage() {
       ) : null}
       {!loading && !error && detail && detailType === "line" ? (
         <LineDetailView detail={detail} />
-      ) : null}
-      {!loading && !error && detail && detailType === "operator" ? (
-        <OperatorDetailView detail={detail} />
       ) : null}
     </DetailLayout>
   );

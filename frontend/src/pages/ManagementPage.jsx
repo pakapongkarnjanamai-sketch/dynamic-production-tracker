@@ -4,7 +4,6 @@ import { getLines } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import AdminShell from "../components/admin/AdminShell";
 import LinesSection from "../components/admin/LinesSection";
-import OperatorsSection from "../components/admin/OperatorsSection";
 import TraysSection from "../components/admin/TraysSection";
 import UsersSection from "../components/admin/UsersSection";
 import { ADMIN_MENUS } from "../features/admin/adminMenus";
@@ -74,19 +73,6 @@ export default function ManagementPage() {
           }
           onBackFromLogs={(trayId) =>
             updateAdminView({ tab: "trays", mode: "edit", id: trayId })
-          }
-          onCloseDetail={closeDetail}
-        />
-      );
-      break;
-    case "operators":
-      currentSection = (
-        <OperatorsSection
-          view={detailMode}
-          selectedId={detailId}
-          onCreate={() => updateAdminView({ tab: "operators", mode: "create" })}
-          onEdit={(operatorId) =>
-            updateAdminView({ tab: "operators", mode: "edit", id: operatorId })
           }
           onCloseDetail={closeDetail}
         />

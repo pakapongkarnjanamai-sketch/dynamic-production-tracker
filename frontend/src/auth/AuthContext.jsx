@@ -14,8 +14,6 @@ export function getDefaultRouteForRole(role) {
   switch (role) {
     case "viewer":
       return "/report";
-    case "operator":
-      return "/scan";
     case "admin":
     case "superadmin":
       return "/admin";

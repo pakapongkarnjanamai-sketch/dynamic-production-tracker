@@ -70,20 +70,7 @@ CREATE TABLE IF NOT EXISTS production_logs (
 );
 
 -- ---------------------------------------------------------------
--- 5. Operators  (ข้อมูลผู้ปฏิบัติงาน)
--- ---------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS operators (
-    id           SERIAL PRIMARY KEY,
-    name         VARCHAR(120) NOT NULL,
-    employee_id  VARCHAR(40)  UNIQUE,
-    department   VARCHAR(80),
-    is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-);
-
--- ---------------------------------------------------------------
--- 6. Users  (บัญชีผู้ใช้ระบบ)
+-- 5. Users  (บัญชีผู้ใช้ระบบ)
 --    User accounts are separate from operator master data.
 -- ---------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
@@ -92,8 +79,7 @@ CREATE TABLE IF NOT EXISTS users (
     name           VARCHAR(120) NOT NULL,
     password_hash  TEXT         NOT NULL,
     role           VARCHAR(20)  NOT NULL
-                               CHECK (role IN ('superadmin','admin','operator','viewer')),
-    operator_id    INTEGER      UNIQUE REFERENCES operators(id) ON DELETE SET NULL,
+                               CHECK (role IN ('superadmin','admin','viewer')),
     is_active      BOOLEAN      NOT NULL DEFAULT TRUE,
     last_login_at  TIMESTAMPTZ,
     created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -109,9 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_trays_line_id        ON trays(line_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_tray_id    ON production_logs(tray_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_process_id ON production_logs(process_id);
 CREATE INDEX IF NOT EXISTS idx_prod_logs_logged_at  ON production_logs(logged_at DESC);
-CREATE INDEX IF NOT EXISTS idx_operators_employee_id ON operators(employee_id);
 CREATE INDEX IF NOT EXISTS idx_users_role           ON users(role);
-CREATE INDEX IF NOT EXISTS idx_users_operator_id    ON users(operator_id);
 
 -- ---------------------------------------------------------------
 -- Trigger: keep updated_at current on lines / processes / trays
@@ -128,7 +112,7 @@ DO $$
 DECLARE
     t TEXT;
 BEGIN
-    FOREACH t IN ARRAY ARRAY['lines','processes','trays','operators','users'] LOOP
+    FOREACH t IN ARRAY ARRAY['lines','processes','trays','users'] LOOP
         IF NOT EXISTS (
             SELECT 1 FROM pg_trigger
             WHERE tgname = 'trg_' || t || '_updated_at'
@@ -168,28 +152,19 @@ INSERT INTO trays (id, qr_code, line_id, product, batch_no, qty) VALUES
     (2, 'TRAY-0002', 2, 'Widget-Pro',  'BT-2024-002', 30)
 ON CONFLICT (id) DO NOTHING;
 
--- Demo operators (ผู้ปฏิบัติงานตัวอย่าง)
-INSERT INTO operators (id, name, employee_id, department) VALUES
-    (1, 'สมชาย ใจดี',    'EMP-001', 'SMT'),
-    (2, 'สมหญิง รักงาน', 'EMP-002', 'Assembly')
-ON CONFLICT (id) DO NOTHING;
-
 -- Demo users (บัญชีผู้ใช้ระบบตัวอย่าง)
 -- Password for all seeded users: Demo@1234
-INSERT INTO users (employee_id, name, password_hash, role, operator_id, is_active) VALUES
-    ('SA-0001', 'SuperAdmin One', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', NULL, TRUE),
-    ('SA-0002', 'SuperAdmin Two', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', NULL, TRUE),
-    ('AD-0001', 'Admin One',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      NULL, TRUE),
-    ('AD-0002', 'Admin Two',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      NULL, TRUE),
-    ('OP-0001', 'Operator One',   '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'operator',   1,    TRUE),
-    ('OP-0002', 'Operator Two',   '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'operator',   2,    TRUE),
-    ('VW-0001', 'Viewer One',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     NULL, TRUE),
-    ('VW-0002', 'Viewer Two',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     NULL, TRUE)
+INSERT INTO users (employee_id, name, password_hash, role, is_active) VALUES
+    ('SA-0001', 'SuperAdmin One', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', TRUE),
+    ('SA-0002', 'SuperAdmin Two', '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'superadmin', TRUE),
+    ('AD-0001', 'Admin One',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      TRUE),
+    ('AD-0002', 'Admin Two',      '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'admin',      TRUE),
+    ('VW-0001', 'Viewer One',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     TRUE),
+    ('VW-0002', 'Viewer Two',     '$2a$10$EbllIjC037XALT.LdBcyX.sne1pz.GJyrWePamFMJS4XYCP7GPkYu', 'viewer',     TRUE)
 ON CONFLICT (employee_id) DO NOTHING;
 
 -- Reset sequences after seed
 SELECT setval('lines_id_seq',      (SELECT MAX(id) FROM lines));
 SELECT setval('processes_id_seq',  (SELECT MAX(id) FROM processes));
 SELECT setval('trays_id_seq',      (SELECT MAX(id) FROM trays));
-SELECT setval('operators_id_seq',  (SELECT MAX(id) FROM operators));
 SELECT setval('users_id_seq',      COALESCE((SELECT MAX(id) FROM users), 1), true);

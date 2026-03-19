@@ -1,4 +1,4 @@
-export const ADMIN_TABS = ["lines", "trays", "operators", "users"];
+export const ADMIN_TABS = ["lines", "trays", "users"];
 export const DEFAULT_ADMIN_TAB = "lines";
 
 export function getValidAdminTab(value) {

@@ -28,7 +28,7 @@ export default function UserListView({
       return true;
     }
 
-    return [user.name, user.employee_id, user.role, user.operator_name]
+    return [user.name, user.employee_id, user.role]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(keyword));
   });
@@ -39,7 +39,7 @@ export default function UserListView({
         <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
           <div className="min-w-0 flex-1">
             <Input
-              placeholder="ค้นหาชื่อ รหัส บทบาท หรือ operator"
+              placeholder="ค้นหาชื่อ รหัส หรือบทบาท"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
             />
@@ -66,7 +66,7 @@ export default function UserListView({
           }
           description={
             users.length === 0
-              ? "สร้างบัญชีเพื่อกำหนดสิทธิ์และผูกกับข้อมูลพนักงานในระบบ"
+              ? "สร้างบัญชีเพื่อกำหนดสิทธิ์การใช้งานในระบบ"
               : "ลองเปลี่ยนคำค้น หรือสร้างบัญชีใหม่"
           }
           action={
@@ -99,9 +99,6 @@ export default function UserListView({
                         <p className="mt-1 font-mono text-sm text-neutral-500">
                           {user.employee_id}
                         </p>
-                        <p className="mt-1 text-xs text-neutral-400">
-                          ผูกกับ: {user.operator_name || "ไม่ผูกข้อมูล"}
-                        </p>
                       </div>
                       <Badge color={getUserRoleBadgeColor(user.role)}>
                         {user.role.toUpperCase()}
@@ -122,7 +119,6 @@ export default function UserListView({
             columns={[
               { key: "identity", label: "ชื่อ / รหัส" },
               { key: "role", label: "สิทธิ์" },
-              { key: "operator", label: "ผูกกับ Operator" },
               { key: "status", label: "สถานะ" },
             ]}
           >
@@ -144,9 +140,6 @@ export default function UserListView({
                   <Badge color={getUserRoleBadgeColor(user.role)}>
                     {user.role.toUpperCase()}
                   </Badge>
-                </td>
-                <td className="px-5 py-4 text-sm text-neutral-500">
-                  {user.operator_name || "—"}
                 </td>
                 <td className="px-5 py-4">
                   <Badge color={user.is_active ? "green" : "red"}>

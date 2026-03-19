@@ -9,7 +9,6 @@ import {
   REPORT_MENUS,
 } from "../features/report/reportQueryState";
 import useAsyncData from "../hooks/useAsyncData";
-import OperatorReportPanel from "../components/report/OperatorReportPanel";
 import ProcessReportPanel from "../components/report/ProcessReportPanel";
 import TrayReportPanel from "../components/report/TrayReportPanel";
 import {
@@ -111,8 +110,10 @@ export default function ReportPage() {
     );
   } else {
     content = (
-      <OperatorReportPanel
+      <ProcessReportPanel
         logs={logsData}
+        processes={processesData}
+        lines={linesData}
         search={search}
         onSearch={handleSearchChange}
       />

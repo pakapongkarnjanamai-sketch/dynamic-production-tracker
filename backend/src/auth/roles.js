@@ -1,11 +1,10 @@
 const ROLES = Object.freeze({
-  SUPERADMIN: 'superadmin',
-  ADMIN: 'admin',
-  OPERATOR: 'operator',
-  VIEWER: 'viewer',
+  SUPERADMIN: "superadmin",
+  ADMIN: "admin",
+  VIEWER: "viewer",
 });
 
-const MANAGEABLE_BY_ADMIN = new Set([ROLES.OPERATOR, ROLES.VIEWER]);
+const MANAGEABLE_BY_ADMIN = new Set([ROLES.VIEWER]);
 
 const isValidRole = (role) => Object.values(ROLES).includes(role);
 
@@ -15,7 +14,8 @@ const canManageRole = (actorRole, targetRole) => {
   return false;
 };
 
-const canAssignRole = (actorRole, nextRole) => canManageRole(actorRole, nextRole);
+const canAssignRole = (actorRole, nextRole) =>
+  canManageRole(actorRole, nextRole);
 
 module.exports = {
   ROLES,

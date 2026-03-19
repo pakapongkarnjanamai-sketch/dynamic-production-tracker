@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createLine, deleteLine, updateLine } from "../../../api/client";
 import useAutoSaveForm from "../../../hooks/useAutoSaveForm";
 import {
@@ -28,12 +28,16 @@ export default function LineEditorView({
   const [submitting, setSubmitting] = useState(false);
   const isEditView = mode === "edit";
   const isCreateView = mode === "create";
-  const initialForm = selectedLine
-    ? {
-        name: selectedLine.name || "",
-        description: selectedLine.description || "",
-      }
-    : EMPTY_LINE_FORM;
+  const initialForm = useMemo(
+    () =>
+      selectedLine
+        ? {
+            name: selectedLine.name || "",
+            description: selectedLine.description || "",
+          }
+        : EMPTY_LINE_FORM,
+    [selectedLine],
+  );
 
   useEffect(() => {
     if (isEditView && selectedLine) {

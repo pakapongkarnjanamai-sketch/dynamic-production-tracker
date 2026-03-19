@@ -6,13 +6,11 @@ import { useAuth } from "../auth/AuthContext";
 import { Button } from "../components/admin/AdminUI";
 import { AppPageShell } from "../components/layout/PageShell";
 
-const LS_OPERATOR = "mes_operator";
-
 export default function ScanPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const operator = (user?.operator_name || user?.name || "").trim();
+  const actorName = (user?.name || "").trim();
 
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState(null);
@@ -42,12 +40,6 @@ export default function ScanPage() {
   }, []);
 
   useEffect(() => {
-    if (operator) {
-      localStorage.setItem(LS_OPERATOR, operator);
-    }
-  }, [operator]);
-
-  useEffect(() => {
     const t = setTimeout(() => {
       manualInputRef.current?.focus();
     }, 120);
@@ -68,7 +60,7 @@ export default function ScanPage() {
       try {
         const data = await scanTray(code);
         navigate(`/trays/${encodeURIComponent(data.tray.qr_code)}`, {
-          state: { result: data, operator },
+          state: { result: data, actorName },
         });
       } catch (e) {
         setRequestError(e.message);
@@ -78,7 +70,7 @@ export default function ScanPage() {
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [operator, navigate],
+    [actorName, navigate],
   );
 
   const reset = () => {
